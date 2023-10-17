@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Auth;
 
 class AuthController extends Controller
 {
@@ -18,19 +19,22 @@ class AuthController extends Controller
 
     public function doLogin(Request $request)
     {
+        // Validasi request
+        $request->validate([
+            'npk' => 'required',
+            'password' => 'required',
+        ]);
 
-        $credentials = [
-            'email' => $request->email,
-            'password' => $request->password,
-        ];
-        $user = auth('user')->attempt($credentials);
-
-        if ($user) {
-            return redirect('/');
+        // Coba melakukan autentikasi user
+        if (Auth::guard('web')->attempt(['npk' => $request->npk, 'password' => $request->password])) {
+            // Jika autentikasi berhasil, redirect ke halaman yang diinginkan
+            return redirect('/dashboard')->with('success', 'Login successful! Welcome back, ' . Auth::user()->name . '!');
         } else {
-            return back();
+            // Jika autentikasi gagal, redirect kembali ke halaman login dengan pesan error
+            return redirect('/login')->withErrors(['login' => 'Invalid NPK or password. Please try again.']);
         }
     }
+
 
     public function register()
     {
@@ -45,8 +49,6 @@ class AuthController extends Controller
             'name' => 'required',
             'password' => 'required|min:6',
         ]);
-
-        // dd($request);
 
         // Simpan data user ke dalam tabel users menggunakan koneksi mysql2
         DB::connection('mysql2')->beginTransaction();
@@ -72,7 +74,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        auth('user')->logout();
+        Auth::logout();
 
         return redirect('/login');
     }

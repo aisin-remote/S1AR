@@ -15,10 +15,24 @@
 <body>
     <div id="app">
         <section class="section">
+            @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
+            @if(session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                {{ session('success') }}
+            </div>
+            @endif
             <div class="container mt-5">
                 <div class="row">
-                    <div
-                        class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
+                    <div class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
                         <div class="card card-primary">
                             <div class="card-header">
                                 <h4>Login</h4>
@@ -28,25 +42,16 @@
                                 <form method="POST" action="{{ route('store.login') }}" class="needs-validation" novalidate="">
                                     @csrf
                                     <div class="form-group">
-                                        <label for="email">Email</label>
-                                        <input id="email" type="email" class="form-control" name="email"
-                                            tabindex="1" required autofocus />
+                                        <label for="npk">NPK</label>
+                                        <input id="npk" type="npk" class="form-control" name="npk" tabindex="1" required autofocus />
                                         <div class="invalid-feedback">
-                                            Please fill in your email
+                                            Please fill in your NPK
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <div class="d-block">
-                                            <label for="password" class="control-label">Password</label>
-                                            <div class="float-right">
-                                                {{-- <a href="auth-forgot-password.html" class="text-small">
-                                                    Forgot Password?
-                                                </a> --}}
-                                            </div>
-                                        </div>
-                                        <input id="password" type="password" class="form-control" name="password"
-                                            tabindex="2" required />
+                                        <label for="password" class="control-label">Password</label>
+                                        <input id="password" type="password" class="form-control" name="password" tabindex="2" required />
                                         <div class="invalid-feedback">
                                             please fill in your password
                                         </div>
