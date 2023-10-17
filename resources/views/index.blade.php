@@ -1,9 +1,9 @@
-@extends('layouts.app', ['title' => 'Dashboard'])
+@extends('layouts.app', ['title' => 'Daily Attendance'])
 @section('content')
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Data Karyawan</h1>
+            <h1>Data Kehadiran Karyawan Harian</h1>
         </div>
 
         <div class="card">

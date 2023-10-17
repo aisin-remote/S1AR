@@ -10,16 +10,17 @@ use Yajra\DataTables\DataTables;
 
 class EmployeeController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $tahunSekarang = Carbon::now()->year;
-        $tanggalDuaHariSebelumnya = Carbon::now()->subDays(2)->format('Y-m-d');
+        $tanggalSekarang = Carbon::now()->subDays(2)->format('Y-m-d');
 
         $data = DB::connection('sqlsrv')
             ->table('attdly1')
             ->select('attdly1.empno', 'attdly1.datin', 'attdly1.timin', 'attdly1.datot', 'attdly1.timot', 'pnmempl.empnm')
             ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
             ->whereYear('attdly1.datin', '=', $tahunSekarang) // Hanya data dari tahun sekarang
-            ->where('attdly1.datin', '>=', $tanggalDuaHariSebelumnya) // Hanya data dari 3 bulan ke belakang
+            ->where('attdly1.datin', '>=', $tanggalSekarang) // Hanya data dari 3 bulan ke belakang
             ->orderBy('attdly1.datin', 'asc') // Mengurutkan data berdasarkan kolom datin secara ascending (naik)
             ->orderBy('attdly1.timin', 'asc') // Mengurutkan data berdasarkan kolom timin secara ascending (naik)
             ->get();
@@ -49,14 +50,14 @@ class EmployeeController extends Controller
     public function getData()
     {
         $tahunSekarang = Carbon::now()->year;
-        $tanggalDuaHariSebelumnya = Carbon::now()->subDays(2)->format('Y-m-d');
+        $tanggalSekarang = Carbon::now()->subDays(1)->format('Y-m-d');
 
         $data = DB::connection('sqlsrv')
             ->table('attdly1')
             ->select('attdly1.empno', 'attdly1.datin', 'attdly1.timin', 'attdly1.datot', 'attdly1.timot', 'pnmempl.empnm')
             ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
             ->whereYear('attdly1.datin', '=', $tahunSekarang) // Hanya data dari tahun sekarang
-            ->where('attdly1.datin', '>=', $tanggalDuaHariSebelumnya) // Hanya data dari 3 bulan ke belakang
+            ->where('attdly1.datin', '>=', $tanggalSekarang) // Hanya data dari 3 bulan ke belakang
             ->orderBy('attdly1.datin', 'asc') // Mengurutkan data berdasarkan kolom datin secara ascending (naik)
             ->orderBy('attdly1.timin', 'asc') // Mengurutkan data berdasarkan kolom timin secara ascending (naik)
             ->get();
