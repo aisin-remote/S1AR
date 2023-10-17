@@ -30,7 +30,7 @@ Before you begin, make sure you have the following software installed:
     php artisan key:generate
     ```
 
-4. Create the database 'siar-mysql' in mySQL and Migrate the database:
+4. Create the database 'siar-mysql' in mySQL and Migrate the database (before migrate db, change sqlsrv to local sqlsrv in env file. after that, you can change sqlsrv to AIIA-...):
 
     ```sh
     php artisan migrate
