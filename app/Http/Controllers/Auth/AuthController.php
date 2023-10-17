@@ -28,7 +28,7 @@ class AuthController extends Controller
         // Coba melakukan autentikasi user
         if (Auth::guard('web')->attempt(['npk' => $request->npk, 'password' => $request->password])) {
             // Jika autentikasi berhasil, redirect ke halaman yang diinginkan
-            return redirect('/dashboard')->with('success', 'Login successful! Welcome back, ' . Auth::user()->name . '!');
+            return redirect('/')->with('success', 'Login successful! Welcome back, ' . Auth::user()->name . '!');
         } else {
             // Jika autentikasi gagal, redirect kembali ke halaman login dengan pesan error
             return redirect('/login')->withErrors(['login' => 'Invalid NPK or password. Please try again.']);

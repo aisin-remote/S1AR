@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
     <link rel="shortcut icon" href="{{ asset('assets/img/aiia.jpg') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ asset('assets/css/dataTables.css') }}">
 </head>
 
 <body>
@@ -42,6 +43,9 @@
     <!-- Template JS File -->
     <script src="{{ asset('assets/js/scripts.js') }}"></script>
     <script src="{{ asset('assets/js/custom.js') }}"></script>
+
+    <script src="{{ asset('assets/js/dataTables.js') }}"></script>
+    @stack('scripts')
 </body>
 
 </html>

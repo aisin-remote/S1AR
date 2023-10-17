@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Route;
 // Grup rute yang memerlukan otentikasi
 Route::middleware(['auth'])->group(function () {
     // Rute / dan /dashboard yang memanggil fungsi getData dari EmployeeController
-    Route::get('/', [EmployeeController::class, 'getData']);
-    Route::get('/dashboard', [EmployeeController::class, 'getData']);
+    Route::get('/', [EmployeeController::class, 'index']);
+    Route::get('/employee/datatables', [EmployeeController::class, 'getData'])->name('employee.datatables');
 });
 
 // Rute otentikasi
