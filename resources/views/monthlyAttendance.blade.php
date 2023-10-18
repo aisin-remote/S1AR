@@ -54,6 +54,20 @@
 </div>
 
 @push('scripts')
-
+<script>
+$(document).ready(function() {
+    var table = $('#employee-table').DataTable({
+        "paging": true,
+        "pagingType": "simple_numbers",
+        "scrollY": "400px",
+        "scrollX": true, // Mengaktifkan scrolling horizontal
+        "scrollCollapse": true,
+        "fixedHeader": true,
+        "fixedColumns": { // Menggunakan FixedColumns untuk mengaktifkan fixed header dan kolom
+            leftColumns: 2, // Tetapkan 2 kolom pertama (NPK dan Nama)
+        }
+    });
+});
+</script>
 @endpush
 @endsection

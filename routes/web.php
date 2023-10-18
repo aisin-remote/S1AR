@@ -21,10 +21,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dailyattendance', [EmployeeController::class, 'index'])->name('daily.attendance');
     Route::get('/employee/datatables', [EmployeeController::class, 'getData'])->name('employee.datatables');
 
-    Route::get('/monthlyattendance', function () {
-        return view('monthlyAttendance');
-    })->name('monthly.attendance'); 
-    Route::get('/employee/monthly/datatables', [EmployeeController::class, 'getDataMonthly'])->name('employee.monthly.datatables');
+    Route::get('/monthlyattendance', [EmployeeController::class, 'getDataMonthly'])->name('employee.monthly.datatables');
 });
 
 // Rute otentikasi
