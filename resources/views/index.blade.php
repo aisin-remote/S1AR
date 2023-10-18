@@ -34,7 +34,6 @@
     $(document).ready(function() {
         console.log('asu');
         $('#employee-table').DataTable({
-            processing: true,
             serverSide: true,
             ajax: '{{ url("/employee/datatables") }}',
             columns: [{
