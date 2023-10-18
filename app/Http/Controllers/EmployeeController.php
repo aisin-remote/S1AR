@@ -51,4 +51,24 @@ class EmployeeController extends Controller
 
         return DataTables::of($data)->make(true);
     }
+
+    public function getDataMonthly()
+    {
+        $tahunSekarang = Carbon::now()->year;
+        $bulanSekarang = Carbon::now()->month;
+
+        $data = DB::connection('sqlsrv')
+            ->table('attdly1')
+            ->select('attdly1.empno', 'pnmempl.empnm', 'attdly1.datin')
+            ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
+            ->whereYear('attdly1.datin', '=', $tahunSekarang)
+            ->whereMonth('attdly1.datin', '=', $bulanSekarang)
+            ->orderBy('attdly1.empno', 'asc')
+            ->orderBy('attdly1.datin', 'asc')
+            ->get();
+
+        $groupedData = $data->groupBy('empno');
+
+        return view('monthlyAttendance', compact('groupedData'));
+    }
 }

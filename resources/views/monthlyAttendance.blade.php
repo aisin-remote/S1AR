@@ -14,7 +14,7 @@
                             <thead>
                                 <tr class="text-center align-middle">
                                     <th>NPK</th>
-                                    <th>Nama</th>  
+                                    <th>Nama</th>
                                     <?php
                                     $bulan = date('m'); // Mengambil bulan saat ini (format: MM)
                                     $tahun = date('Y'); // Mengambil tahun saat ini (format: YYYY)
@@ -27,6 +27,24 @@
                                     ?>
                                 </tr>
                             </thead>
+                            <tbody>
+                                @foreach($groupedData as $npk => $npkData)
+                                <tr>
+                                    <td>{{ $npk }}</td>
+                                    <td>{{ $npkData[0]->empnm }}</td> <!-- Ambil nama dari data pertama karena nama sama dalam satu NPK -->
+                                    @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
+                                                                                        $hadir = false;
+                                                                                        foreach ($npkData as $data) {
+                                                                                            if (date('j', strtotime($data->datin)) == $hari) {
+                                                                                                $hadir = true;
+                                                                                                break;
+                                                                                            }
+                                                                                        }
+                                                                                        ?> <td>{!! $hadir ? '<i class="fas fa-check"></i>' : '' !!}</td>
+                                        @endfor
+                                </tr>
+                                @endforeach
+                            </tbody>
                         </table>
                     </div>
                 </div>
