@@ -19,8 +19,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [EmployeeController::class, 'index']);
     Route::get('/dailyattendance', [EmployeeController::class, 'index'])->name('daily.attendance');
-    
     Route::get('/employee/datatables', [EmployeeController::class, 'getData'])->name('employee.datatables');
+
+    Route::get('/monthlyattendance', function () {
+        return view('monthlyAttendance');
+    })->name('monthly.attendance'); 
 });
 
 // Rute otentikasi

@@ -49,18 +49,6 @@ class EmployeeController extends Controller
             }
         }
 
-        // dd($data);
-
         return DataTables::of($data)->make(true);
-        // return view('index', ['data' => $data]);
-
-        // $data = DB::connection('sqlsrv') // Sesuaikan nama koneksi database jika perlu
-        //     ->table('dbo.attdly1')
-        //     ->select('no')
-        //     ->get();
-
-        //     dd($data);
-
-        // return view('welcome', ['data' => $data]);
     }
 }

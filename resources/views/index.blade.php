@@ -32,7 +32,6 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        console.log('asu');
         $('#employee-table').DataTable({
             serverSide: true,
             ajax: '{{ url("/employee/datatables") }}',
