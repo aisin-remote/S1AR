@@ -21,6 +21,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dailyattendance', [EmployeeController::class, 'index'])->name('daily.attendance');
     Route::get('/employee/datatables', [EmployeeController::class, 'getData'])->name('employee.datatables');
 
+    Route::get('/weeklyattendance', [EmployeeController::class, 'indexWeekly'])->name('weekly.attendance');
+    Route::get('/employee/weekly/datatables', [EmployeeController::class, 'getDataWeekly'])->name('employee.weekly.datatables');
+
     Route::get('/monthlyattendance', [EmployeeController::class, 'getDataMonthly'])->name('employee.monthly.datatables');
 });
 
