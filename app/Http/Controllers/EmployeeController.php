@@ -115,4 +115,14 @@ class EmployeeController extends Controller
 
         return view('monthlyAttendance', compact('groupedData'));
     }
+
+    public function test()
+    {
+        $data = DB::connection('mysql3')
+            ->table('m_divisions')
+            ->select('*')
+            ->get();
+
+        dd($data);
+    }
 }

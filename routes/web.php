@@ -25,6 +25,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/employee/weekly/datatables', [EmployeeController::class, 'getDataWeekly'])->name('employee.weekly.datatables');
 
     Route::get('/monthlyattendance', [EmployeeController::class, 'getDataMonthly'])->name('employee.monthly.datatables');
+
+    Route::get('/test', [EmployeeController::class,'test']);
 });
 
 // Rute otentikasi
