@@ -34,13 +34,22 @@
                                     <td>{{ $npkData[0]->empnm }}</td> <!-- Ambil nama dari data pertama karena nama sama dalam satu NPK -->
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
                                                                                         $hadir = false;
+                                                                                        $rsccd = '';
                                                                                         foreach ($npkData as $data) {
                                                                                             if (date('j', strtotime($data->datin)) == $hari) {
                                                                                                 $hadir = true;
+                                                                                                if (is_null($data->rsccd) && !is_null($data->schdt)) {
+                                                                                                    // Jika rsccd kosong tapi schdt ada, gunakan rsccd dari schdt
+                                                                                                    $rsccd = $data->rsccd;
+                                                                                                }
+                                                                                                break;
+                                                                                            } elseif (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
+                                                                                                // Jika datin tidak cocok, tetapi schdt ada dan cocok, gunakan rsccd dari schdt
+                                                                                                $rsccd = $data->rsccd;
                                                                                                 break;
                                                                                             }
                                                                                         }
-                                                                                        ?> <td>{!! $hadir ? '<i class="fas fa-check"></i>' : '' !!}</td>
+                                                                                        ?> <td>{!! $hadir ? '<i class="fas fa-check"></i>' : '' !!} {{ $rsccd }}</td>
                                         @endfor
                                 </tr>
                                 @endforeach
@@ -55,19 +64,19 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    var table = $('#employee-table').DataTable({
-        "paging": true,
-        "pagingType": "simple_numbers",
-        "scrollY": "400px",
-        "scrollX": true, // Mengaktifkan scrolling horizontal
-        "scrollCollapse": true,
-        "fixedHeader": true,
-        "fixedColumns": { // Menggunakan FixedColumns untuk mengaktifkan fixed header dan kolom
-            leftColumns: 2, // Tetapkan 2 kolom pertama (NPK dan Nama)
-        }
+    $(document).ready(function() {
+        var table = $('#employee-table').DataTable({
+            "paging": true,
+            "pagingType": "simple_numbers",
+            "scrollY": "400px",
+            "scrollX": true, // Mengaktifkan scrolling horizontal
+            "scrollCollapse": true,
+            "fixedHeader": true,
+            "fixedColumns": { // Menggunakan FixedColumns untuk mengaktifkan fixed header dan kolom
+                leftColumns: 2, // Tetapkan 2 kolom pertama (NPK dan Nama)
+            }
+        });
     });
-});
 </script>
 @endpush
 @endsection

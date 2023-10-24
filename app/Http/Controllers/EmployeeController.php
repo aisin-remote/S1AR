@@ -117,8 +117,13 @@ class EmployeeController extends Controller
 
         $data = DB::connection('sqlsrv')
             ->table('attdly1')
-            ->select('attdly1.empno', 'pnmempl.empnm', 'attdly1.datin')
+            ->select('attdly1.empno', 'pnmempl.empnm', 'attdly1.datin', 'atttrn2.rsccd', 'atttrn2.schdt')
             ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
+            ->leftJoin('atttrn2', function ($join) {
+                $join->on('attdly1.empno', '=', 'atttrn2.empno')
+                    ->whereYear('atttrn2.schdt', '=', DB::raw('YEAR(attdly1.datin)'))
+                    ->whereMonth('atttrn2.schdt', '=', DB::raw('MONTH(attdly1.datin)'));
+            })
             ->whereYear('attdly1.datin', '=', $tahunSekarang)
             ->whereMonth('attdly1.datin', '=', $bulanSekarang)
             ->orderBy('attdly1.empno', 'asc')
@@ -126,6 +131,8 @@ class EmployeeController extends Controller
             ->get();
 
         $groupedData = $data->groupBy('empno');
+
+        // dd($groupedData);
 
         return view('monthlyAttendance', compact('groupedData'));
     }
