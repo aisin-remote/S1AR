@@ -30,6 +30,20 @@ class EmployeeController extends Controller
             ->orderBy('attdly1.timin', 'asc') // Mengurutkan data berdasarkan kolom timin secara ascending (naik)
             ->get();
 
+        $data->map(function ($row) {
+            $subSection = DB::connection('mysql3')
+                ->table('m_employees')
+                ->where(function ($query) use ($row) {
+                    $query->where('npk', $row->empno)
+                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
+                })
+                ->value('sub_section');
+
+            // Menambahkan kolom sub_section ke hasil data dari SQL Server
+            $row->sub_section = $subSection ? $subSection : 'Tidak Ada Data'; // Jika sub_section tidak ada, beri nilai default
+            return $row;
+        });
+
         // Mengubah format tanggal dan jam dalam hasil data
         foreach ($data as $row) {
             if ($row->datin != "        ") {

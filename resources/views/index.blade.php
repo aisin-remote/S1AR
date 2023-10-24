@@ -19,6 +19,7 @@
                                     <th>Waktu Masuk</th>
                                     <th>Tanggal Keluar</th>
                                     <th>Waktu Keluar</th>
+                                    <th>Sub Section</th> <!-- Tambahkan kolom ini -->
                                 </tr>
                             </thead>
                         </table>
@@ -33,6 +34,7 @@
 <script>
     $(document).ready(function() {
         $('#employee-table').DataTable({
+            processing: true,
             serverSide: true,
             ajax: '{{ url("/employee/datatables") }}',
             columns: [{
@@ -58,6 +60,10 @@
                 {
                     data: 'timot',
                     name: 'timot'
+                },
+                {
+                    data: 'sub_section', // Sesuaikan dengan nama kolom yang digunakan
+                    name: 'sub_section'
                 }
             ]
         });
