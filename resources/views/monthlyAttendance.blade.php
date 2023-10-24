@@ -22,7 +22,9 @@
 
                                     // Menambahkan kolom tanggal dari 1 hingga 31
                                     for ($hari = 1; $hari <= $jumlah_hari; $hari++) {
-                                        echo "<th>$hari</th>";
+                                        // Tentukan apakah hari ini adalah Sabtu atau Minggu
+                                        $class = (date('N', strtotime("$tahun-$bulan-$hari")) >= 6) ? 'class="text-danger"' : '';
+                                        echo "<th $class>$hari</th>";
                                     }
                                     ?>
                                 </tr>
@@ -49,7 +51,9 @@
                                                                                                 break;
                                                                                             }
                                                                                         }
-                                                                                        ?> <td>{!! $hadir ? '<i class="fas fa-check"></i>' : '' !!} {{ $rsccd }}</td>
+                                                                                        ?> <td {!! $hadir ? 'class="text-success"' : '' !!}>
+                                        {!! $hadir ? '<i class="fas fa-check"></i>' : '' !!} <span class="badge badge-warning">{{ $rsccd }}</span>
+                                        </td>
                                         @endfor
                                 </tr>
                                 @endforeach
