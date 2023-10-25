@@ -59,8 +59,6 @@ class EmployeeController extends Controller
 
                 // Menambahkan kolom section ke hasil data dari SQL Server
                 $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                return $row;
             } elseif ($occupation == 'KDP') {
                 $department = DB::connection('mysql3')
                     ->table('m_departments')
@@ -166,6 +164,8 @@ class EmployeeController extends Controller
 
     public function getDataMonthly()
     {
+        set_time_limit(120); // Mengatur batas waktu eksekusi menjadi 2 menit
+
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = Carbon::now()->month;
 
@@ -183,6 +183,74 @@ class EmployeeController extends Controller
             ->orderBy('attdly1.empno', 'asc')
             ->orderBy('attdly1.datin', 'asc')
             ->get();
+
+        // Menggunakan map untuk menambahkan sub_section ke setiap baris data
+        $data->map(function ($row) {
+            $subSection = DB::connection('mysql3')
+                ->table('m_employees')
+                ->where(function ($query) use ($row) {
+                    $query->where('npk', $row->empno)
+                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
+                })
+                ->value('sub_section');
+
+            $occupation = DB::connection('mysql3')
+                ->table('m_employees')
+                ->where(function ($query) use ($row) {
+                    $query->where('npk', $row->empno)
+                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
+                })
+                ->value('occupation');
+
+            // Tambahkan informasi sub_section ke setiap baris data
+            $row->sub_section = $subSection ? $subSection : 'Tidak Ada Data';
+
+            $row->occupation = $occupation ? $occupation : 'Tidak Ada Data';
+
+            if ($occupation == 'GMR') {
+                $department = DB::connection('mysql3')
+                    ->table('m_divisions')
+                    ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } elseif ($occupation == 'KDP') {
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } else {
+                $section = DB::connection('mysql3')
+                    ->table('m_sub_sections')
+                    ->where('code', $subSection)
+                    ->value('code_section');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->section = $section ? $section : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $section)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            }
+
+            return $row;
+        });
 
         $groupedData = $data->groupBy('empno');
 
