@@ -15,6 +15,9 @@
                         <a class="nav-link {{ request()->is('dailyattendance*') ? 'text-primary' : '' }}" href="/dailyattendance">Daily attendance</a>
                     </li>
                     <li>
+                        <a class="nav-link {{ request()->is('weeklyattendance*') ? 'text-primary' : '' }}" href="/weeklyattendance">Weekly attendance</a>
+                    </li>
+                    <li>
                         <a class="nav-link {{ request()->is('monthlyattendance*') ? 'text-primary' : '' }}" href="/monthlyattendance">Monthly attendance</a>
                     </li>
             </li>

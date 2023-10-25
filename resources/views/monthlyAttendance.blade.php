@@ -33,7 +33,7 @@
                                 @foreach($groupedData as $npk => $npkData)
                                 <tr>
                                     <td>{{ $npk }}</td>
-                                    <td>{{ $npkData[0]->empnm }}</td> <!-- Ambil nama dari data pertama karena nama sama dalam satu NPK -->
+                                    <td>{{ $npkData[0]->empnm }}</td>
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
                                                                                         $hadir = false;
                                                                                         $rsccd = '';

@@ -18,7 +18,7 @@ class EmployeeController extends Controller
     public function getData()
     {
         $tahunSekarang = Carbon::now()->year;
-        $tanggalSekarang = Carbon::now()->subDays(1)->format('Ymd');
+        $tanggalSekarang = Carbon::now()->format('Ymd');
 
         $data = DB::connection('sqlsrv')
             ->table('attdly1')
