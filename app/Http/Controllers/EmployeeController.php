@@ -39,8 +39,62 @@ class EmployeeController extends Controller
                 })
                 ->value('sub_section');
 
+            $occupation = DB::connection('mysql3')
+                ->table('m_employees')
+                ->where(function ($query) use ($row) {
+                    $query->where('npk', $row->empno)
+                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
+                })
+                ->value('occupation');
+
             // Menambahkan kolom sub_section ke hasil data dari SQL Server
             $row->sub_section = $subSection ? $subSection : 'Tidak Ada Data'; // Jika sub_section tidak ada, beri nilai default
+            $row->occupation = $occupation ? $occupation : 'Tidak Ada Data';
+
+            if ($occupation == 'GMR') {
+                $department = DB::connection('mysql3')
+                    ->table('m_divisions')
+                    ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                return $row;
+            } elseif ($occupation == 'KDP') {
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } else {
+                $section = DB::connection('mysql3')
+                    ->table('m_sub_sections')
+                    ->where('code', $subSection)
+                    ->value('code_section');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->section = $section ? $section : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $section)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            }
+
             return $row;
         });
 

@@ -19,7 +19,8 @@
                                     <th>Waktu Masuk</th>
                                     <th>Tanggal Keluar</th>
                                     <th>Waktu Keluar</th>
-                                    <th>Sub Section</th> <!-- Tambahkan kolom ini -->
+                                    <th>Occupation</th>
+                                    <th>Department</th> 
                                 </tr>
                             </thead>
                         </table>
@@ -62,8 +63,12 @@
                     name: 'timot'
                 },
                 {
-                    data: 'sub_section', // Sesuaikan dengan nama kolom yang digunakan
-                    name: 'sub_section'
+                    data: 'occupation',
+                    name: 'occupation'
+                },
+                {
+                    data: 'department',
+                    name: 'department'
                 }
             ]
         });
