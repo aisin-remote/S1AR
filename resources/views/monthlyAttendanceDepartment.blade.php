@@ -3,7 +3,7 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Data Kehadiran Karyawan Bulanan</h1>
+            <h1>Data Kehadiran Karyawan Bulanan per Department</h1>
         </div>
 
         <div class="card">
@@ -77,7 +77,7 @@
             "scrollCollapse": true,
             "fixedHeader": true,
             "fixedColumns": {
-                leftColumns: 4, 
+                leftColumns: 4,
             }
         });
     });

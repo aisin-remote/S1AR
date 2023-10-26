@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Daily Attendance'])
+@extends('layouts.app', ['title' => 'Weekly Attendance'])
 @section('content')
 <div class="main-content">
     <section class="section">
