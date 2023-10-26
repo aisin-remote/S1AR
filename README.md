@@ -1,4 +1,4 @@
-# SIAR Application Installation Guide
+# S1AR Application Installation Guide
 
 This guide will walk you through the steps to install the SIAR application.
 
