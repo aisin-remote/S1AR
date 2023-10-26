@@ -26,6 +26,10 @@
         @yield('content')
     </div>
 
+    <div class="simple-footer">
+        Copyright &copy; {{ date('Y') }} AIIA All Rights Reserved.
+    </div>
+
     <!-- General JS Scripts -->
     <script src="{{ asset('assets/modules/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/modules/popper.js') }}"></script>

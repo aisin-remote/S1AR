@@ -67,6 +67,22 @@ class EmployeeController extends Controller
 
                 // Menambahkan kolom section ke hasil data dari SQL Server
                 $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } elseif ($occupation == 'SPV') {
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $subSection)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
             } else {
                 $section = DB::connection('mysql3')
                     ->table('m_sub_sections')
@@ -223,6 +239,22 @@ class EmployeeController extends Controller
 
                 // Menambahkan kolom section ke hasil data dari SQL Server
                 $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } elseif ($occupation == 'SPV') {
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $subSection)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
             } else {
                 $section = DB::connection('mysql3')
                     ->table('m_sub_sections')
@@ -318,6 +350,22 @@ class EmployeeController extends Controller
                 $department = DB::connection('mysql3')
                     ->table('m_departments')
                     ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } elseif ($occupation == 'SPV') {
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $subSection)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
                     ->value('name');
 
                 // Menambahkan kolom section ke hasil data dari SQL Server

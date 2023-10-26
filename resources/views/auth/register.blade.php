@@ -70,9 +70,9 @@
                             have an account?
                             <a href="/login">Login</a>
                         </div>
-                        {{-- <div class="simple-footer">
-                            Copyright &copy;
-                        </div> --}}
+                        <div class="simple-footer">
+                            Copyright &copy; {{ date('Y') }} AIIA All Rights Reserved.
+                        </div>
                     </div>
                 </div>
             </div>

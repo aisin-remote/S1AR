@@ -68,9 +68,9 @@
                             Don't have an account?
                             <a href="/register">Create One</a>
                         </div>
-                        {{-- <div class="simple-footer">
-                            Copyright &copy;
-                        </div> --}}
+                        <div class="simple-footer">
+                            Copyright &copy; {{ date('Y') }} AIIA All Rights Reserved.
+                        </div>
                     </div>
                 </div>
             </div>
