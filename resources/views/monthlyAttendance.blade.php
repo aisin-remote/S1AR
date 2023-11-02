@@ -21,6 +21,7 @@
                                     $bulan = date('m');
                                     $tahun = date('Y');
                                     $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+                                    // $today = date('j');
                                     for ($hari = 1; $hari <= $jumlah_hari; $hari++) {
                                         $class = (date('N', strtotime("$tahun-$bulan-$hari")) >= 6) ? 'class="text-danger"' : '';
                                         echo "<th $class>$hari</th>";
@@ -36,23 +37,18 @@
                                     <td>{{ $npkData[0]->department }}</td>
                                     <td>{{ $npkData[0]->occupation }}</td>
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
-                                                                                        $hadir = false;
                                                                                         $rsccd = '';
-                                                                                        foreach ($npkData as $data) {
-                                                                                            if (date('j', strtotime($data->datin)) == $hari) {
-                                                                                                $hadir = true;
-                                                                                                if (is_null($data->rsccd) && !is_null($data->schdt)) {
+                                                                                        $today = date('j');
+                                                                                        if ($hari <= $today) {
+                                                                                            foreach ($npkData as $data) {
+                                                                                                if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
                                                                                                     $rsccd = $data->rsccd;
+                                                                                                    break;
                                                                                                 }
-                                                                                                break;
-                                                                                            } elseif (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                                                                                $rsccd = $data->rsccd;
-                                                                                                break;
                                                                                             }
                                                                                         }
-                                                                                        ?> <td {!! $hadir ? 'class="text-success"' : '' !!}>
-                                        {!! $hadir ? '<i class="fas fa-check"></i>' : '' !!}
-                                        <span class="badge badge-warning">{{ $rsccd }}</span>
+                                                                                        ?> <td {!! in_array(TRIM($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success"' : '' !!}>
+                                        {!! in_array(TRIM($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '<i class="fas fa-check"></i>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
                                         </td>
                                         @endfor
                                 </tr>
@@ -77,7 +73,7 @@
             "scrollCollapse": true,
             "fixedHeader": true,
             "fixedColumns": {
-                leftColumns: 4, 
+                leftColumns: 4,
             }
         });
     });
