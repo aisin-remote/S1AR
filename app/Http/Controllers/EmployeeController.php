@@ -178,12 +178,12 @@ class EmployeeController extends Controller
         return DataTables::of($data)->make(true);
     }
 
-    public function getDataMonthly()
+    public function getDataMonthly($month = null)
     {
         set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
 
         $tahunSekarang = Carbon::now()->year;
-        $bulanSekarang = Carbon::now()->month;
+        $bulanSekarang = $month ?: Carbon::now()->month;
 
         $data = DB::connection('sqlsrv')
             ->table('attdly2')

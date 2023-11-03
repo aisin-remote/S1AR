@@ -25,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/employee/weekly/datatables', [EmployeeController::class, 'getDataWeekly'])->name('employee.weekly.datatables');
 
     Route::get('/monthlyattendance', [EmployeeController::class, 'getDataMonthly'])->name('employee.monthly.datatables');
+    Route::get('/monthlyattendance/{month?}', [EmployeeController::class, 'getDataMonthly'])->name('monthlyattendance');
 
     Route::get('/monthlyattendancedepartment', [EmployeeController::class, 'getDataMonthlyDepartment'])->name('department.monthly.datatables');
 

@@ -9,6 +9,30 @@
         <div class="card">
             <div class="row px-3 py-3">
                 <div class="col-lg-12">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-auto">
+                                <select id="monthFilter" class="form-control py-2">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button id="filterButton" class="btn btn-primary">Apply Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
                     <div class="table-responsive">
                         <table class="table table-striped table-sm" id="employee-table">
                             <thead>
@@ -21,7 +45,6 @@
                                     $bulan = date('m');
                                     $tahun = date('Y');
                                     $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
-                                    // $today = date('j');
                                     for ($hari = 1; $hari <= $jumlah_hari; $hari++) {
                                         $class = (date('N', strtotime("$tahun-$bulan-$hari")) >= 6) ? 'class="text-danger"' : '';
                                         echo "<th $class>$hari</th>";
@@ -76,6 +99,26 @@
                 leftColumns: 4,
             }
         });
+    });
+
+    // Mendapatkan bulan saat ini (0-11, dimulai dari Januari)
+    var currentMonth = new Date().getMonth() + 1;
+
+    // Mengatur nilai seleksi pada elemen select dengan ID 'monthFilter' ke bulan saat ini
+    document.getElementById('monthFilter').value = currentMonth;
+
+    // Mendapatkan bulan yang dipilih dari URL (jika ada)
+    var selectedMonthFromUrl = window.location.pathname.split('/').pop();
+
+    // Jika bulan yang dipilih dari URL valid (antara 1 hingga 12), atur nilai seleksi pada elemen select
+    if (selectedMonthFromUrl >= 1 && selectedMonthFromUrl <= 12) {
+        document.getElementById('monthFilter').value = selectedMonthFromUrl;
+    }
+
+    // Menambahkan event listener untuk tombol filter
+    document.getElementById('filterButton').addEventListener('click', function() {
+        var selectedMonth = document.getElementById('monthFilter').value;
+        window.location.href = '{{ route("monthlyattendance") }}/' + selectedMonth;
     });
 </script>
 @endpush
