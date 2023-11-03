@@ -57,12 +57,10 @@
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
                                                                                         $rsccd = '';
                                                                                         $today = date('j');
-                                                                                        if ($hari <= $today) {
-                                                                                            foreach ($npkData as $data) {
-                                                                                                if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                                                                                    $rsccd = $data->rsccd;
-                                                                                                    break;
-                                                                                                }
+                                                                                        foreach ($npkData as $data) {
+                                                                                            if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
+                                                                                                $rsccd = $data->rsccd;
+                                                                                                break;
                                                                                             }
                                                                                         }
                                                                                         ?> <td {!! in_array(TRIM($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success"' : '' !!}>
