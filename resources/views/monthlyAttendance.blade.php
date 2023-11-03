@@ -42,13 +42,8 @@
                                     <th>Department</th>
                                     <th>Occupation</th>
                                     <?php
-                                    $bulan = date('m');
                                     $tahun = date('Y');
-                                    $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
-                                    for ($hari = 1; $hari <= $jumlah_hari; $hari++) {
-                                        $class = (date('N', strtotime("$tahun-$bulan-$hari")) >= 6) ? 'class="text-danger"' : '';
-                                        echo "<th $class>$hari</th>";
-                                    }
+                                    $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulanSekarang, $tahun);
                                     ?>
                                 </tr>
                             </thead>
@@ -120,6 +115,35 @@
         var selectedMonth = document.getElementById('monthFilter').value;
         window.location.href = '{{ route("monthlyattendance") }}/' + selectedMonth;
     });
+
+    // Mendapatkan bulan saat ini (0-11, dimulai dari Januari) dan tahun saat ini
+    var selectedMonth = document.getElementById('monthFilter').value;
+    var currentDate = new Date();
+    var currentMonth = selectedMonth;
+    var currentYear = currentDate.getFullYear();
+
+    // Mendapatkan jumlah hari dalam bulan saat ini
+    var numberOfDaysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+    // Menentukan nama-nama hari untuk memberi warna pada hari-hari akhir pekan
+    var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Mendapatkan tabel dengan ID 'employee-table'
+    var table = document.getElementById('employee-table');
+
+    // Membuat elemen-elemen <th> dan menambahkannya ke tabel
+    for (var day = 1; day <= numberOfDaysInMonth; day++) {
+        var th = document.createElement('th');
+        th.textContent = day;
+
+        // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
+        var dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
+        var isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        th.className = isWeekend ? 'text-danger' : '';
+
+        // Menambahkan elemen <th> ke dalam baris pertama tabel
+        table.rows[0].appendChild(th);
+    }
 </script>
 @endpush
 @endsection

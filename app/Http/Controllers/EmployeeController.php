@@ -281,9 +281,7 @@ class EmployeeController extends Controller
 
         $groupedData = $data->groupBy('empno');
 
-        // dd($groupedData);
-
-        return view('monthlyAttendance', compact('groupedData'));
+        return view('monthlyAttendance', compact('groupedData', 'bulanSekarang'));
     }
 
     public function getDataMonthlyDepartment()
