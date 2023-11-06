@@ -57,10 +57,22 @@
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
                                                                                         $rsccd = '';
                                                                                         $today = date('j');
-                                                                                        foreach ($npkData as $data) {
-                                                                                            if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                                                                                $rsccd = $data->rsccd;
-                                                                                                break;
+                                                                                        $month = date('m');
+                                                                                        if ($bulanSekarang == $month) {
+                                                                                            if ($hari <= $today) {
+                                                                                                foreach ($npkData as $data) {
+                                                                                                    if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
+                                                                                                        $rsccd = $data->rsccd;
+                                                                                                        break;
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        } else {
+                                                                                            foreach ($npkData as $data) {
+                                                                                                if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
+                                                                                                    $rsccd = $data->rsccd;
+                                                                                                    break;
+                                                                                                }
                                                                                             }
                                                                                         }
                                                                                         ?> <td {!! in_array(TRIM($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success"' : '' !!}>
