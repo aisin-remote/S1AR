@@ -290,9 +290,9 @@ class EmployeeController extends Controller
         return view('monthlyAttendance', compact('groupedData', 'bulanSekarang'));
     }
 
-    public function getDataMonthlyDepartment()
+    public function getDataMonthlyDepartment($department = null)
     {
-        set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
+        set_time_limit(500); // Mengatur batas waktu eksekusi menjadi 5 menit
 
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = Carbon::now()->month;
@@ -402,16 +402,27 @@ class EmployeeController extends Controller
         $matchedData = $data->firstWhere('empno', $loggedInNPK);
 
         // Inisialisasi variabel $department dan $filteredData
-        $department = null;
+        $departmentFitt = null;
         $filteredData = collect(); // Membuat koleksi data kosong
 
-        if ($matchedData) {
-            $department = $matchedData->department;
-
-            // Menyaring data berdasarkan $department yang sesuai
-            $filteredData = $data->filter(function ($row) use ($department) {
-                return $row->department === $department;
-            });
+        if ($department != null) {
+            if ($matchedData) {
+                $departmentFitt = $department;
+    
+                // Menyaring data berdasarkan $department yang sesuai
+                $filteredData = $data->filter(function ($row) use ($departmentFitt) {
+                    return $row->department === $departmentFitt;
+                });
+            }
+        } else {
+            if ($matchedData) {
+                $departmentFitt = $matchedData->department;
+    
+                // Menyaring data berdasarkan $department yang sesuai
+                $filteredData = $data->filter(function ($row) use ($departmentFitt) {
+                    return $row->department === $departmentFitt;
+                });
+            }
         }
 
         // Mengelompokkan data berdasarkan empno

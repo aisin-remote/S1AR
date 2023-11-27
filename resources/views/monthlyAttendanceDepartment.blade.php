@@ -9,6 +9,29 @@
         <div class="card">
             <div class="row px-3 py-3">
                 <div class="col-lg-12">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-auto">
+                                <select id="departmentFilter" class="form-control py-2">
+                                    <option value="" disabled selected>Select Department</option>
+                                    <option value="PRODUCTION SYSTEM & DEVELOPMEN">PRODUCTION SYSTEM & DEVELOPMENT</option>
+                                    <option value="QA ENGINE COMPONENT">QA ENGINE COMPONENT</option>
+                                    <option value="IT DEVELOPMENT">IT DEVELOPMENT</option>
+                                    <option value="PRODUCTION ELECTRIC">PRODUCTION ELECTRIC</option>
+                                    <option value="ENGINEERING & QUALITY ELECTRICAL COMPONENT">ENGINEERING & QUALITY ELECTRICAL COMPONENT</option>
+                                    <option value="ENGINERING BODY">ENGINERING BODY</option>
+                                    <option value="QA BODY COMPONENT">QA BODY COMPONENT</option>
+                                    <option value="BODY COMPONENT">BODY COMPONENT</option>
+                                    <option value="MAINTENANCE ELECTRIC">MAINTENANCE ELECTRIC</option>
+                                    <option value="PPIC">PPIC</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button id="filterButton" class="btn btn-primary">Apply Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
                     <div class="table-responsive">
                         <table class="table table-striped table-sm" id="employee-table">
                             <thead>
@@ -80,6 +103,12 @@
                 leftColumns: 4,
             }
         });
+    });
+
+    // Menambahkan event listener untuk tombol filter
+    document.getElementById('filterButton').addEventListener('click', function() {
+        var selectedMonth = document.getElementById('departmentFilter').value;
+        window.location.href = '{{ route("departmentattendance") }}/' + selectedMonth;
     });
 </script>
 @endpush
