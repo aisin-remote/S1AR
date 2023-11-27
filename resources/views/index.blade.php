@@ -1,4 +1,5 @@
 @extends('layouts.app', ['title' => 'Daily Attendance'])
+
 @section('content')
 <div class="main-content">
     <section class="section">
@@ -9,6 +10,19 @@
         <div class="card">
             <div class="row px-3 py-3">
                 <div class="col-lg-12">
+                    <form id="filter-form">
+                        <div class="form-row">
+                            <div class="form-group col-auto">
+                                <label for="start_date">Filter Date:</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date">
+                            </div>
+                            <div class="form-group col-auto">
+                                <label for="filter_button">&nbsp;</label>
+                                <button type="button" class="btn btn-primary btn-sm form-control" id="filter_button">Apply Filter</button>
+                            </div>
+                        </div>
+                    </form>
+
                     <div class="table-responsive">
                         <table class="table table-striped table-sm" id="employee-table">
                             <thead>
@@ -20,7 +34,7 @@
                                     <th>Tanggal Keluar</th>
                                     <th>Waktu Keluar</th>
                                     <th>Occupation</th>
-                                    <th>Department</th> 
+                                    <th>Department</th>
                                 </tr>
                             </thead>
                         </table>
@@ -34,10 +48,16 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        $('#employee-table').DataTable({
+        var table = $('#employee-table').DataTable({
             processing: true,
             serverSide: true,
-            ajax: '{{ url("/employee/datatables") }}',
+            ajax: {
+                url: '{{ url("/employee/datatables") }}',
+                data: function(d) {
+                    d.start_date = $('#start_date').val();
+                    d.end_date = $('#end_date').val();
+                }
+            },
             columns: [{
                     data: 'empno',
                     name: 'empno'
@@ -71,6 +91,10 @@
                     name: 'department'
                 }
             ]
+        });
+
+        $('#filter_button').on('click', function() {
+            table.ajax.reload();
         });
     });
 </script>

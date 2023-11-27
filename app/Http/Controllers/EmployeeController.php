@@ -15,17 +15,23 @@ class EmployeeController extends Controller
         return view('index');
     }
 
-    public function getData()
+    public function getData(Request $request)
     {
         $tahunSekarang = Carbon::now()->year;
         $tanggalSekarang = Carbon::now()->format('Ymd');
+
+        if ($request->has('start_date')) {
+            $tanggalSekarang = Carbon::parse($request->input('start_date'))->format('Ymd');
+        } else {
+            $tanggalSekarang = Carbon::now()->format('Ymd');
+        }
 
         $data = DB::connection('sqlsrv')
             ->table('attdly1')
             ->select('attdly1.empno', 'attdly1.datin', 'attdly1.timin', 'attdly1.datot', 'attdly1.timot', 'pnmempl.empnm')
             ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
             ->whereYear('attdly1.datin', '=', $tahunSekarang) // Hanya data dari tahun sekarang
-            ->where('attdly1.datin', '>=', $tanggalSekarang) // Hanya data dari 2 hari kebelakang
+            ->where('attdly1.datin', '=', $tanggalSekarang) // Hanya data dari 2 hari kebelakang
             ->orderBy('attdly1.datin', 'asc') // Mengurutkan data berdasarkan kolom datin secara ascending (naik)
             ->orderBy('attdly1.timin', 'asc') // Mengurutkan data berdasarkan kolom timin secara ascending (naik)
             ->get();
