@@ -23,6 +23,9 @@
                     <li>
                         <a class="nav-link {{ request()->is('monthlyattendancedepartment*') ? 'text-primary' : '' }}" href="/monthlyattendancedepartment">Department attendance</a>
                     </li>
+                    <li>
+                        <a class="nav-link {{ request()->is('historyattendance*') ? 'text-primary' : '' }}" href="/historyattendance">History attendance</a>
+                    </li>
             </li>
         </ul>
         <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a>

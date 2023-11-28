@@ -20,7 +20,7 @@ class EmployeeController extends Controller
         $tahunSekarang = Carbon::now()->year;
         $tanggalSekarang = Carbon::now()->format('Ymd');
 
-        if ($request->has('start_date')) {
+        if ($request->input('start_date') != null) {
             $tanggalSekarang = Carbon::parse($request->input('start_date'))->format('Ymd');
         } else {
             $tanggalSekarang = Carbon::now()->format('Ymd');
@@ -408,7 +408,7 @@ class EmployeeController extends Controller
         if ($department != null) {
             if ($matchedData) {
                 $departmentFitt = $department;
-    
+
                 // Menyaring data berdasarkan $department yang sesuai
                 $filteredData = $data->filter(function ($row) use ($departmentFitt) {
                     return $row->department === $departmentFitt;
@@ -417,7 +417,7 @@ class EmployeeController extends Controller
         } else {
             if ($matchedData) {
                 $departmentFitt = $matchedData->department;
-    
+
                 // Menyaring data berdasarkan $department yang sesuai
                 $filteredData = $data->filter(function ($row) use ($departmentFitt) {
                     return $row->department === $departmentFitt;
@@ -431,13 +431,138 @@ class EmployeeController extends Controller
         return view('monthlyAttendanceDepartment', compact('groupedData'));
     }
 
-    public function test()
+    public function indexPerson()
     {
-        $data = DB::connection('mysql3')
-            ->table('m_divisions')
-            ->select('*')
+        return view('HistoryPerson');
+    }
+
+    public function getDataPerson(Request $request)
+    {
+        // $tahunSekarang = Carbon::now()->year;
+        $npk = auth()->user()->npk; // Ambil NPK dari user yang sedang login
+
+        if ($request->input('start_date') != null) {
+            $startDate = Carbon::parse($request->input('start_date'));
+            $tahunSekarang = $startDate->year;
+            $bulanSekarang = $startDate->month;
+        } else {
+            $tahunSekarang = Carbon::now()->year;
+            $bulanSekarang = Carbon::now()->month;
+        }
+
+        $data = DB::connection('sqlsrv')
+            ->table('attdly1')
+            ->select('attdly1.empno', 'attdly1.datin', 'attdly1.timin', 'attdly1.datot', 'attdly1.timot', 'pnmempl.empnm')
+            ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
+            ->whereYear('attdly1.datin', '=', $tahunSekarang)
+            ->whereMonth('attdly1.datin', '=', $bulanSekarang)
+            ->where('attdly1.empno', '=', $npk)
+            ->orderBy('attdly1.datin', 'asc')
+            ->orderBy('attdly1.timin', 'asc')
             ->get();
 
-        dd($data);
+
+        $data->map(function ($row) {
+            $subSection = DB::connection('mysql3')
+                ->table('m_employees')
+                ->where(function ($query) use ($row) {
+                    $query->where('npk', $row->empno)
+                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
+                })
+                ->value('sub_section');
+
+            $occupation = DB::connection('mysql3')
+                ->table('m_employees')
+                ->where(function ($query) use ($row) {
+                    $query->where('npk', $row->empno)
+                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
+                })
+                ->value('occupation');
+
+            // Menambahkan kolom sub_section ke hasil data dari SQL Server
+            $row->sub_section = $subSection ? $subSection : 'Tidak Ada Data'; // Jika sub_section tidak ada, beri nilai default
+            $row->occupation = $occupation ? $occupation : 'Tidak Ada Data';
+
+            if ($occupation == 'GMR') {
+                $department = DB::connection('mysql3')
+                    ->table('m_divisions')
+                    ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } elseif ($occupation == 'KDP') {
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $subSection)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } elseif ($occupation == 'SPV') {
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $subSection)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            } else {
+                $section = DB::connection('mysql3')
+                    ->table('m_sub_sections')
+                    ->where('code', $subSection)
+                    ->value('code_section');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->section = $section ? $section : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $codeDepartment = DB::connection('mysql3')
+                    ->table('m_sections')
+                    ->where('code', $section)
+                    ->value('code_department');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+
+                $department = DB::connection('mysql3')
+                    ->table('m_departments')
+                    ->where('code', $codeDepartment)
+                    ->value('name');
+
+                // Menambahkan kolom section ke hasil data dari SQL Server
+                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
+            }
+
+            return $row;
+        });
+
+        // Mengubah format tanggal dan jam dalam hasil data
+        foreach ($data as $row) {
+            if ($row->datin != "        ") {
+                $row->datin = substr($row->datin, 0, 4) . '-' . substr($row->datin, 4, 2) . '-' . substr($row->datin, 6, 2);
+                $row->timin = substr($row->timin, 0, 2) . ':' . substr($row->timin, 2, 2);
+            } else {
+                $row->datin = "Tidak Ada Data";
+                $row->timin = "Tidak Ada Data";
+            }
+
+            if ($row->datot != "        ") {
+                $row->datot = substr($row->datot, 0, 4) . '-' . substr($row->datot, 4, 2) . '-' . substr($row->datot, 6, 2);
+                $row->timot = substr($row->timot, 0, 2) . ':' . substr($row->timot, 2, 2);
+            } else {
+                $row->datot = "Tidak Ada Data";
+                $row->timot = "Tidak Ada Data";
+            }
+        }
+
+        return DataTables::of($data)->make(true);
     }
 }
