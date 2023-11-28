@@ -54,31 +54,46 @@
                                     <td>{{ $npkData[0]->empnm }}</td>
                                     <td>{{ $npkData[0]->department }}</td>
                                     <td>{{ $npkData[0]->occupation }}</td>
-                                    @for ($hari = 1; $hari <= $jumlah_hari; $hari++) <?php
-                                                                                        $rsccd = '';
-                                                                                        $today = date('j');
-                                                                                        $month = date('m');
-                                                                                        if ($bulanSekarang == $month) {
-                                                                                            if ($hari <= $today) {
-                                                                                                foreach ($npkData as $data) {
-                                                                                                    if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                                                                                        $rsccd = $data->rsccd;
-                                                                                                        break;
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                        } else {
-                                                                                            foreach ($npkData as $data) {
-                                                                                                if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                                                                                    $rsccd = $data->rsccd;
-                                                                                                    break;
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                        ?> <td {!! in_array(TRIM($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success"' : '' !!}>
-                                        {!! in_array(TRIM($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '<i class="fas fa-check"></i>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
+
+                                    @php
+                                    $alpCount = 0; // Initialize ALP counter
+                                    @endphp
+
+                                    @for ($hari = 1; $hari <= $jumlah_hari; $hari++) @php $rsccd='' ; $today=date('j'); $month=date('m'); if ($bulanSekarang==$month) { if ($hari <=$today) { foreach ($npkData as $data) { if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
+                                        $rsccd = $data->rsccd;
+
+                                        // Increment ALP count if rsccd is ALP
+                                        if (trim($rsccd) == 'ALP') {
+                                        $alpCount++;
+                                        }
+
+                                        break;
+                                        }
+                                        }
+                                        }
+                                        } else {
+                                        foreach ($npkData as $data) {
+                                        if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
+                                        $rsccd = $data->rsccd;
+
+                                        // Increment ALP count if rsccd is ALP
+                                        if (trim($rsccd) == 'ALP') {
+                                        $alpCount++;
+                                        }
+
+                                        break;
+                                        }
+                                        }
+                                        }
+                                        @endphp
+
+                                        <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success"' : '' !!}>
+                                            {!! in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '<i class="fas fa-check"></i>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
                                         </td>
                                         @endfor
+
+                                        <!-- Display ALP count in the "Note" column -->
+                                        <td>ALP : {{ $alpCount }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -144,7 +159,6 @@
     // Membuat elemen-elemen <th> dan menambahkannya ke tabel
     for (var day = 1; day <= numberOfDaysInMonth; day++) {
         var th = document.createElement('th');
-        th.textContent = day;
 
         // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
         var dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
@@ -153,6 +167,16 @@
 
         // Menambahkan elemen <th> ke dalam baris pertama tabel
         table.rows[0].appendChild(th);
+
+        // Tambahkan kolom note setelah kolom terakhir (30 atau 31)
+        if (day === numberOfDaysInMonth) {
+            var noteTh = document.createElement('th');
+            noteTh.textContent = 'Note';
+            table.rows[0].appendChild(noteTh);
+        }
+
+        // Setel teks untuk semua elemen <th>, termasuk kolom tanggal dan kolom note
+        th.textContent = day;
     }
 </script>
 @endpush
