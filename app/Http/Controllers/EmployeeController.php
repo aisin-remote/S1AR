@@ -186,8 +186,8 @@ class EmployeeController extends Controller
 
     public function getDataMonthly($month = null)
     {
-        set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
-
+        //set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
+        ini_set('max_execution_time', 0);
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = $month ?: Carbon::now()->month;
 
