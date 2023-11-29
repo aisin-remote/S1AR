@@ -297,27 +297,28 @@ class EmployeeController extends Controller
 
     public function getDataMonthlyDepartment($department = null)
     {
-        set_time_limit(500); // Mengatur batas waktu eksekusi menjadi 5 menit
+        // set_time_limit(500); // Mengatur batas waktu eksekusi menjadi 5 menit
+        ini_set('max_execution_time', 0);
 
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = Carbon::now()->month;
 
         $loggedInNPK = auth()->user()->npk;
 
-        $data = DB::connection('sqlsrv')
-            ->table('attdly1')
-            ->select('attdly1.empno', 'pnmempl.empnm', 'attdly1.datin', 'atttrn2.rsccd', 'atttrn2.schdt')
-            ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
-            ->leftJoin('atttrn2', function ($join) {
-                $join->on('attdly1.empno', '=', 'atttrn2.empno')
-                    ->whereYear('atttrn2.schdt', '=', DB::raw('YEAR(attdly1.datin)'))
-                    ->whereMonth('atttrn2.schdt', '=', DB::raw('MONTH(attdly1.datin)'));
-            })
-            ->whereYear('attdly1.datin', '=', $tahunSekarang)
-            ->whereMonth('attdly1.datin', '=', $bulanSekarang)
-            ->orderBy('attdly1.empno', 'asc')
-            ->orderBy('attdly1.datin', 'asc')
-            ->get();
+        $data = DB::select('SELECT COALESCE(a.coid, b.coid) AS coid,
+        COALESCE(a.empno, b.empno) AS empno,
+        COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+        COALESCE(a.schdt, b.schdt) AS schdt,
+        COALESCE(a.rsccd, b.rsccd) AS rsccd
+        FROM attdly2 a
+        LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
+        FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+        LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
+        WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
+        ORDER BY empno ASC, schdt ASC; 
+        ');
+
+        $data = collect($data);
 
         // Menggunakan map untuk menambahkan sub_section ke setiap baris data
         $data->map(function ($row) {
@@ -433,7 +434,7 @@ class EmployeeController extends Controller
         // Mengelompokkan data berdasarkan empno
         $groupedData = $filteredData->groupBy('empno');
 
-        return view('monthlyAttendanceDepartment', compact('groupedData'));
+        return view('monthlyAttendanceDepartment', compact('groupedData', 'bulanSekarang'));
     }
 
     public function indexPerson()
