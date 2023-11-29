@@ -191,15 +191,20 @@ class EmployeeController extends Controller
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = $month ?: Carbon::now()->month;
 
-        $data = DB::connection('sqlsrv')
-            ->table('attdly2')
-            ->select('attdly2.empno', 'attdly2.rsccd', 'attdly2.schdt', 'pnmempl.empnm')
-            ->join('pnmempl', 'attdly2.empno', '=', 'pnmempl.empno')
-            ->whereYear('attdly2.schdt', '=', $tahunSekarang)
-            ->whereMonth('attdly2.schdt', '=', $bulanSekarang)
-            ->orderBy('attdly2.empno', 'asc')
-            ->orderBy('attdly2.schdt', 'asc')
-            ->get();
+        $data = DB::select('SELECT COALESCE(a.coid, b.coid) AS coid,
+        COALESCE(a.empno, b.empno) AS empno,
+        COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+        COALESCE(a.schdt, b.schdt) AS schdt,
+        COALESCE(a.rsccd, b.rsccd) AS rsccd
+        FROM attdly2 a
+        LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
+        FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+        LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
+        WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
+        ORDER BY empno ASC, schdt ASC; 
+        ');
+
+        $data = collect($data);
 
         // Menggunakan map untuk menambahkan sub_section ke setiap baris data
         $data->map(function ($row) {
