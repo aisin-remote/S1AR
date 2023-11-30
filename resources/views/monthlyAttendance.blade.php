@@ -52,8 +52,8 @@
                                 <tr>
                                     <td>{{ $npk }}</td>
                                     <td>{{ $npkData[0]->empnm }}</td>
-                                    <td>{{ $npkData[0]->department }}</td>
-                                    <td>{{ $npkData[0]->occupation }}</td>
+                                    <td>{{ $npkData[0]->descr }}</td>
+                                    <td>{{ $npkData[0]->hirar }}</td>
 
                                     @php
                                     $alpCount = 0; // Initialize ALP counter

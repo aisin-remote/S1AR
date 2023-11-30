@@ -191,104 +191,37 @@ class EmployeeController extends Controller
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = $month ?: Carbon::now()->month;
 
-        $data = DB::select('SELECT COALESCE(a.coid, b.coid) AS coid,
-        COALESCE(a.empno, b.empno) AS empno,
-        COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
-        COALESCE(a.schdt, b.schdt) AS schdt,
-        COALESCE(a.rsccd, b.rsccd) AS rsccd
-        FROM attdly2 a
-        LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
-        FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-        LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
-        WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
-        ORDER BY empno ASC, schdt ASC; 
+        $data = DB::select('
+        WITH CTE AS (
+            SELECT 
+                COALESCE(a.coid, b.coid) AS coid,
+                COALESCE(a.empno, b.empno) AS empno,
+                COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+                COALESCE(a.schdt, b.schdt) AS schdt,
+                COALESCE(a.rsccd, b.rsccd) AS rsccd,
+                COALESCE(pnhhira_attdly2.hirar, pnhhira_atttrn2.hirar) AS hirar,
+                COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) AS mutdt,
+                COALESCE(ssmhira_attdly2.descr, ssmhira_atttrn2.descr) AS descr,
+                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) DESC) AS RowNum
+            FROM attdly2 a
+            LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
+            LEFT JOIN pnhhira pnhhira_attdly2 ON a.empno = pnhhira_attdly2.empno
+            LEFT JOIN ssmhira ssmhira_attdly2 ON pnhhira_attdly2.hirar = ssmhira_attdly2.hirar
+            FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+            LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
+            LEFT JOIN pnhhira pnhhira_atttrn2 ON b.empno = pnhhira_atttrn2.empno
+            LEFT JOIN ssmhira ssmhira_atttrn2 ON pnhhira_atttrn2.hirar = ssmhira_atttrn2.hirar
+            WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
+        )
+        
+        SELECT * 
+        FROM CTE
+        WHERE RowNum = 1
+        ORDER BY empno ASC, schdt ASC;
+        
         ');
 
         $data = collect($data);
-
-        // Menggunakan map untuk menambahkan sub_section ke setiap baris data
-        $data->map(function ($row) {
-            $subSection = DB::connection('mysql3')
-                ->table('m_employees')
-                ->where(function ($query) use ($row) {
-                    $query->where('npk', $row->empno)
-                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
-                })
-                ->value('sub_section');
-
-            $occupation = DB::connection('mysql3')
-                ->table('m_employees')
-                ->where(function ($query) use ($row) {
-                    $query->where('npk', $row->empno)
-                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
-                })
-                ->value('occupation');
-
-            // Tambahkan informasi sub_section ke setiap baris data
-            $row->sub_section = $subSection ? $subSection : 'Tidak Ada Data';
-
-            $row->occupation = $occupation ? $occupation : 'Tidak Ada Data';
-
-            if ($occupation == 'GMR') {
-                $department = DB::connection('mysql3')
-                    ->table('m_divisions')
-                    ->where('code', $subSection)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            } elseif ($occupation == 'KDP') {
-                $department = DB::connection('mysql3')
-                    ->table('m_departments')
-                    ->where('code', $subSection)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            } elseif ($occupation == 'SPV') {
-                $codeDepartment = DB::connection('mysql3')
-                    ->table('m_sections')
-                    ->where('code', $subSection)
-                    ->value('code_department');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                $department = DB::connection('mysql3')
-                    ->table('m_departments')
-                    ->where('code', $codeDepartment)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            } else {
-                $section = DB::connection('mysql3')
-                    ->table('m_sub_sections')
-                    ->where('code', $subSection)
-                    ->value('code_section');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->section = $section ? $section : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                $codeDepartment = DB::connection('mysql3')
-                    ->table('m_sections')
-                    ->where('code', $section)
-                    ->value('code_department');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                $department = DB::connection('mysql3')
-                    ->table('m_departments')
-                    ->where('code', $codeDepartment)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            }
-
-            return $row;
-        });
 
         $groupedData = $data->groupBy('empno');
 
