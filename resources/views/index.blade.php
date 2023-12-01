@@ -41,10 +41,10 @@
                                     <th class="text-center align-middle">Nama</th>
                                     <th class="text-center align-middle">Occupation</th>
                                     <th class="text-center align-middle">Department</th>
-                                    <th class="text-center align-middle">Tanggal Masuk</th>
-                                    <th class="text-center align-middle">Waktu Masuk</th>
-                                    <th class="text-center align-middle">Tanggal Keluar</th>
-                                    <th class="text-center align-middle">Waktu Keluar</th>
+                                    <th class="align-middle">Tanggal Masuk</th>
+                                    <th class="align-middle">Waktu Masuk</th>
+                                    <th class="align-middle">Tanggal Keluar</th>
+                                    <th class="align-middle">Waktu Keluar</th>
                                 </tr>
                             </thead>
                         </table>
