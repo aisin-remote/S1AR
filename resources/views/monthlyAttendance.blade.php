@@ -36,11 +36,11 @@
                     <div class="table-responsive">
                         <table class="table table-striped table-sm" id="employee-table">
                             <thead>
-                                <tr class="text-center align-middle">
-                                    <th>NPK</th>
-                                    <th>Nama</th>
-                                    <th>Department</th>
-                                    <th>Occupation</th>
+                                <tr>
+                                    <th class="text-center align-middle">NPK</th>
+                                    <th class="text-center align-middle">Nama</th>
+                                    <th class="text-center align-middle">Department</th>
+                                    <th class="text-center align-middle">Occupation</th>
                                     <?php
                                     $tahun = date('Y');
                                     $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulanSekarang, $tahun);
@@ -109,7 +109,7 @@
                                         }
                                         @endphp
 
-                                        <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success"' : '' !!}>
+                                        <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
                                             {!! in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '<i class="fas fa-check"></i>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
                                         </td>
                                         @endfor
@@ -136,9 +136,20 @@
             "scrollY": "400px",
             "scrollX": true,
             "scrollCollapse": true,
-            "fixedHeader": true,
-            "fixedColumns": {
-                leftColumns: 4,
+            "columnDefs": [{
+                "orderable": false,
+                "targets": [1, 2, 3]
+            }],
+            initComplete: function() {
+                this.api().columns([2]).every(function() {
+                    var column = this;
+
+                    var input = $('<input type="text" class="form-control form-control-sm mt-2" placeholder="Search..."/>')
+                        .appendTo($(column.header()))
+                        .on('keyup change', function() {
+                            column.search($(this).val()).draw();
+                        });
+                });
             }
         });
     });
@@ -186,6 +197,7 @@
         var dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
         var isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
         th.className = isWeekend ? 'text-danger' : '';
+        th.className = "text-center align-middle";
 
         // Menambahkan elemen <th> ke dalam baris pertama tabel
         table.rows[0].appendChild(th);
