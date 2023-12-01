@@ -20,37 +20,42 @@ class EmployeeController extends Controller
         $tahunSekarang = Carbon::now()->year;
         $tanggalSekarang = Carbon::now()->format('Ymd');
 
-        if ($request->input('start_date') != null) {
-            $tanggalSekarang = Carbon::parse($request->input('start_date'))->format('Ymd');
+        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
+            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
+        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
         } else {
-            $tanggalSekarang = Carbon::now()->format('Ymd');
+            $tanggalMulai = $tanggalSekarang;
+            $tanggalAkhir = $tanggalSekarang;
         }
 
         $data = DB::connection('sqlsrv')
             ->select(DB::raw("
-                WITH CTE AS (
-                    SELECT 
-                        attdly1.empno,
-                        attdly1.datin,
-                        attdly1.timin,
-                        attdly1.datot,
-                        attdly1.timot,
-                        pnmempl.empnm,
-                        pnhhira.hirar,
-                        ssmhira.descr,
-                        ROW_NUMBER() OVER (PARTITION BY attdly1.empno, attdly1.datin, attdly1.timin, attdly1.datot, attdly1.timot, pnmempl.empnm ORDER BY pnhhira.mutdt DESC) AS RowNum
-                    FROM attdly1 
-                    INNER JOIN pnmempl ON attdly1.empno = pnmempl.empno
-                    LEFT JOIN pnhhira ON attdly1.empno = pnhhira.empno
-                    LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
-                    WHERE YEAR(attdly1.datin) = $tahunSekarang
-                        AND attdly1.datin = $tanggalSekarang
-                )
-                
-                SELECT * 
-                FROM CTE
-                WHERE RowNum = 1
-                ORDER BY empno ASC, datin ASC, timin ASC;
+            WITH CTE AS (
+                SELECT 
+                    attdly1.empno,
+                    attdly1.datin,
+                    attdly1.timin,
+                    attdly1.datot,
+                    attdly1.timot,
+                    pnmempl.empnm,
+                    pnhhira.hirar,
+                    ssmhira.descr,
+                    ROW_NUMBER() OVER (PARTITION BY attdly1.empno, attdly1.datin, attdly1.timin, attdly1.datot, attdly1.timot, pnmempl.empnm ORDER BY pnhhira.mutdt DESC) AS RowNum
+                FROM attdly1 
+                INNER JOIN pnmempl ON attdly1.empno = pnmempl.empno
+                LEFT JOIN pnhhira ON attdly1.empno = pnhhira.empno
+                LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
+                WHERE YEAR(attdly1.datin) = $tahunSekarang
+                    AND attdly1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+            )
+            
+            SELECT * 
+            FROM CTE
+            WHERE RowNum = 1
+            ORDER BY empno ASC, datin ASC, timin ASC;
             "));
 
         $data = collect($data);

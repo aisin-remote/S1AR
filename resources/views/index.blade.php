@@ -1,6 +1,12 @@
 @extends('layouts.app', ['title' => 'Daily Attendance'])
 
 @section('content')
+@if(session('error'))
+    <script>
+        alert("{{ session('error') }}");
+    </script>
+@endif
+
 <div class="main-content">
     <section class="section">
         <div class="section-header">
@@ -13,8 +19,12 @@
                     <form id="filter-form">
                         <div class="form-row">
                             <div class="form-group col-auto">
-                                <label for="start_date">Filter Date:</label>
+                                <label for="start_date">Start Date:</label>
                                 <input type="date" class="form-control" id="start_date" name="start_date">
+                            </div>
+                            <div class="form-group col-auto">
+                                <label for="start_date">End Date:</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date">
                             </div>
                             <div class="form-group col-auto">
                                 <label for="filter_button">&nbsp;</label>
