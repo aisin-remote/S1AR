@@ -83,11 +83,11 @@
                     name: 'timot'
                 },
                 {
-                    data: 'occupation',
+                    data: 'hirar',
                     name: 'occupation'
                 },
                 {
-                    data: 'department',
+                    data: 'descr',
                     name: 'department'
                 }
             ]

@@ -27,96 +27,33 @@ class EmployeeController extends Controller
         }
 
         $data = DB::connection('sqlsrv')
-            ->table('attdly1')
-            ->select('attdly1.empno', 'attdly1.datin', 'attdly1.timin', 'attdly1.datot', 'attdly1.timot', 'pnmempl.empnm')
-            ->join('pnmempl', 'attdly1.empno', '=', 'pnmempl.empno')
-            ->whereYear('attdly1.datin', '=', $tahunSekarang) // Hanya data dari tahun sekarang
-            ->where('attdly1.datin', '=', $tanggalSekarang) // Hanya data dari 2 hari kebelakang
-            ->orderBy('attdly1.datin', 'asc') // Mengurutkan data berdasarkan kolom datin secara ascending (naik)
-            ->orderBy('attdly1.timin', 'asc') // Mengurutkan data berdasarkan kolom timin secara ascending (naik)
-            ->get();
+            ->select(DB::raw("
+                WITH CTE AS (
+                    SELECT 
+                        attdly1.empno,
+                        attdly1.datin,
+                        attdly1.timin,
+                        attdly1.datot,
+                        attdly1.timot,
+                        pnmempl.empnm,
+                        pnhhira.hirar,
+                        ssmhira.descr,
+                        ROW_NUMBER() OVER (PARTITION BY attdly1.empno, attdly1.datin, attdly1.timin, attdly1.datot, attdly1.timot, pnmempl.empnm ORDER BY pnhhira.mutdt DESC) AS RowNum
+                    FROM attdly1 
+                    INNER JOIN pnmempl ON attdly1.empno = pnmempl.empno
+                    LEFT JOIN pnhhira ON attdly1.empno = pnhhira.empno
+                    LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
+                    WHERE YEAR(attdly1.datin) = $tahunSekarang
+                        AND attdly1.datin = $tanggalSekarang
+                )
+                
+                SELECT * 
+                FROM CTE
+                WHERE RowNum = 1
+                ORDER BY empno ASC, datin ASC, timin ASC;
+            "));
 
-        $data->map(function ($row) {
-            $subSection = DB::connection('mysql3')
-                ->table('m_employees')
-                ->where(function ($query) use ($row) {
-                    $query->where('npk', $row->empno)
-                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
-                })
-                ->value('sub_section');
-
-            $occupation = DB::connection('mysql3')
-                ->table('m_employees')
-                ->where(function ($query) use ($row) {
-                    $query->where('npk', $row->empno)
-                        ->orWhere('nama', 'LIKE', '%' . $row->empnm . '%');
-                })
-                ->value('occupation');
-
-            // Menambahkan kolom sub_section ke hasil data dari SQL Server
-            $row->sub_section = $subSection ? $subSection : 'Tidak Ada Data'; // Jika sub_section tidak ada, beri nilai default
-            $row->occupation = $occupation ? $occupation : 'Tidak Ada Data';
-
-            if ($occupation == 'GMR') {
-                $department = DB::connection('mysql3')
-                    ->table('m_divisions')
-                    ->where('code', $subSection)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            } elseif ($occupation == 'KDP') {
-                $department = DB::connection('mysql3')
-                    ->table('m_departments')
-                    ->where('code', $subSection)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            } elseif ($occupation == 'SPV') {
-                $codeDepartment = DB::connection('mysql3')
-                    ->table('m_sections')
-                    ->where('code', $subSection)
-                    ->value('code_department');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                $department = DB::connection('mysql3')
-                    ->table('m_departments')
-                    ->where('code', $codeDepartment)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            } else {
-                $section = DB::connection('mysql3')
-                    ->table('m_sub_sections')
-                    ->where('code', $subSection)
-                    ->value('code_section');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->section = $section ? $section : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                $codeDepartment = DB::connection('mysql3')
-                    ->table('m_sections')
-                    ->where('code', $section)
-                    ->value('code_department');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->codeDepartment = $codeDepartment ? $codeDepartment : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-
-                $department = DB::connection('mysql3')
-                    ->table('m_departments')
-                    ->where('code', $codeDepartment)
-                    ->value('name');
-
-                // Menambahkan kolom section ke hasil data dari SQL Server
-                $row->department = $department ? $department : 'Tidak Ada Data'; // Jika section tidak ada, beri nilai default
-            }
-
-            return $row;
-        });
+        $data = collect($data);
 
         // Mengubah format tanggal dan jam dalam hasil data
         foreach ($data as $row) {
@@ -134,6 +71,26 @@ class EmployeeController extends Controller
             } else {
                 $row->datot = "Tidak Ada Data";
                 $row->timot = "Tidak Ada Data";
+            }
+        }
+
+        // Iterate through each row in the collection
+        foreach ($data as $row) {
+            // Calculate the character count for each row's cleaned hirar
+            $cleanedString = str_replace(' ', '', $row->hirar);
+            $jumlahKarakter = strlen($cleanedString);
+
+            // Determine jenis berdasarkan jumlah karakter
+            if ($jumlahKarakter == 5) {
+                $row->hirar = 'KDP';
+            } elseif ($jumlahKarakter == 7) {
+                $row->hirar = 'SPV';
+            } elseif ($jumlahKarakter == 9) {
+                $row->hirar = 'LDR/OPR';
+            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                $row->hirar = 'GMR';
+            } else {
+                $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
 
