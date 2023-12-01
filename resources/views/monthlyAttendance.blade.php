@@ -53,7 +53,29 @@
                                     <td>{{ $npk }}</td>
                                     <td>{{ $npkData[0]->empnm }}</td>
                                     <td>{{ $npkData[0]->descr }}</td>
-                                    <td>{{ $npkData[0]->hirar }}</td>
+                                    @php
+                                    $npkDesc = $npkData[0]->hirar; // Ambil nilai dari $npkData[0]->hirar
+
+                                    $cleanedString = str_replace(' ', '', $npkDesc);
+
+                                    // Hitung jumlah karakter
+                                    $jumlahKarakter = strlen($cleanedString);
+
+                                    // Tentukan jenis berdasarkan jumlah karakter
+                                    if ($jumlahKarakter == 5) {
+                                    $jenis = 'KDP';
+                                    } elseif ($jumlahKarakter == 7) {
+                                    $jenis = 'SPV';
+                                    } elseif ($jumlahKarakter == 9) {
+                                    $jenis = 'LDR/OPR';
+                                    } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                                    $jenis = 'GMR';
+                                    } else {
+                                    $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+                                    }
+
+                                    echo "<td>{$jenis}</td>";
+                                    @endphp
 
                                     @php
                                     $alpCount = 0; // Initialize ALP counter
