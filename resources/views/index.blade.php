@@ -26,15 +26,15 @@
                     <div class="table-responsive">
                         <table class="table table-striped table-sm" id="employee-table">
                             <thead>
-                                <tr class="text-center align middle">
-                                    <th>NPK</th>
-                                    <th>Nama</th>
-                                    <th>Tanggal Masuk</th>
-                                    <th>Waktu Masuk</th>
-                                    <th>Tanggal Keluar</th>
-                                    <th>Waktu Keluar</th>
-                                    <th>Occupation</th>
-                                    <th>Department</th>
+                                <tr>
+                                    <th class="text-center align-middle">NPK</th>
+                                    <th class="text-center align-middle">Nama</th>
+                                    <th class="text-center align-middle">Occupation</th>
+                                    <th class="text-center align-middle">Department</th>
+                                    <th class="text-center align-middle">Tanggal Masuk</th>
+                                    <th class="text-center align-middle">Waktu Masuk</th>
+                                    <th class="text-center align-middle">Tanggal Keluar</th>
+                                    <th class="text-center align-middle">Waktu Keluar</th>
                                 </tr>
                             </thead>
                         </table>
@@ -50,7 +50,6 @@
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
             processing: true,
-            serverSide: true,
             ajax: {
                 url: '{{ url("/employee/datatables") }}',
                 data: function(d) {
@@ -64,7 +63,18 @@
                 },
                 {
                     data: 'empnm',
-                    name: 'empnm'
+                    name: 'empnm',
+                    orderable: false
+                },
+                {
+                    data: 'hirar',
+                    name: 'occupation',
+                    orderable: false
+                },
+                {
+                    data: 'descr',
+                    name: 'department',
+                    orderable: false
                 },
                 {
                     data: 'datin',
@@ -81,16 +91,19 @@
                 {
                     data: 'timot',
                     name: 'timot'
-                },
-                {
-                    data: 'hirar',
-                    name: 'occupation'
-                },
-                {
-                    data: 'descr',
-                    name: 'department'
                 }
-            ]
+            ],
+            initComplete: function() {
+                this.api().columns([3]).every(function() {
+                    var column = this;
+
+                    var input = $('<input type="text" class="form-control form-control-sm mt-2" placeholder="Search..."/>')
+                        .appendTo($(column.header()))
+                        .on('keyup change', function() {
+                            column.search($(this).val()).draw();
+                        });
+                });
+            }
         });
 
         $('#filter_button').on('click', function() {
