@@ -15,13 +15,7 @@
                         <a class="nav-link {{ request()->is('dailyattendance*') ? 'text-primary' : '' }}" href="/dailyattendance">Daily attendance</a>
                     </li>
                     <li>
-                        <a class="nav-link {{ request()->is('weeklyattendance*') ? 'text-primary' : '' }}" href="/weeklyattendance">Weekly attendance</a>
-                    </li>
-                    <li>
                         <a class="nav-link {{ request()->is('monthlyattendance') ? 'text-primary' : '' }}" href="/monthlyattendance">Monthly attendance</a>
-                    </li>
-                    <li>
-                        <a class="nav-link {{ request()->is('monthlyattendancedepartment*') ? 'text-primary' : '' }}" href="/monthlyattendancedepartment">Department attendance</a>
                     </li>
                     <li>
                         <a class="nav-link {{ request()->is('historyattendance*') ? 'text-primary' : '' }}" href="/historyattendance">History attendance</a>
