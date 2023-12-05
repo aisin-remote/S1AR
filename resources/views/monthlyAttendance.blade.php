@@ -34,7 +34,7 @@
                     </div>
                     <br>
                     <div class="table-responsive">
-                        <table class="table table-striped table-sm" id="employee-table">
+                        <table class="table table-striped table-sm table-bordered" id="employee-table">
                             <thead>
                                 <tr>
                                     <th class="text-center align-middle">NPK</th>
@@ -135,7 +135,6 @@
             "pagingType": "simple_numbers",
             "scrollY": "400px",
             "scrollX": true,
-            "scrollCollapse": true,
             "columnDefs": [{
                 "orderable": false,
                 "targets": [1, 2, 3]

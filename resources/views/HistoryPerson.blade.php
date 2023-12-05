@@ -24,7 +24,7 @@
                     </form>
 
                     <div class="table-responsive">
-                        <table class="table table-striped table-sm" id="employee-table">
+                        <table class="table table-striped table-sm table-bordered" id="employee-table">
                             <thead>
                                 <tr class="text-center align middle">
                                     <th>NPK</th>
