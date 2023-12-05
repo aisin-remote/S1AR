@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Termwind\Components\Raw;
 use Carbon\Carbon;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
@@ -153,7 +154,84 @@ class EmployeeController extends Controller
         $tahunSekarang = Carbon::now()->year;
         $bulanSekarang = $month ?: Carbon::now()->month;
 
-        $data = DB::select('
+        $npk = auth()->user()->npk;
+
+        $userInfo = DB::select(
+            '
+            SELECT TOP 1 attdly2.empno, pnhhira.hirar, MAX(pnhhira.mutdt) AS mutdt, ssmhira.descr
+            FROM attdly2
+            LEFT JOIN pnhhira ON attdly2.empno = pnhhira.empno
+            LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
+            WHERE attdly2.empno = ?
+            GROUP BY attdly2.empno, pnhhira.hirar, ssmhira.descr
+            ORDER BY mutdt DESC;
+            ',
+            [$npk]
+        );
+
+        if (!empty($userInfo)) {
+            $npkDesc = $userInfo[0]->hirar; // Use array syntax
+
+            $cleanedString = str_replace(' ', '', $npkDesc);
+
+            // Hitung jumlah karakter
+            $jumlahKarakter = strlen($cleanedString);
+
+            // Tentukan jenis berdasarkan jumlah karakter
+            if ($jumlahKarakter == 5) {
+                $jenis = 'KDP';
+            } elseif ($jumlahKarakter == 7) {
+                $jenis = 'SPV';
+            } elseif ($jumlahKarakter == 9) {
+                $jenis = 'LDR/OPR';
+            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                $jenis = 'GMR';
+            } else {
+                $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+            }
+        } else {
+            // Handle the case where no results are returned
+            $jenis = 'Jenis tidak dikenali';
+        }
+
+        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
+        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $userInfoOccupation = $jenis;
+        $userInfoDept = $cleanedStringDeptFinal;
+
+        // dd($userInfoDept);
+
+        if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
+            $data = DB::select('
+        WITH CTE AS (
+            SELECT 
+                COALESCE(a.coid, b.coid) AS coid,
+                COALESCE(a.empno, b.empno) AS empno,
+                COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+                COALESCE(a.schdt, b.schdt) AS schdt,
+                COALESCE(a.rsccd, b.rsccd) AS rsccd,
+                COALESCE(pnhhira_attdly2.hirar, pnhhira_atttrn2.hirar) AS hirar,
+                COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) AS mutdt,
+                COALESCE(ssmhira_attdly2.descr, ssmhira_atttrn2.descr) AS descr,
+                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) DESC) AS RowNum
+            FROM attdly2 a
+            LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
+            LEFT JOIN pnhhira pnhhira_attdly2 ON a.empno = pnhhira_attdly2.empno
+            LEFT JOIN ssmhira ssmhira_attdly2 ON pnhhira_attdly2.hirar = ssmhira_attdly2.hirar
+            FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+            LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
+            LEFT JOIN pnhhira pnhhira_atttrn2 ON b.empno = pnhhira_atttrn2.empno
+            LEFT JOIN ssmhira ssmhira_atttrn2 ON pnhhira_atttrn2.hirar = ssmhira_atttrn2.hirar
+            WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
+        )
+        
+        SELECT * 
+        FROM CTE
+        WHERE RowNum = 1 
+        ORDER BY empno ASC, schdt ASC;
+        ');
+        } else if ($userInfoOccupation == 'KDP') {
+            $data = DB::select('
         WITH CTE AS (
             SELECT 
                 COALESCE(a.coid, b.coid) AS coid,
@@ -179,15 +257,47 @@ class EmployeeController extends Controller
         SELECT * 
         FROM CTE
         WHERE RowNum = 1
+        AND descr LIKE \'%' . $userInfoDept . '%\'
         ORDER BY empno ASC, schdt ASC;
-        
         ');
+        } else {
+            $data = DB::select('
+        WITH CTE AS (
+            SELECT 
+                COALESCE(a.coid, b.coid) AS coid,
+                COALESCE(a.empno, b.empno) AS empno,
+                COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+                COALESCE(a.schdt, b.schdt) AS schdt,
+                COALESCE(a.rsccd, b.rsccd) AS rsccd,
+                COALESCE(pnhhira_attdly2.hirar, pnhhira_atttrn2.hirar) AS hirar,
+                COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) AS mutdt,
+                COALESCE(ssmhira_attdly2.descr, ssmhira_atttrn2.descr) AS descr,
+                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) DESC) AS RowNum
+            FROM attdly2 a
+            LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
+            LEFT JOIN pnhhira pnhhira_attdly2 ON a.empno = pnhhira_attdly2.empno
+            LEFT JOIN ssmhira ssmhira_attdly2 ON pnhhira_attdly2.hirar = ssmhira_attdly2.hirar
+            FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+            LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
+            LEFT JOIN pnhhira pnhhira_atttrn2 ON b.empno = pnhhira_atttrn2.empno
+            LEFT JOIN ssmhira ssmhira_atttrn2 ON pnhhira_atttrn2.hirar = ssmhira_atttrn2.hirar
+            WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
+        )
+        
+        SELECT * 
+        FROM CTE
+        WHERE RowNum = 1
+        AND empno = ' . $npk . '
+        ORDER BY empno ASC, schdt ASC;
+        ');
+        }
 
         $data = collect($data);
 
         $groupedData = $data->groupBy('empno');
 
-        return view('monthlyAttendance', compact('groupedData', 'bulanSekarang'));
+
+        return view('monthlyAttendance', compact('groupedData', 'bulanSekarang', 'userInfoOccupation', 'userInfoDept'));
     }
 
     public function getDataMonthlyDepartment($department = null)
