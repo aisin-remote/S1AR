@@ -21,6 +21,51 @@ class EmployeeController extends Controller
         $tahunSekarang = Carbon::now()->year;
         $tanggalSekarang = Carbon::now()->format('Ymd');
 
+        $npk = auth()->user()->npk;
+
+        $userInfo = DB::select(
+            '
+            SELECT TOP 1 attdly2.empno, pnhhira.hirar, MAX(pnhhira.mutdt) AS mutdt, ssmhira.descr
+            FROM attdly2
+            LEFT JOIN pnhhira ON attdly2.empno = pnhhira.empno
+            LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
+            WHERE attdly2.empno = ?
+            GROUP BY attdly2.empno, pnhhira.hirar, ssmhira.descr
+            ORDER BY mutdt DESC;
+            ',
+            [$npk]
+        );
+
+        if (!empty($userInfo)) {
+            $npkDesc = $userInfo[0]->hirar; // Use array syntax
+
+            $cleanedString = str_replace(' ', '', $npkDesc);
+
+            // Hitung jumlah karakter
+            $jumlahKarakter = strlen($cleanedString);
+
+            // Tentukan jenis berdasarkan jumlah karakter
+            if ($jumlahKarakter == 5) {
+                $jenis = 'KDP';
+            } elseif ($jumlahKarakter == 7) {
+                $jenis = 'SPV';
+            } elseif ($jumlahKarakter == 9) {
+                $jenis = 'LDR/OPR';
+            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                $jenis = 'GMR';
+            } else {
+                $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+            }
+        } else {
+            // Handle the case where no results are returned
+            $jenis = 'Jenis tidak dikenali';
+        }
+
+        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
+        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $userInfoOccupation = $jenis;
+        $userInfoDept = $cleanedStringDeptFinal;
+
         if ($request->input('start_date') != null && $request->input('end_date') != null) {
             $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
             $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
@@ -32,8 +77,9 @@ class EmployeeController extends Controller
             $tanggalAkhir = $tanggalSekarang;
         }
 
-        $data = DB::connection('sqlsrv')
-            ->select(DB::raw("
+        if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
+            $data = DB::connection('sqlsrv')
+                ->select(DB::raw("
             WITH CTE AS (
                 SELECT 
                     attdly1.empno,
@@ -58,6 +104,35 @@ class EmployeeController extends Controller
             WHERE RowNum = 1
             ORDER BY empno ASC, datin ASC, timin ASC;
             "));
+        } else if ($userInfoOccupation == 'KDP') {
+            $data = DB::connection('sqlsrv')
+                ->select(DB::raw('
+            WITH CTE AS (
+                SELECT 
+                    attdly1.empno,
+                    attdly1.datin,
+                    attdly1.timin,
+                    attdly1.datot,
+                    attdly1.timot,
+                    pnmempl.empnm,
+                    pnhhira.hirar,
+                    ssmhira.descr,
+                    ROW_NUMBER() OVER (PARTITION BY attdly1.empno, attdly1.datin, attdly1.timin, attdly1.datot, attdly1.timot, pnmempl.empnm ORDER BY pnhhira.mutdt DESC) AS RowNum
+                FROM attdly1 
+                INNER JOIN pnmempl ON attdly1.empno = pnmempl.empno
+                LEFT JOIN pnhhira ON attdly1.empno = pnhhira.empno
+                LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
+                WHERE YEAR(attdly1.datin) = '.$tahunSekarang.'
+                    AND attdly1.datin BETWEEN '.$tanggalMulai.' AND '.$tanggalAkhir.'
+            )
+            
+            SELECT * 
+            FROM CTE
+            WHERE RowNum = 1
+            AND descr LIKE \'%' . $userInfoDept . '%\'
+            ORDER BY empno ASC, datin ASC, timin ASC;
+            '));
+        }
 
         $data = collect($data);
 
@@ -198,8 +273,6 @@ class EmployeeController extends Controller
         $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDeptFinal;
-
-        // dd($userInfoDept);
 
         if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
             $data = DB::select('
