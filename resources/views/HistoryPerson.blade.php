@@ -14,11 +14,11 @@
                         <div class="form-row">
                             <div class="form-group col-auto">
                                 <label for="start_date">Filter Month:</label>
-                                <input type="month" class="form-control" id="start_date" name="start_date">
+                                <input type="month" class="form-control form-control-sm" id="start_date" name="start_date">
                             </div>
                             <div class="form-group col-auto">
                                 <label for="filter_button">&nbsp;</label>
-                                <button type="button" class="btn btn-primary btn-sm form-control" id="filter_button">Apply Filter</button>
+                                <button type="button" class="btn btn-primary btn-sm form-control form-control-sm" id="filter_button">Apply Filter</button>
                             </div>
                         </div>
                     </form>
@@ -47,6 +47,7 @@
 <script>
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
+            dom: '<"top"f>rt<"bottom"lip><"clear">',
             processing: true,
             serverSide: true,
             ajax: {

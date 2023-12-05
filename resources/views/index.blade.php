@@ -2,9 +2,9 @@
 
 @section('content')
 @if(session('error'))
-    <script>
-        alert("{{ session('error') }}");
-    </script>
+<script>
+    alert("{{ session('error') }}");
+</script>
 @endif
 
 <div class="main-content">
@@ -20,18 +20,19 @@
                         <div class="form-row">
                             <div class="form-group col-auto">
                                 <label for="start_date">Start Date:</label>
-                                <input type="date" class="form-control" id="start_date" name="start_date">
+                                <input type="date" class="form-control form-control-sm" id="start_date" name="start_date">
                             </div>
                             <div class="form-group col-auto">
-                                <label for="start_date">End Date:</label>
-                                <input type="date" class="form-control" id="end_date" name="end_date">
+                                <label for="end_date">End Date:</label>
+                                <input type="date" class="form-control form-control-sm" id="end_date" name="end_date">
                             </div>
                             <div class="form-group col-auto">
                                 <label for="filter_button">&nbsp;</label>
-                                <button type="button" class="btn btn-primary btn-sm form-control" id="filter_button">Apply Filter</button>
+                                <button type="button" class="btn btn-primary btn-sm form-control form-control-sm" id="filter_button">Apply Filter</button>
                             </div>
                         </div>
                     </form>
+
 
                     <div class="table-responsive">
                         <table class="table table-striped table-sm table-bordered" id="employee-table">
@@ -59,6 +60,7 @@
 <script>
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
+            dom: '<"top"f>rt<"bottom"lip><"clear">',
             processing: true,
             ajax: {
                 url: '{{ url("/employee/datatables") }}',
@@ -104,11 +106,12 @@
                 }
             ],
             initComplete: function() {
-                this.api().columns([3]).every(function() {
+                this.api().columns([2]).every(function() {
                     var column = this;
 
-                    var input = $('<input type="text" class="form-control form-control-sm mt-2" placeholder="Search..."/>')
-                        .appendTo($(column.header()))
+                    // Pindahkan elemen pencarian ke sebelah kiri atas tabel
+                    var input = $('<input type="text" class="form-control form-control-sm w-25" placeholder="Search Department..."/>')
+                        .appendTo($('#employee-table_wrapper .top'))
                         .on('keyup change', function() {
                             column.search($(this).val()).draw();
                         });

@@ -12,7 +12,7 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-auto">
-                                <select id="monthFilter" class="form-control py-2">
+                                <select id="monthFilter" class="form-control form-control-sm py-1 ">
                                     <option value="1">January</option>
                                     <option value="2">February</option>
                                     <option value="3">March</option>
@@ -131,6 +131,7 @@
 <script>
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
+            "dom": '<"top"f>rt<"bottom"lip><"clear">',
             "paging": true,
             "pagingType": "simple_numbers",
             "scrollY": "400px",
@@ -143,8 +144,9 @@
                 this.api().columns([2]).every(function() {
                     var column = this;
 
-                    var input = $('<input type="text" class="form-control form-control-sm mt-2" placeholder="Search..."/>')
-                        .appendTo($(column.header()))
+                    // Pindahkan elemen pencarian ke sebelah kiri atas tabel
+                    var input = $('<input type="text" class="form-control form-control-sm w-25" placeholder="Search Department..."/>')
+                        .appendTo($('#employee-table_wrapper .top'))
                         .on('keyup change', function() {
                             column.search($(this).val()).draw();
                         });
@@ -203,6 +205,7 @@
         // Tambahkan kolom note setelah kolom terakhir (30 atau 31)
         if (day === numberOfDaysInMonth) {
             var noteTh = document.createElement('th');
+            noteTh.className = 'text-center align-middle';
             noteTh.textContent = 'Note';
             table.rows[0].appendChild(noteTh);
         }
