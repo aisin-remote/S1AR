@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 // Grup rute yang memerlukan otentikasi
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', [EmployeeController::class, 'index']);
+    Route::get('/', [EmployeeController::class, 'indexPerson']);
     Route::get('/dailyattendance', [EmployeeController::class, 'index'])->name('daily.attendance');
     Route::get('/employee/datatables', [EmployeeController::class, 'getData'])->name('employee.datatables');
 

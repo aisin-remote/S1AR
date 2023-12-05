@@ -33,8 +33,6 @@
                                     <th>Waktu Masuk</th>
                                     <th>Tanggal Keluar</th>
                                     <th>Waktu Keluar</th>
-                                    <th>Occupation</th>
-                                    <th>Department</th>
                                 </tr>
                             </thead>
                         </table>
@@ -81,14 +79,6 @@
                 {
                     data: 'timot',
                     name: 'timot'
-                },
-                {
-                    data: 'occupation',
-                    name: 'occupation'
-                },
-                {
-                    data: 'department',
-                    name: 'department'
                 }
             ]
         });

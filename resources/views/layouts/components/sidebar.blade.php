@@ -57,7 +57,7 @@
         <ul class="sidebar-menu">
             <li class="dropdown">
                 <a href="#" class="nav-link has-dropdown {{ request()->is('dailyattendance*')||request()->is('weeklyattendance*')||request()->is('monthlyattendance*') ? 'text-primary' : '' }}"><i class="fas fa-th"></i>
-                    <span>History Attendance</span></a>
+                    <span>Attendance</span></a>
                 <ul class="dropdown-menu">
                     <li>
                         <a class="nav-link {{ request()->is('dailyattendance*') ? 'text-primary' : '' }}" href="/dailyattendance">Daily attendance</a>
@@ -72,11 +72,10 @@
                 <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a>
             </li>
         </ul>
-        <!-- ... Menu lainnya untuk GMR, KDP, dan HRD ... -->
         @else
         <ul class="sidebar-menu">
             <li>
-                <a class="nav-link {{ request()->is('historyattendance*') ? 'text-primary' : '' }}" href="/historyattendance">History attendance</a>
+                <a class="nav-link {{ request()->is('historyattendance*') || request()->is('/') ? 'text-primary' : '' }}" href="/historyattendance"><i class="fas fa-th"></i><span>History attendance</span></a>
                 <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a>
             </li>
         </ul>
