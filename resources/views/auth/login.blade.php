@@ -30,7 +30,11 @@
                 {{ session('success') }}
             </div>
             @endif
+
             <div class="container mt-5">
+                <div class="text-center mb-4">
+                    <img src="{{ url('assets/img/S1AR.png') }}" alt="S1AR" class="img-fluid" style="max-width: 200px;">
+                </div>
                 <div class="row">
                     <div class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
                         <div class="card card-primary">
