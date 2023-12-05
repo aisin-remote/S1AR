@@ -196,8 +196,7 @@
         // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
         var dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
         var isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        th.className = isWeekend ? 'text-danger' : '';
-        th.className = "text-center align-middle";
+        th.className = isWeekend ? 'text-danger text-center align-middle' : 'text-center align-middle';
 
         // Menambahkan elemen <th> ke dalam baris pertama tabel
         table.rows[0].appendChild(th);
