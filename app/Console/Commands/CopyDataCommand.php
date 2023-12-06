@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\employee;
 use App\Models\kehadiran1;
 use App\Models\kehadiran2;
 use Illuminate\Console\Command;
@@ -69,6 +70,23 @@ class CopyDataCommand extends Command
                     'empno' => $data2->empno,
                     'schdt' => $data2->schdt,
                     'rsccd' => $data2->rsccd,
+                ]);
+            }
+        }
+
+        $employee = employee::all();
+
+        foreach ($employee as $dataEmpl) {
+            $exists = DB::connection('mysql2')
+                ->table('employee')
+                ->where('empno', $dataEmpl->empno)
+                ->exists();
+
+            if (!$exists) {
+                DB::connection('mysql2')->table('employee')->insert([
+                    'coid' => $dataEmpl->coid,
+                    'empno' => $dataEmpl->empno,
+                    'empnm' => $dataEmpl->empnm,
                 ]);
             }
         }
