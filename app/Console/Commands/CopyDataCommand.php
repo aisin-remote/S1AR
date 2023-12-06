@@ -116,12 +116,12 @@ class CopyDataCommand extends Command
 
         foreach ($hirarkiDesc as $dataHirarDesc) {
             $exists  = DB::connection('mysql2')
-                ->table('hirarkiDesc')
+                ->table('hirarkidesc')
                 ->where('hirar', $dataHirarDesc->hirar)
                 ->exists();
 
             if (!$exists) {
-                DB::connection('mysql2')->table('hirarkiDesc')->insert([
+                DB::connection('mysql2')->table('hirarkidesc')->insert([
                     'hirar' => $dataHirarDesc->hirar,
                     'descr' => $dataHirarDesc->descr,
                 ]);
