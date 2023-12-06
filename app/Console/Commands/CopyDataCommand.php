@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\kehadiran1;
+use App\Models\kehadiran2;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +48,27 @@ class CopyDataCommand extends Command
                     'timin' => $data1->timin,
                     'datot' => $data1->datot,
                     'timot' => $data1->timot,
+                ]);
+            }
+        }
+
+        $kehadiran2 = kehadiran2::orderBy('schdt', 'desc')->take(10)->get();
+
+        foreach ($kehadiran2 as $data2) {
+            // Pengecekan apakah data sudah ada di MySQL2
+            $exists = DB::connection('mysql2')
+                ->table('kehadiran2')
+                ->where('empno', $data2->empno)
+                ->where('schdt', $data2->schdt)
+                ->exists();
+
+            // Jika data belum ada, lakukan insert
+            if (!$exists) {
+                DB::connection('mysql2')->table('kehadiran2')->insert([
+                    'coid' => $data2->coid,
+                    'empno' => $data2->empno,
+                    'schdt' => $data2->schdt,
+                    'rsccd' => $data2->rsccd,
                 ]);
             }
         }
