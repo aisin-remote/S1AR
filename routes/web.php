@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\SchedulerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,3 +43,5 @@ Route::post('login', [AuthController::class, 'doLogin'])->name('store.login');
 Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'doRegister'])->name('store.register');
 Route::get('logout', [AuthController::class, 'logout']);
+
+Route::get('/scheduler', [SchedulerController::class, 'index']);
