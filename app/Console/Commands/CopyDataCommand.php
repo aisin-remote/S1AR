@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\employee;
 use App\Models\hirarki;
+use App\Models\hirarkiDesc;
 use App\Models\kehadiran1;
 use App\Models\kehadiran2;
 use Illuminate\Console\Command;
@@ -106,6 +107,22 @@ class CopyDataCommand extends Command
                     'empno' => $dataHirar->empno,
                     'hirar' => $dataHirar->hirar,
                     'mutdt' => $dataHirar->mutdt,
+                ]);
+            }
+        }
+
+        $hirarkiDesc = hirarkiDesc::all();
+
+        foreach ($hirarkiDesc as $dataHirarDesc) {
+            $exists  = DB::connection('mysql2')
+                ->table('hirarkiDesc')
+                ->where('hirar', $dataHirarDesc->hirar)
+                ->exists();
+
+            if (!$exists) {
+                DB::connection('mysql2')->table('hirarkiDesc')->insert([
+                    'hirar' => $dataHirarDesc->hirar,
+                    'descr' => $dataHirarDesc->descr,
                 ]);
             }
         }
