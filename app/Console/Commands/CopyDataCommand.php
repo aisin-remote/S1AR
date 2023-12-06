@@ -133,14 +133,14 @@ class CopyDataCommand extends Command
         foreach ($attrn2 as $dataAttrn2) {
             // Pengecekan apakah data sudah ada di MySQL2
             $exists = DB::connection('mysql2')
-                ->table('attrn2')
+                ->table('kehadiranmu')
                 ->where('empno', $dataAttrn2->empno)
                 ->where('schdt', $dataAttrn2->schdt)
                 ->exists();
 
             // Jika data belum ada, lakukan insert
             if (!$exists) {
-                DB::connection('mysql2')->table('attrn2')->insert([
+                DB::connection('mysql2')->table('kehadiranmu')->insert([
                     'coid' => $dataAttrn2->coid,
                     'empno' => $dataAttrn2->empno,
                     'schdt' => $dataAttrn2->schdt,
