@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\attrn2;
 use App\Models\employee;
 use App\Models\hirarki;
 use App\Models\hirarkiDesc;
@@ -123,6 +124,27 @@ class CopyDataCommand extends Command
                 DB::connection('mysql2')->table('hirarkiDesc')->insert([
                     'hirar' => $dataHirarDesc->hirar,
                     'descr' => $dataHirarDesc->descr,
+                ]);
+            }
+        }
+
+        $attrn2 = attrn2::orderBy('schdt', 'desc')->take(10)->get(); // Data yang  masuk berapa nanti tanya HRD
+
+        foreach ($attrn2 as $dataAttrn2) {
+            // Pengecekan apakah data sudah ada di MySQL2
+            $exists = DB::connection('mysql2')
+                ->table('attrn2')
+                ->where('empno', $dataAttrn2->empno)
+                ->where('schdt', $dataAttrn2->schdt)
+                ->exists();
+
+            // Jika data belum ada, lakukan insert
+            if (!$exists) {
+                DB::connection('mysql2')->table('attrn2')->insert([
+                    'coid' => $dataAttrn2->coid,
+                    'empno' => $dataAttrn2->empno,
+                    'schdt' => $dataAttrn2->schdt,
+                    'rsccd' => $dataAttrn2->rsccd,
                 ]);
             }
         }
