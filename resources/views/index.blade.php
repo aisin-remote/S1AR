@@ -106,7 +106,7 @@
                 }
             ],
             initComplete: function() {
-                this.api().columns([2]).every(function() {
+                this.api().columns([3]).every(function() {
                     var column = this;
 
                     // Pindahkan elemen pencarian ke sebelah kiri atas tabel
