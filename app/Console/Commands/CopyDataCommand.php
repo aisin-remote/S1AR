@@ -10,6 +10,7 @@ use App\Models\kehadiran1;
 use App\Models\kehadiran2;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class CopyDataCommand extends Command
 {
@@ -34,7 +35,12 @@ class CopyDataCommand extends Command
      */
     public function handle()
     {
-        $kehadiran1 = Kehadiran1::orderBy('datin', 'desc')->take(10)->get(); // Data yang  masuk berapa nanti tanya HRD
+        // $waktuSekarang = Carbon::now()->format('Y-m-d');
+        $waktuSekarang = '2023-11-23';
+
+        // dd($waktuSekarang);
+
+        $kehadiran1 = Kehadiran1::whereDate('crtdt', $waktuSekarang)->orderBy('crtdt', 'desc')->get(); // Data yang  masuk berapa nanti tanya HRD
 
         foreach ($kehadiran1 as $data1) {
             // Pengecekan apakah data sudah ada di MySQL2
@@ -52,6 +58,7 @@ class CopyDataCommand extends Command
                     'timin' => $data1->timin,
                     'datot' => $data1->datot,
                     'timot' => $data1->timot,
+                    'crtdt' => $data1->crtdt,
                 ]);
             }
         }

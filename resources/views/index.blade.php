@@ -109,11 +109,23 @@
                 this.api().columns([3]).every(function() {
                     var column = this;
 
-                    // Pindahkan elemen pencarian ke sebelah kiri atas tabel
-                    var input = $('<input type="text" class="form-control form-control-sm w-25" placeholder="Search Department..."/>')
-                        .appendTo($('#employee-table_wrapper .top'))
+                    // Create a container for the filter and clear button
+                    var filterContainer = $('<div class="d-flex align-items-center"></div>').appendTo($('#employee-table_wrapper .top'));
+
+                    // Create a select element
+                    var select = $('<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="itd">ITD</option><option value="dept2">Department 2</option><option value="dept3">Department 3</option></select>')
+                        .appendTo(filterContainer) // Append it to the container
+
+                        // Add event listeners for keyup and change events
                         .on('keyup change', function() {
                             column.search($(this).val()).draw();
+                        });
+
+                    // Add a clear button to reset the filter
+                    $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
+                        .appendTo(filterContainer)
+                        .on('click', function() {
+                            select.val('').change(); // Reset the select and trigger change event
                         });
                 });
             }
