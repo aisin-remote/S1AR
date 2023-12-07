@@ -79,6 +79,7 @@
 
                                     @php
                                     $alpCount = 0; // Initialize ALP counter
+                                    $sktCount = 0; // Initialize SKT counter
                                     @endphp
 
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) @php $rsccd='' ; $today=date('j'); $month=date('m'); if ($bulanSekarang==$month) { if ($hari <=$today) { foreach ($npkData as $data) { if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
@@ -87,6 +88,11 @@
                                         // Increment ALP count if rsccd is ALP
                                         if (trim($rsccd) == 'ALP') {
                                         $alpCount++;
+                                        }
+
+                                        // Increment SKT count if rsccd is SKT
+                                        if (trim($rsccd) == 'SKT') {
+                                        $sktCount++;
                                         }
 
                                         break;
@@ -103,6 +109,11 @@
                                         $alpCount++;
                                         }
 
+                                        // Increment SKT count if rsccd is SKT
+                                        if (trim($rsccd) == 'SKT') {
+                                        $sktCount++;
+                                        }
+
                                         break;
                                         }
                                         }
@@ -115,7 +126,7 @@
                                         @endfor
 
                                         <!-- Display ALP count in the "Note" column -->
-                                        <td>ALP : {{ $alpCount }}</td>
+                                        <td>ALP : {{ $alpCount }} SKT: {{ $sktCount }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
