@@ -77,25 +77,25 @@ class EmployeeController extends Controller
         }
 
         if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
-            $data = DB::connection('sqlsrv')
+            $data = DB::connection('mysql2')
                 ->select(DB::raw("
             WITH CTE AS (
                 SELECT 
-                    attdly1.empno,
-                    attdly1.datin,
-                    attdly1.timin,
-                    attdly1.datot,
-                    attdly1.timot,
-                    pnmempl.empnm,
-                    pnhhira.hirar,
-                    ssmhira.descr,
-                    ROW_NUMBER() OVER (PARTITION BY attdly1.empno, attdly1.datin, attdly1.timin, attdly1.datot, attdly1.timot, pnmempl.empnm ORDER BY pnhhira.mutdt DESC) AS RowNum
-                FROM attdly1 
-                INNER JOIN pnmempl ON attdly1.empno = pnmempl.empno
-                LEFT JOIN pnhhira ON attdly1.empno = pnhhira.empno
-                LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
-                WHERE YEAR(attdly1.datin) = $tahunSekarang
-                    AND attdly1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+                    kehadiran1.empno,
+                    kehadiran1.datin,
+                    kehadiran1.timin,
+                    kehadiran1.datot,
+                    kehadiran1.timot,
+                    employee.empnm,
+                    hirarki.hirar,
+                    hirarkidesc.descr,
+                    ROW_NUMBER() OVER (PARTITION BY kehadiran1.empno, kehadiran1.datin, kehadiran1.timin, kehadiran1.datot, kehadiran1.timot, employee.empnm ORDER BY hirarki.mutdt DESC) AS RowNum
+                FROM kehadiran1 
+                INNER JOIN employee ON kehadiran1.empno = employee.empno
+                LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
+                LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+                WHERE YEAR(kehadiran1.datin) = $tahunSekarang
+                    AND kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
             )
             
             SELECT * 
@@ -104,25 +104,25 @@ class EmployeeController extends Controller
             ORDER BY empno ASC, datin ASC, timin ASC;
             "));
         } else if ($userInfoOccupation == 'KDP') {
-            $data = DB::connection('sqlsrv')
+            $data = DB::connection('mysql2')
                 ->select(DB::raw('
             WITH CTE AS (
                 SELECT 
-                    attdly1.empno,
-                    attdly1.datin,
-                    attdly1.timin,
-                    attdly1.datot,
-                    attdly1.timot,
-                    pnmempl.empnm,
-                    pnhhira.hirar,
-                    ssmhira.descr,
-                    ROW_NUMBER() OVER (PARTITION BY attdly1.empno, attdly1.datin, attdly1.timin, attdly1.datot, attdly1.timot, pnmempl.empnm ORDER BY pnhhira.mutdt DESC) AS RowNum
-                FROM attdly1 
-                INNER JOIN pnmempl ON attdly1.empno = pnmempl.empno
-                LEFT JOIN pnhhira ON attdly1.empno = pnhhira.empno
-                LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
-                WHERE YEAR(attdly1.datin) = ' . $tahunSekarang . '
-                    AND attdly1.datin BETWEEN ' . $tanggalMulai . ' AND ' . $tanggalAkhir . '
+                    kehadiran1.empno,
+                    kehadiran1.datin,
+                    kehadiran1.timin,
+                    kehadiran1.datot,
+                    kehadiran1.timot,
+                    employee.empnm,
+                    hirarki.hirar,
+                    hirarkidesc.descr,
+                    ROW_NUMBER() OVER (PARTITION BY kehadiran1.empno, kehadiran1.datin, kehadiran1.timin, kehadiran1.datot, kehadiran1.timot, employee.empnm ORDER BY hirarki.mutdt DESC) AS RowNum
+                FROM kehadiran1 
+                INNER JOIN employee ON kehadiran1.empno = employee.empno
+                LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
+                LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+                WHERE YEAR(kehadiran1.datin) = ' . $tahunSekarang . '
+                    AND kehadiran1.datin BETWEEN ' . $tanggalMulai . ' AND ' . $tanggalAkhir . '
             )
             
             SELECT * 
