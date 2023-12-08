@@ -230,26 +230,26 @@ class EmployeeController extends Controller
         $userInfoDept = $cleanedStringDeptFinal;
 
         if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
-            $data = DB::select('
+            $data = DB::connection('mysql2')->select('
         WITH CTE AS (
             SELECT 
                 COALESCE(a.coid, b.coid) AS coid,
                 COALESCE(a.empno, b.empno) AS empno,
-                COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+                COALESCE(employee_kehadiran2.empnm, employee_kehadiran2.empnm) AS empnm,
                 COALESCE(a.schdt, b.schdt) AS schdt,
                 COALESCE(a.rsccd, b.rsccd) AS rsccd,
-                COALESCE(pnhhira_attdly2.hirar, pnhhira_atttrn2.hirar) AS hirar,
-                COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) AS mutdt,
-                COALESCE(ssmhira_attdly2.descr, ssmhira_atttrn2.descr) AS descr,
-                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) DESC) AS RowNum
-            FROM attdly2 a
-            LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
-            LEFT JOIN pnhhira pnhhira_attdly2 ON a.empno = pnhhira_attdly2.empno
-            LEFT JOIN ssmhira ssmhira_attdly2 ON pnhhira_attdly2.hirar = ssmhira_attdly2.hirar
-            FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-            LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
-            LEFT JOIN pnhhira pnhhira_atttrn2 ON b.empno = pnhhira_atttrn2.empno
-            LEFT JOIN ssmhira ssmhira_atttrn2 ON pnhhira_atttrn2.hirar = ssmhira_atttrn2.hirar
+                COALESCE(hirarki_kehadiran2.hirar, hirarki_kehadiranmu.hirar) AS hirar,
+                COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) AS mutdt,
+                COALESCE(hirarkidesc_kehadiran2.descr, hirarkidesc_kehadiranmu.descr) AS descr,
+                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) DESC) AS RowNum
+            FROM kehadiran2 a
+            LEFT JOIN employee employee_kehadiran2 ON a.empno = employee_kehadiran2.empno
+            LEFT JOIN hirarki hirarki_kehadiran2 ON a.empno = hirarki_kehadiran2.empno
+            LEFT JOIN hirarkidesc hirarkidesc_kehadiran2 ON hirarki_kehadiran2.hirar = hirarkidesc_kehadiran2.hirar
+            LEFT JOIN kehadiranmu b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+            LEFT JOIN employee employee_kehadiranmu ON b.empno = employee_kehadiranmu.empno
+            LEFT JOIN hirarki hirarki_kehadiranmu ON b.empno = hirarki_kehadiranmu.empno
+            LEFT JOIN hirarkidesc hirarkidesc_kehadiranmu ON hirarki_kehadiranmu.hirar = hirarkidesc_kehadiranmu.hirar
             WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
         )
         
@@ -259,26 +259,26 @@ class EmployeeController extends Controller
         ORDER BY empno ASC, schdt ASC;
         ');
         } else if ($userInfoOccupation == 'KDP') {
-            $data = DB::select('
+            $data = DB::connection('mysql2')->select('
         WITH CTE AS (
             SELECT 
                 COALESCE(a.coid, b.coid) AS coid,
                 COALESCE(a.empno, b.empno) AS empno,
-                COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+                COALESCE(employee_kehadiran2.empnm, employee_kehadiran2.empnm) AS empnm,
                 COALESCE(a.schdt, b.schdt) AS schdt,
                 COALESCE(a.rsccd, b.rsccd) AS rsccd,
-                COALESCE(pnhhira_attdly2.hirar, pnhhira_atttrn2.hirar) AS hirar,
-                COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) AS mutdt,
-                COALESCE(ssmhira_attdly2.descr, ssmhira_atttrn2.descr) AS descr,
-                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) DESC) AS RowNum
-            FROM attdly2 a
-            LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
-            LEFT JOIN pnhhira pnhhira_attdly2 ON a.empno = pnhhira_attdly2.empno
-            LEFT JOIN ssmhira ssmhira_attdly2 ON pnhhira_attdly2.hirar = ssmhira_attdly2.hirar
-            FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-            LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
-            LEFT JOIN pnhhira pnhhira_atttrn2 ON b.empno = pnhhira_atttrn2.empno
-            LEFT JOIN ssmhira ssmhira_atttrn2 ON pnhhira_atttrn2.hirar = ssmhira_atttrn2.hirar
+                COALESCE(hirarki_kehadiran2.hirar, hirarki_kehadiranmu.hirar) AS hirar,
+                COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) AS mutdt,
+                COALESCE(hirarkidesc_kehadiran2.descr, hirarkidesc_kehadiranmu.descr) AS descr,
+                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) DESC) AS RowNum
+            FROM kehadiran2 a
+            LEFT JOIN employee employee_kehadiran2 ON a.empno = employee_kehadiran2.empno
+            LEFT JOIN hirarki hirarki_kehadiran2 ON a.empno = hirarki_kehadiran2.empno
+            LEFT JOIN hirarkidesc hirarkidesc_kehadiran2 ON hirarki_kehadiran2.hirar = hirarkidesc_kehadiran2.hirar
+            LEFT JOIN kehadiranmu b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+            LEFT JOIN employee employee_kehadiranmu ON b.empno = employee_kehadiranmu.empno
+            LEFT JOIN hirarki hirarki_kehadiranmu ON b.empno = hirarki_kehadiranmu.empno
+            LEFT JOIN hirarkidesc hirarkidesc_kehadiranmu ON hirarki_kehadiranmu.hirar = hirarkidesc_kehadiranmu.hirar
             WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
         )
         
@@ -289,26 +289,26 @@ class EmployeeController extends Controller
         ORDER BY empno ASC, schdt ASC;
         ');
         } else {
-            $data = DB::select('
+            $data = DB::connection('mysql2')->select('
         WITH CTE AS (
             SELECT 
                 COALESCE(a.coid, b.coid) AS coid,
                 COALESCE(a.empno, b.empno) AS empno,
-                COALESCE(pnmempl_attdly2.empnm, pnmempl_atttrn2.empnm) AS empnm,
+                COALESCE(employee_kehadiran2.empnm, employee_kehadiran2.empnm) AS empnm,
                 COALESCE(a.schdt, b.schdt) AS schdt,
                 COALESCE(a.rsccd, b.rsccd) AS rsccd,
-                COALESCE(pnhhira_attdly2.hirar, pnhhira_atttrn2.hirar) AS hirar,
-                COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) AS mutdt,
-                COALESCE(ssmhira_attdly2.descr, ssmhira_atttrn2.descr) AS descr,
-                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(pnhhira_attdly2.mutdt, pnhhira_atttrn2.mutdt) DESC) AS RowNum
-            FROM attdly2 a
-            LEFT JOIN pnmempl pnmempl_attdly2 ON a.empno = pnmempl_attdly2.empno
-            LEFT JOIN pnhhira pnhhira_attdly2 ON a.empno = pnhhira_attdly2.empno
-            LEFT JOIN ssmhira ssmhira_attdly2 ON pnhhira_attdly2.hirar = ssmhira_attdly2.hirar
-            FULL OUTER JOIN atttrn2 b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-            LEFT JOIN pnmempl pnmempl_atttrn2 ON b.empno = pnmempl_atttrn2.empno
-            LEFT JOIN pnhhira pnhhira_atttrn2 ON b.empno = pnhhira_atttrn2.empno
-            LEFT JOIN ssmhira ssmhira_atttrn2 ON pnhhira_atttrn2.hirar = ssmhira_atttrn2.hirar
+                COALESCE(hirarki_kehadiran2.hirar, hirarki_kehadiranmu.hirar) AS hirar,
+                COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) AS mutdt,
+                COALESCE(hirarkidesc_kehadiran2.descr, hirarkidesc_kehadiranmu.descr) AS descr,
+                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) DESC) AS RowNum
+            FROM kehadiran2 a
+            LEFT JOIN employee employee_kehadiran2 ON a.empno = employee_kehadiran2.empno
+            LEFT JOIN hirarki hirarki_kehadiran2 ON a.empno = hirarki_kehadiran2.empno
+            LEFT JOIN hirarkidesc hirarkidesc_kehadiran2 ON hirarki_kehadiran2.hirar = hirarkidesc_kehadiran2.hirar
+            LEFT JOIN kehadiranmu b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
+            LEFT JOIN employee employee_kehadiranmu ON b.empno = employee_kehadiranmu.empno
+            LEFT JOIN hirarki hirarki_kehadiranmu ON b.empno = hirarki_kehadiranmu.empno
+            LEFT JOIN hirarkidesc hirarkidesc_kehadiranmu ON hirarki_kehadiranmu.hirar = hirarkidesc_kehadiranmu.hirar
             WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
         )
         
@@ -376,6 +376,8 @@ class EmployeeController extends Controller
                 $row->timot = "Tidak Ada Data";
             }
         }
+
+        $data = collect($data);
 
         return DataTables::of($data)->make(true);
     }
