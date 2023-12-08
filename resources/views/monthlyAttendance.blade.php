@@ -126,7 +126,8 @@
                                         @endfor
 
                                         <!-- Display ALP count in the "Note" column -->
-                                        <td>ALP : {{ $alpCount }} SKT: {{ $sktCount }}</td>
+                                        <td>{{ $alpCount }}</td>
+                                        <td>{{ $sktCount }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -227,10 +228,15 @@
 
         // Tambahkan kolom note setelah kolom terakhir (30 atau 31)
         if (day === numberOfDaysInMonth) {
-            var noteTh = document.createElement('th');
-            noteTh.className = 'text-center align-middle';
-            noteTh.textContent = 'Note';
-            table.rows[0].appendChild(noteTh);
+            var alpTh = document.createElement('th');
+            alpTh.className = 'text-center align-middle';
+            alpTh.textContent = 'ALP';
+            table.rows[0].appendChild(alpTh);
+
+            var sktTh = document.createElement('th');
+            sktTh.className = 'text-center align-middle';
+            sktTh.textContent = 'SKT';
+            table.rows[0].appendChild(sktTh);
         }
 
         // Setel teks untuk semua elemen <th>, termasuk kolom tanggal dan kolom note
