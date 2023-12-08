@@ -36,22 +36,22 @@ class CopyDataCommand extends Command
     public function handle()
     {
         // $waktuSekarang = Carbon::now()->format('Y-m-d');
-        $waktuSekarang = '2023-11-23';
+        $waktuSekarang = '2023-11-22';
 
-        // dd($waktuSekarang);
-
-        $kehadiran1 = Kehadiran1::whereDate('crtdt', $waktuSekarang)->orderBy('crtdt', 'desc')->get(); // Data yang  masuk berapa nanti tanya HRD
+        $kehadiran1 = Kehadiran1::whereDate('crtdt', $waktuSekarang)
+            ->orWhereDate('lupddt', $waktuSekarang)
+            ->orderBy('crtdt', 'desc')
+            ->get();
 
         foreach ($kehadiran1 as $data1) {
             // Pengecekan apakah data sudah ada di MySQL2
-            $exists = DB::connection('mysql2')
-                ->table('kehadiran1')
+            $record = DB::connection('mysql2')->table('kehadiran1')
                 ->where('empno', $data1->empno)
                 ->where('datin', $data1->datin)
-                ->exists();
+                ->first();
 
             // Jika data belum ada, lakukan insert
-            if (!$exists) {
+            if (!$record) {
                 DB::connection('mysql2')->table('kehadiran1')->insert([
                     'empno' => $data1->empno,
                     'datin' => $data1->datin,
@@ -59,28 +59,95 @@ class CopyDataCommand extends Command
                     'datot' => $data1->datot,
                     'timot' => $data1->timot,
                     'crtdt' => $data1->crtdt,
+                    'lupddt' => $data1->lupddt,
                 ]);
+            } else if ($record->lupddt != $data1->lupddt) {
+                DB::connection('mysql2')->table('kehadiran1')
+                    ->where('empno', $data1->empno)
+                    ->where('crtdt', $data1->crtdt)
+                    ->update([
+                        'empno' => $data1->empno,
+                        'datin' => $data1->datin,
+                        'timin' => $data1->timin,
+                        'datot' => $data1->datot,
+                        'timot' => $data1->timot,
+                        'crtdt' => $data1->crtdt,
+                        'lupddt' => $data1->lupddt,
+                    ]);
             }
         }
 
-        $kehadiran2 = kehadiran2::orderBy('schdt', 'desc')->take(10)->get();
+        $kehadiran2 = Kehadiran2::whereDate('crtdt', $waktuSekarang)
+            ->orWhereDate('lupddt', $waktuSekarang)
+            ->orderBy('crtdt', 'desc')
+            ->get();
 
         foreach ($kehadiran2 as $data2) {
             // Pengecekan apakah data sudah ada di MySQL2
-            $exists = DB::connection('mysql2')
-                ->table('kehadiran2')
+
+            $record = DB::connection('mysql2')->table('kehadiran2')
                 ->where('empno', $data2->empno)
                 ->where('schdt', $data2->schdt)
-                ->exists();
+                ->first();
 
             // Jika data belum ada, lakukan insert
-            if (!$exists) {
+            if (!$record) {
                 DB::connection('mysql2')->table('kehadiran2')->insert([
                     'coid' => $data2->coid,
                     'empno' => $data2->empno,
                     'schdt' => $data2->schdt,
                     'rsccd' => $data2->rsccd,
+                    'crtdt' => $data2->crtdt,
+                    'lupddt' => $data2->lupddt,
                 ]);
+            } else if ($record->lupddt != $data2->lupddt) {
+                DB::connection('mysql2')->table('kehadiran2')
+                    ->where('empno', $data2->empno)
+                    ->where('crtdt', $data2->crtdt)
+                    ->update([
+                        'coid' => $data2->coid,
+                        'empno' => $data2->empno,
+                        'schdt' => $data2->schdt,
+                        'rsccd' => $data2->rsccd,
+                        'crtdt' => $data2->crtdt,
+                        'lupddt' => $data2->lupddt,
+                    ]);
+            }
+        }
+
+        $attrn2 = attrn2::whereDate('crtdt', $waktuSekarang)
+            ->orWhereDate('lupddt', $waktuSekarang)
+            ->orderBy('crtdt', 'desc')
+            ->get();
+
+        foreach ($attrn2 as $dataAttrn2) {
+            $record = DB::connection('mysql2')->table('kehadiranmu')
+                ->where('empno', $dataAttrn2->empno)
+                ->where('schdt', $dataAttrn2->schdt)
+                ->first();
+
+            // Jika data belum ada, lakukan insert
+            if (!$record) {
+                DB::connection('mysql2')->table('kehadiranmu')->insert([
+                    'coid' => $dataAttrn2->coid,
+                    'empno' => $dataAttrn2->empno,
+                    'schdt' => $dataAttrn2->schdt,
+                    'rsccd' => $dataAttrn2->rsccd,
+                    'crtdt' => $dataAttrn2->crtdt,
+                    'lupddt' => $dataAttrn2->lupddt,
+                ]);
+            } else if ($record->lupddt != $dataAttrn2->lupddt) {
+                DB::connection('mysql2')->table('kehadiranmu')
+                    ->where('empno', $data2->empno)
+                    ->where('crtdt', $data2->crtdt)
+                    ->update([
+                        'coid' => $dataAttrn2->coid,
+                        'empno' => $dataAttrn2->empno,
+                        'schdt' => $dataAttrn2->schdt,
+                        'rsccd' => $dataAttrn2->rsccd,
+                        'crtdt' => $dataAttrn2->crtdt,
+                        'lupddt' => $dataAttrn2->lupddt,
+                    ]);
             }
         }
 
@@ -131,27 +198,6 @@ class CopyDataCommand extends Command
                 DB::connection('mysql2')->table('hirarkidesc')->insert([
                     'hirar' => $dataHirarDesc->hirar,
                     'descr' => $dataHirarDesc->descr,
-                ]);
-            }
-        }
-
-        $attrn2 = attrn2::orderBy('schdt', 'desc')->take(10)->get(); // Data yang  masuk berapa nanti tanya HRD
-
-        foreach ($attrn2 as $dataAttrn2) {
-            // Pengecekan apakah data sudah ada di MySQL2
-            $exists = DB::connection('mysql2')
-                ->table('kehadiranmu')
-                ->where('empno', $dataAttrn2->empno)
-                ->where('schdt', $dataAttrn2->schdt)
-                ->exists();
-
-            // Jika data belum ada, lakukan insert
-            if (!$exists) {
-                DB::connection('mysql2')->table('kehadiranmu')->insert([
-                    'coid' => $dataAttrn2->coid,
-                    'empno' => $dataAttrn2->empno,
-                    'schdt' => $dataAttrn2->schdt,
-                    'rsccd' => $dataAttrn2->rsccd,
                 ]);
             }
         }
