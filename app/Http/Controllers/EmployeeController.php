@@ -77,63 +77,119 @@ class EmployeeController extends Controller
         }
 
         if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
+            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
+
+            // Execute main query
             $data = DB::connection('mysql2')
                 ->select(DB::raw("
-            WITH CTE AS (
                 SELECT 
-                    kehadiran1.empno,
-                    kehadiran1.datin,
-                    kehadiran1.timin,
-                    kehadiran1.datot,
-                    kehadiran1.timot,
-                    employee.empnm,
-                    hirarki.hirar,
-                    hirarkidesc.descr,
-                    ROW_NUMBER() OVER (PARTITION BY kehadiran1.empno, kehadiran1.datin, kehadiran1.timin, kehadiran1.datot, kehadiran1.timot, employee.empnm ORDER BY hirarki.mutdt DESC) AS RowNum
-                FROM kehadiran1 
-                INNER JOIN employee ON kehadiran1.empno = employee.empno
-                LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
-                LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                WHERE YEAR(kehadiran1.datin) = $tahunSekarang
-                    AND kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
-            )
-            
-            SELECT * 
-            FROM CTE
-            WHERE RowNum = 1
-            ORDER BY empno ASC, datin ASC, timin ASC;
+                    empno,
+                    datin,
+                    timin,
+                    datot,
+                    timot,
+                    empnm,
+                    hirar,
+                    mutdt,
+                    descr
+                FROM (
+                    SELECT 
+                        kehadiran1.empno,
+                        kehadiran1.datin,
+                        kehadiran1.timin,
+                        kehadiran1.datot,
+                        kehadiran1.timot,
+                        employee.empnm,
+                        hirarki.hirar,
+                        hirarki.mutdt,
+                        hirarkidesc.descr,
+                        @row_number := CASE 
+                            WHEN kehadiran1.empno != @empno_prev OR kehadiran1.datin != @datin_prev OR kehadiran1.timin != @timin_prev 
+                                THEN 1 
+                                ELSE @row_number + 1 
+                            END AS RowNum,
+                        @empno_prev := kehadiran1.empno,
+                        @datin_prev := kehadiran1.datin,
+                        @timin_prev := kehadiran1.timin
+                    FROM kehadiran1 
+                    INNER JOIN employee ON kehadiran1.empno = employee.empno
+                    LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
+                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+                    WHERE YEAR(kehadiran1.datin) = $tahunSekarang
+                        AND kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+                ) AS numbered
+                WHERE RowNum = 1
+                ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
             "));
         } else if ($userInfoOccupation == 'KDP') {
+            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
+
+            // Execute main query
             $data = DB::connection('mysql2')
-                ->select(DB::raw('
-            WITH CTE AS (
+                ->select(DB::raw("
                 SELECT 
-                    kehadiran1.empno,
-                    kehadiran1.datin,
-                    kehadiran1.timin,
-                    kehadiran1.datot,
-                    kehadiran1.timot,
-                    employee.empnm,
-                    hirarki.hirar,
-                    hirarkidesc.descr,
-                    ROW_NUMBER() OVER (PARTITION BY kehadiran1.empno, kehadiran1.datin, kehadiran1.timin, kehadiran1.datot, kehadiran1.timot, employee.empnm ORDER BY hirarki.mutdt DESC) AS RowNum
-                FROM kehadiran1 
-                INNER JOIN employee ON kehadiran1.empno = employee.empno
-                LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
-                LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                WHERE YEAR(kehadiran1.datin) = ' . $tahunSekarang . '
-                    AND kehadiran1.datin BETWEEN ' . $tanggalMulai . ' AND ' . $tanggalAkhir . '
-            )
-            
-            SELECT * 
-            FROM CTE
-            WHERE RowNum = 1
-            AND descr LIKE \'%' . $userInfoDept . '%\'
-            ORDER BY empno ASC, datin ASC, timin ASC;
-            '));
+                    empno,
+                    datin,
+                    timin,
+                    datot,
+                    timot,
+                    empnm,
+                    hirar,
+                    mutdt,
+                    descr
+                FROM (
+                    SELECT 
+                        kehadiran1.empno,
+                        kehadiran1.datin,
+                        kehadiran1.timin,
+                        kehadiran1.datot,
+                        kehadiran1.timot,
+                        employee.empnm,
+                        hirarki.hirar,
+                        hirarki.mutdt,
+                        hirarkidesc.descr,
+                        @row_number := CASE 
+                            WHEN kehadiran1.empno != @empno_prev OR kehadiran1.datin != @datin_prev OR kehadiran1.timin != @timin_prev 
+                                THEN 1 
+                                ELSE @row_number + 1 
+                            END AS RowNum,
+                        @empno_prev := kehadiran1.empno,
+                        @datin_prev := kehadiran1.datin,
+                        @timin_prev := kehadiran1.timin
+                    FROM kehadiran1 
+                    INNER JOIN employee ON kehadiran1.empno = employee.empno
+                    LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
+                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+                    WHERE YEAR(kehadiran1.datin) = $tahunSekarang
+                        AND kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+                ) AS numbered
+                WHERE RowNum = 1
+                AND descr LIKE \'%' . $userInfoDept . '%\'
+                ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
+            "));
         }
 
-        $data = collect($data);
+        // Initialize an associative array to store the latest mutdt for each empno and datin
+        $latestMutdt = [];
+
+        // Filter the data based on the latest mutdt for each empno and datin
+        $filteredData = array_filter($data, function ($item) use (&$latestMutdt) {
+            $key = $item->empno . $item->datin;
+
+            // Check if the key already exists in $latestMutdt
+            if (!isset($latestMutdt[$key]) || $item->mutdt > $latestMutdt[$key]->mutdt) {
+                // Update the latest mutdt for this key
+                $latestMutdt[$key] = $item;
+                return true;
+            }
+
+            return false;
+        });
+
+        // Reindex the array to reset keys
+        $filteredData = array_values($filteredData);
+
+        $data = collect($filteredData);
 
         // Mengubah format tanggal dan jam dalam hasil data
         foreach ($data as $row) {
