@@ -164,7 +164,7 @@ class EmployeeController extends Controller
                         AND kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
                 ) AS numbered
                 WHERE RowNum = 1
-                AND descr LIKE \'%' . $userInfoDept . '%\'
+                AND descr LIKE '%$userInfoDept%'
                 ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
             "));
         }
