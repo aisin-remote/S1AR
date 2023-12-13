@@ -233,12 +233,13 @@ class EmployeeController extends Controller
         return DataTables::of($data)->make(true);
     }
 
-    public function getDataMonthly($month = null)
+    public function getDataMonthly($year = null, $month = null)
     {
         //set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
         ini_set('max_execution_time', 0);
-        $tahunSekarang = Carbon::now()->year;
-        $bulanSekarang = $month ?: Carbon::now()->month;
+        $dateArray = explode('-', $year);
+        $tahunSekarang = $year ? $dateArray[0] : Carbon::now()->year;
+        $bulanSekarang = $year ? $dateArray[1] : Carbon::now()->month;
 
         $npk = auth()->user()->npk;
 

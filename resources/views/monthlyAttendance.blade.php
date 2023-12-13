@@ -12,7 +12,7 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-auto">
-                                <select id="monthFilter" class="form-control form-control-sm py-1 ">
+                                <!-- <select id="monthFilter" class="form-control form-control-sm py-1 ">
                                     <option value="1">January</option>
                                     <option value="2">February</option>
                                     <option value="3">March</option>
@@ -25,7 +25,8 @@
                                     <option value="10">October</option>
                                     <option value="11">November</option>
                                     <option value="12">December</option>
-                                </select>
+                                </select> -->
+                                <input type="month" id="monthFilter" class="form-control form-control-sm py-1" value="{{ date('yyyy-MM') }}">
                             </div>
                             <div class="col-auto">
                                 <button id="filterButton" class="btn btn-primary">Apply Filter</button>
@@ -89,7 +90,7 @@
                                         // Increment ALP count if rsccd is ALP
                                         if (trim($rsccd) == 'ALP') {
                                         $alpCount++;
-                                        }   
+                                        }
 
                                         // Increment SKT count if rsccd is SKT
                                         if (trim($rsccd) == 'SKT') {
@@ -173,7 +174,7 @@
 
                     // Create a select element
                     var select = $('<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>')
-                    .appendTo(filterContainer) // Append it to the container
+                        .appendTo(filterContainer) // Append it to the container
 
                         // Add event listeners for keyup and change events
                         .on('keyup change', function() {
@@ -212,10 +213,17 @@
     });
 
     // Mendapatkan bulan saat ini (0-11, dimulai dari Januari) dan tahun saat ini
-    var selectedMonth = document.getElementById('monthFilter').value;
-    var currentDate = new Date();
-    var currentMonth = selectedMonth;
-    var currentYear = currentDate.getFullYear();
+    var currentDate = selectedMonthFromUrl ? selectedMonthFromUrl.split('-') : null;
+
+    // Jika currentDate tidak ada atau kosong, gunakan tanggal hari ini
+    if (!currentDate || currentDate.length !== 2) {
+        var today = new Date();
+        var currentMonth = today.getMonth() + 1; // Adding 1 to get the correct month (1-12)
+        var currentYear = today.getFullYear();
+    } else {
+        var currentMonth = currentDate[1];
+        var currentYear = currentDate[0];
+    }
 
     // Mendapatkan jumlah hari dalam bulan saat ini
     var numberOfDaysInMonth = new Date(currentYear, currentMonth, 0).getDate();
