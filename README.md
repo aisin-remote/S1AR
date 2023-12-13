@@ -46,6 +46,10 @@ Before you begin, make sure you have the following software installed:
 
 Table Name:
 
-1. mySQL (users)
-2. SQL Server (attdly1, attdly2, pnmempl, atttrn2, atmrscd)
-3. Sikola
+1. attdly1
+2. attdly2
+3. pnmempl
+4. pnhhira
+5. ssmhira
+6. attrn2
+7. atmrscd
