@@ -82,6 +82,7 @@
                                     $alpCount = 0; // Initialize ALP counter
                                     $sktCount = 0; // Initialize SKT counter
                                     $hdrCount = 0; // Initialize HDR counter
+                                    $cutiCount = 0; // Initialize Cuti counter
                                     @endphp
 
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) @php $rsccd='' ; $today=date('j'); $month=date('m'); if ($bulanSekarang==$month) { if ($hari <=$today) { foreach ($npkData as $data) { if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
@@ -100,6 +101,11 @@
                                         // Increment HDR count if rsccd is HDR
                                         if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3'])) {
                                         $hdrCount++;
+                                        }
+
+                                        // Increment Cuti count if rsccd is Cuti
+                                        if (in_array(trim($rsccd), ['CBS', 'CHD', 'CK', 'CM', 'CML', 'CTH'])) {
+                                        $cutiCount++;
                                         }
 
                                         break;
@@ -126,6 +132,11 @@
                                         $hdrCount++;
                                         }
 
+                                        // Increment Cuti count if rsccd is Cuti
+                                        if (in_array(trim($rsccd), ['CBS', 'CHD', 'CK', 'CM', 'CML', 'CTH'])) {
+                                        $cutiCount++;
+                                        }
+
                                         break;
                                         }
                                         }
@@ -140,6 +151,7 @@
                                         <!-- Display ALP count in the "Note" column -->
                                         <td>{{ $alpCount }}</td>
                                         <td>{{ $sktCount }}</td>
+                                        <td>{{ $cutiCount }}</td>
                                         <td>{{ $hdrCount }}</td>
                                 </tr>
                                 @endforeach
@@ -257,6 +269,11 @@
             sktTh.className = 'text-center align-middle';
             sktTh.textContent = 'SKT';
             table.rows[0].appendChild(sktTh);
+
+            var cutiTh = document.createElement('th');
+            cutiTh.className = 'text-center align-middle';
+            cutiTh.textContent = 'Cuti';
+            table.rows[0].appendChild(cutiTh);
 
             var hdrTh = document.createElement('th');
             hdrTh.className = 'text-center align-middle';
