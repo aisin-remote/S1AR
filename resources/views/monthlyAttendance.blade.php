@@ -80,6 +80,7 @@
                                     @php
                                     $alpCount = 0; // Initialize ALP counter
                                     $sktCount = 0; // Initialize SKT counter
+                                    $hdrCount = 0; // Initialize HDR counter
                                     @endphp
 
                                     @for ($hari = 1; $hari <= $jumlah_hari; $hari++) @php $rsccd='' ; $today=date('j'); $month=date('m'); if ($bulanSekarang==$month) { if ($hari <=$today) { foreach ($npkData as $data) { if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
@@ -88,11 +89,16 @@
                                         // Increment ALP count if rsccd is ALP
                                         if (trim($rsccd) == 'ALP') {
                                         $alpCount++;
-                                        }
+                                        }   
 
                                         // Increment SKT count if rsccd is SKT
                                         if (trim($rsccd) == 'SKT') {
                                         $sktCount++;
+                                        }
+
+                                        // Increment HDR count if rsccd is HDR
+                                        if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3'])) {
+                                        $hdrCount++;
                                         }
 
                                         break;
@@ -114,6 +120,11 @@
                                         $sktCount++;
                                         }
 
+                                        // Increment HDR count if rsccd is HDR
+                                        if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3'])) {
+                                        $hdrCount++;
+                                        }
+
                                         break;
                                         }
                                         }
@@ -128,6 +139,7 @@
                                         <!-- Display ALP count in the "Note" column -->
                                         <td>{{ $alpCount }}</td>
                                         <td>{{ $sktCount }}</td>
+                                        <td>{{ $hdrCount }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -237,6 +249,11 @@
             sktTh.className = 'text-center align-middle';
             sktTh.textContent = 'SKT';
             table.rows[0].appendChild(sktTh);
+
+            var hdrTh = document.createElement('th');
+            hdrTh.className = 'text-center align-middle';
+            hdrTh.textContent = 'HDR';
+            table.rows[0].appendChild(hdrTh);
         }
 
         // Setel teks untuk semua elemen <th>, termasuk kolom tanggal dan kolom note
