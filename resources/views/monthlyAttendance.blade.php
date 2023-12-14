@@ -165,25 +165,19 @@
         const sheetName = 'Monthly_Attendance';
         const fileName = 'monthly_attendance';
 
-        const tables = document.querySelectorAll('table');
+        // Mengambil elemen tabel dengan ID employee-table
+        const table = document.getElementById('employee-table');
+
+        // Memastikan tabel ditemukan sebelum melanjutkan
+        if (!table) {
+            console.error('Tabel dengan ID employee-table tidak ditemukan.');
+            return;
+        }
+
         const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.table_to_sheet(table);
 
-        tables.forEach((table, index) => {
-            const ws = XLSX.utils.table_to_sheet(table);
-
-            // Set column width based on the maximum width of the data in each column
-            const maxColumnWidths = Array.from({
-                    length: ws['!cols'].length
-                }, (_, colIndex) =>
-                XLSX.utils.decode_col(XLSX.utils.encode_col(colIndex + 1))
-            );
-
-            ws['!cols'] = maxColumnWidths.map((width) => ({
-                wch: width
-            }));
-
-            XLSX.utils.book_append_sheet(wb, ws, sheetName + (index + 1));
-        });
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
         XLSX.writeFile(wb, fileName + '.xlsx');
     }
