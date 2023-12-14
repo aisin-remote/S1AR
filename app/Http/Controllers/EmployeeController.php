@@ -8,6 +8,8 @@ use Termwind\Components\Raw;
 use Carbon\Carbon;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+
 
 class EmployeeController extends Controller
 {
@@ -377,13 +379,17 @@ class EmployeeController extends Controller
         // ');
         // }
 
-        if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
-            // Set variables
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
+        $cacheKey = 'monthly_data_' . $npk . '_' . $tahunSekarang . '_' . $bulanSekarang;
+        if (Cache::has($cacheKey)) {
+            $groupedData = Cache::get($cacheKey);
+        } else {
+            if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
+                // Set variables
+                DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw('
+                // Execute main query
+                $data = DB::connection('mysql2')
+                    ->select(DB::raw('
                     SELECT 
                         coid,
                         empno,
@@ -423,13 +429,13 @@ class EmployeeController extends Controller
                     WHERE RowNum = 1
                     ORDER BY empno ASC, schdt ASC, mutdt DESC
                 '));
-        } else if ($userInfoOccupation == 'KDP') {
-            // Set variables
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
+            } else if ($userInfoOccupation == 'KDP') {
+                // Set variables
+                DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw('
+                // Execute main query
+                $data = DB::connection('mysql2')
+                    ->select(DB::raw('
                     SELECT 
                         coid,
                         empno,
@@ -470,13 +476,13 @@ class EmployeeController extends Controller
                     AND descr LIKE \'%' . $userInfoDept . '%\'
                     ORDER BY empno ASC, schdt ASC, mutdt DESC
                 '));
-        } else {
-            // Set variables
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
+            } else {
+                // Set variables
+                DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw('
+                // Execute main query
+                $data = DB::connection('mysql2')
+                    ->select(DB::raw('
                     SELECT 
                         coid,
                         empno,
@@ -517,11 +523,15 @@ class EmployeeController extends Controller
                     AND empno = ' . $npk . '
                     ORDER BY empno ASC, schdt ASC, mutdt DESC
                 '));
+            }
+
+            $data = collect($data);
+
+            $groupedData = $data->groupBy('empno');
+
+            // Simpan data ke cache dengan waktu kadaluarsa 1 jam (3600 detik)
+            Cache::put($cacheKey, $groupedData, 7200);
         }
-
-        $data = collect($data);
-
-        $groupedData = $data->groupBy('empno');
 
         return view('monthlyAttendance', compact('groupedData', 'bulanSekarang', 'userInfoOccupation', 'userInfoDept'));
     }
