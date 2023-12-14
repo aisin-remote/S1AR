@@ -11,21 +11,22 @@
                 <div class="col-lg-12">
                     <div class="container">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6 mb-3 mb-md-0">
                                 <div class="d-flex">
                                     <div class="col-auto">
-                                        <input type="month" id="monthFilter" class="form-control form-control-sm py-1" value="{{ date('yyyy-MM') }}">
+                                        <input type="month" id="monthFilter" class="form-control form-control-sm py-1" value="{{ date('Y-m') }}">
                                     </div>
                                     <div class="col-auto">
                                         <button id="filterButton" class="btn btn-primary">Apply Filter</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 text-right">
-                                <button class="btn btn-success" onclick="exportToExcel()">Export to Excel</button>
+                            <div class="col-md-6 text-md-right">
+                                <button class="btn btn-success">Export to Excel</button>
                             </div>
                         </div>
                     </div>
+
 
                     <br>
                     <div class="table-responsive">
