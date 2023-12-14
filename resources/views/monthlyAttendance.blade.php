@@ -11,28 +11,22 @@
                 <div class="col-lg-12">
                     <div class="container">
                         <div class="row">
-                            <div class="col-auto">
-                                <!-- <select id="monthFilter" class="form-control form-control-sm py-1 ">
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select> -->
-                                <input type="month" id="monthFilter" class="form-control form-control-sm py-1" value="{{ date('yyyy-MM') }}">
+                            <div class="col-md-6">
+                                <div class="d-flex">
+                                    <div class="col-auto">
+                                        <input type="month" id="monthFilter" class="form-control form-control-sm py-1" value="{{ date('yyyy-MM') }}">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button id="filterButton" class="btn btn-primary">Apply Filter</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-auto">
-                                <button id="filterButton" class="btn btn-primary">Apply Filter</button>
+                            <div class="col-md-6 text-right">
+                                <button class="btn btn-success" onclick="exportToExcel()">Export to Excel</button>
                             </div>
                         </div>
                     </div>
+
                     <br>
                     <div class="table-responsive">
                         <table class="table table-striped table-sm table-bordered" id="employee-table">
@@ -144,7 +138,7 @@
                                         @endphp
 
                                         <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
-                                            {!! in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '<i class="fas fa-check"></i>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
+                                            {!! in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '✔️' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
                                         </td>
                                         @endfor
 
@@ -165,11 +159,40 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+    function exportToExcel() {
+        const sheetName = 'Monthly_Attendance';
+        const fileName = 'monthly_attendance';
+
+        const tables = document.querySelectorAll('table');
+        const wb = XLSX.utils.book_new();
+
+        tables.forEach((table, index) => {
+            const ws = XLSX.utils.table_to_sheet(table);
+
+            // Set column width based on the maximum width of the data in each column
+            const maxColumnWidths = Array.from({
+                    length: ws['!cols'].length
+                }, (_, colIndex) =>
+                XLSX.utils.decode_col(XLSX.utils.encode_col(colIndex + 1))
+            );
+
+            ws['!cols'] = maxColumnWidths.map((width) => ({
+                wch: width
+            }));
+
+            XLSX.utils.book_append_sheet(wb, ws, sheetName + (index + 1));
+        });
+
+        XLSX.writeFile(wb, fileName + '.xlsx');
+    }
+</script>
 <script>
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
             "dom": '<"top"f>rt<"bottom"lip><"clear">',
-            "paging": true,
+            "paging": false,
             "pagingType": "simple_numbers",
             "scrollY": "400px",
             "scrollX": true,
