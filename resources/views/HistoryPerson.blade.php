@@ -27,12 +27,14 @@
                         <table class="table table-striped table-sm table-bordered" id="employee-table">
                             <thead>
                                 <tr class="text-center align middle">
-                                    <th>NPK</th>
-                                    <th>Nama</th>
-                                    <th>Tanggal Masuk</th>
-                                    <th>Waktu Masuk</th>
-                                    <th>Tanggal Keluar</th>
-                                    <th>Waktu Keluar</th>
+                                    <th class="text-center align-middle">NPK</th>
+                                    <th class="text-center align-middle">Nama</th>
+                                    <th class="text-center align-middle">Occupation</th>
+                                    <th class="text-center align-middle">Department</th>
+                                    <th class="align-middle">Tanggal Masuk</th>
+                                    <th class="align-middle">Waktu Masuk</th>
+                                    <th class="align-middle">Tanggal Keluar</th>
+                                    <th class="align-middle">Waktu Keluar</th>
                                 </tr>
                             </thead>
                         </table>
@@ -63,7 +65,18 @@
                 },
                 {
                     data: 'empnm',
-                    name: 'empnm'
+                    name: 'empnm',
+                    orderable: false
+                },
+                {
+                    data: 'hirar',
+                    name: 'occupation',
+                    orderable: false
+                },
+                {
+                    data: 'descr',
+                    name: 'department',
+                    orderable: false
                 },
                 {
                     data: 'datin',
