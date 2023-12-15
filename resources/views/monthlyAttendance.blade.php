@@ -9,25 +9,18 @@
         <div class="card">
             <div class="row px-3 py-3">
                 <div class="col-lg-12">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="d-flex">
-                                    <div class="col-auto">
-                                        <input type="month" id="monthFilter" class="form-control form-control-sm py-1" value="{{ date('yyyy-MM') }}">
-                                    </div>
-                                    <div class="col-auto">
-                                        <button id="filterButton" class="btn btn-primary">Apply Filter</button>
-                                    </div>
-                                </div>
+                    <form id="filter-form">
+                        <div class="form-row">
+                            <div class="form-group col-auto">
+                                <label for="start_date">Filter Month:</label>
+                                <input type="month" id="monthFilter" class="form-control form-control-sm py-1">
                             </div>
-                            <div class="col-md-6 text-right">
-                                <button class="btn btn-success" onclick="exportToExcel()">Export to Excel</button>
+                            <div class="form-group col-auto">
+                                <label for="filter_button">&nbsp;</label>
+                                <button type="button" class="btn btn-primary btn-sm form-control form-control-sm" id="filterButton">Apply Filter</button>
                             </div>
                         </div>
-                    </div>
-
-                    <br>
+                    </form>
                     <div class="table-responsive">
                         <table class="table table-striped table-sm table-bordered" id="employee-table">
                             <thead>
@@ -160,32 +153,38 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
 <script>
-    function exportToExcel() {
-        const sheetName = 'Monthly_Attendance';
-        const fileName = 'monthly_attendance';
+    // function exportToExcel() {
+    //     const sheetName = 'Monthly_Attendance';
+    //     const fileName = 'monthly_attendance';
 
-        // Mengambil elemen tabel dengan ID employee-table
-        const table = document.getElementById('employee-table');
+    //     // Mengambil elemen tabel dengan ID employee-table
+    //     const table = document.getElementById('employee-table');
 
-        // Memastikan tabel ditemukan sebelum melanjutkan
-        if (!table) {
-            console.error('Tabel dengan ID employee-table tidak ditemukan.');
-            return;
-        }
+    //     // Memastikan tabel ditemukan sebelum melanjutkan
+    //     if (!table) {
+    //         console.error('Tabel dengan ID employee-table tidak ditemukan.');
+    //         return;
+    //     }
 
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.table_to_sheet(table);
+    //     const wb = XLSX.utils.book_new();
+    //     const ws = XLSX.utils.table_to_sheet(table);
 
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    //     XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-        XLSX.writeFile(wb, fileName + '.xlsx');
-    }
+    //     XLSX.writeFile(wb, fileName + '.xlsx');
+    // }
 </script>
 <script>
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
-            dom: '<"top"f>rt<"bottom"lip><"clear">',
+            dom: '<"top"f>Brt<"bottom"lip><"clear">',
             paging: false,
             pagingType: "simple_numbers",
             scrollY: "400px",
@@ -193,6 +192,20 @@
             columnDefs: [{
                 "orderable": false,
                 "targets": [1, 2, 3]
+            }],
+            buttons: [{
+                extend: 'excelHtml5',
+                text: 'Export to Excel', // customize button text
+                className: 'btn btn-success btn-sm float-right', // apply Bootstrap button classes
+                exportOptions: {
+                    columns: ':visible'
+                },
+                customize: function(xlsx) {
+                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                    $('row c', sheet).each(function() {
+                        $(this).attr('s', '50');
+                    });
+                }
             }],
             initComplete: function() {
                 var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
