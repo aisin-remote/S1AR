@@ -185,7 +185,7 @@
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
             dom: '<"top"f>Brt<"bottom"lip><"clear">',
-            paging: false,
+            paging: true,
             pagingType: "simple_numbers",
             scrollY: "400px",
             scrollX: true,
@@ -195,6 +195,7 @@
             }],
             buttons: [{
                 extend: 'excelHtml5',
+                autoFilter: true,
                 text: 'Export to Excel', // customize button text
                 className: 'btn btn-success btn-sm float-right', // apply Bootstrap button classes
                 exportOptions: {
