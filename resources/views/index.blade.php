@@ -106,28 +106,33 @@
                 }
             ],
             initComplete: function() {
-                this.api().columns([3]).every(function() {
-                    var column = this;
+                var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
+                var userInfoDept = '<?php echo $userInfoDept; ?>';
 
-                    // Create a container for the filter and clear button
-                    var filterContainer = $('<div class="d-flex align-items-center"></div>').appendTo($('#employee-table_wrapper .top'));
+                if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
+                    this.api().columns([3]).every(function() {
+                        var column = this;
 
-                    // Create a select element
-                    var select = $('<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>')
-                        .appendTo(filterContainer) // Append it to the container
+                        // Create a container for the filter and clear button
+                        var filterContainer = $('<div class="d-flex align-items-center"></div>').appendTo($('#employee-table_wrapper .top'));
 
-                        // Add event listeners for keyup and change events
-                        .on('keyup change', function() {
-                            column.search($(this).val()).draw();
-                        });
+                        // Create a select element
+                        var select = $('<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>')
+                            .appendTo(filterContainer) // Append it to the container
 
-                    // Add a clear button to reset the filter
-                    $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
-                        .appendTo(filterContainer)
-                        .on('click', function() {
-                            select.val('').change(); // Reset the select and trigger change event
-                        });
-                });
+                            // Add event listeners for keyup and change events
+                            .on('keyup change', function() {
+                                column.search($(this).val()).draw();
+                            });
+
+                        // Add a clear button to reset the filter
+                        $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
+                            .appendTo(filterContainer)
+                            .on('click', function() {
+                                select.val('').change(); // Reset the select and trigger change event
+                            });
+                    });
+                }
             }
         });
 

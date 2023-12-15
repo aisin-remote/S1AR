@@ -15,7 +15,51 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        return view('index');
+        $npk = auth()->user()->npk;
+
+        $userInfo = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+            FROM kehadiran2
+            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+            WHERE kehadiran2.empno = $npk
+            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr
+            ORDER BY mutdt DESC LIMIT 1;
+            "
+        ));
+
+        if (!empty($userInfo)) {
+            $npkDesc = $userInfo[0]->hirar; // Use array syntax
+
+            $cleanedString = str_replace(' ', '', $npkDesc);
+
+            // Hitung jumlah karakter
+            $jumlahKarakter = strlen($cleanedString);
+
+            // Tentukan jenis berdasarkan jumlah karakter
+            if ($jumlahKarakter == 5) {
+                $jenis = 'KDP';
+            } elseif ($jumlahKarakter == 7) {
+                $jenis = 'SPV';
+            } elseif ($jumlahKarakter == 9) {
+                $jenis = 'LDR/OPR';
+            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                $jenis = 'GMR';
+            } else {
+                $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+            }
+        } else {
+            // Handle the case where no results are returned
+            $jenis = 'Jenis tidak dikenali';
+        }
+
+        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
+        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $userInfoOccupation = $jenis;
+        $userInfoDept = $cleanedStringDeptFinal;
+
+        return view('index', compact('userInfoOccupation', 'userInfoDept'));
     }
 
     public function getData(Request $request)
