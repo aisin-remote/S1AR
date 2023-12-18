@@ -33,6 +33,23 @@
                                     $tahun = date('Y');
                                     $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulanSekarang, $tahun);
                                     ?>
+                                    @for ($day = 1; $day <= $jumlah_hari; $day++) <th>
+                                        <?php
+                                        // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
+                                        $dayOfWeek = (new DateTime("$tahun-$bulanSekarang-$day"))->format('w');
+                                        $isWeekend = $dayOfWeek == 0 || $dayOfWeek == 6;
+                                        $thClass = $isWeekend ? 'text-danger text-center align-middle' : 'text-center align-middle';
+                                        ?>
+                                        <div class="<?= $thClass ?>">
+                                            {{ $day }}
+                                        </div>
+                                        </th>
+                                        @endfor
+                                        <!-- Tambahkan kolom note setelah kolom terakhir (30 atau 31) -->
+                                        <th class="text-center align-middle">ALP</th>
+                                        <th class="text-center align-middle">SKT</th>
+                                        <th class="text-center align-middle">Cuti</th>
+                                        <th class="text-center align-middle">HDR</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -185,14 +202,11 @@
     $(document).ready(function() {
         var table = $('#employee-table').DataTable({
             dom: '<"top"f>Brt<"bottom"lip><"clear">',
+            "ordering": false,
             paging: true,
             pagingType: "simple_numbers",
             scrollY: "400px",
             scrollX: true,
-            columnDefs: [{
-                "orderable": false,
-                "targets": [1, 2, 3]
-            }],
             buttons: [{
                 extend: 'excelHtml5',
                 autoFilter: true,
@@ -287,53 +301,6 @@
         var currentYear = currentDate[0];
     }
 
-    // Mendapatkan jumlah hari dalam bulan saat ini
-    var numberOfDaysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-
-    // Menentukan nama-nama hari untuk memberi warna pada hari-hari akhir pekan
-    var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    // Mendapatkan tabel dengan ID 'employee-table'
-    var table = document.getElementById('employee-table');
-
-    // Membuat elemen-elemen <th> dan menambahkannya ke tabel
-    for (var day = 1; day <= numberOfDaysInMonth; day++) {
-        var th = document.createElement('th');
-
-        // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
-        var dayOfWeek = new Date(currentYear, currentMonth - 1, day).getDay();
-        var isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        th.className = isWeekend ? 'text-danger text-center align-middle' : 'text-center align-middle';
-
-        // Menambahkan elemen <th> ke dalam baris pertama tabel
-        table.rows[0].appendChild(th);
-
-        // Tambahkan kolom note setelah kolom terakhir (30 atau 31)
-        if (day === numberOfDaysInMonth) {
-            var alpTh = document.createElement('th');
-            alpTh.className = 'text-center align-middle';
-            alpTh.textContent = 'ALP';
-            table.rows[0].appendChild(alpTh);
-
-            var sktTh = document.createElement('th');
-            sktTh.className = 'text-center align-middle';
-            sktTh.textContent = 'SKT';
-            table.rows[0].appendChild(sktTh);
-
-            var cutiTh = document.createElement('th');
-            cutiTh.className = 'text-center align-middle';
-            cutiTh.textContent = 'Cuti';
-            table.rows[0].appendChild(cutiTh);
-
-            var hdrTh = document.createElement('th');
-            hdrTh.className = 'text-center align-middle';
-            hdrTh.textContent = 'HDR';
-            table.rows[0].appendChild(hdrTh);
-        }
-
-        // Setel teks untuk semua elemen <th>, termasuk kolom tanggal dan kolom note
-        th.textContent = day;
-    }
 </script>
 @endpush
 @endsection
