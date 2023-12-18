@@ -235,6 +235,20 @@
                                 select.val('').change(); // Reset the select and trigger change event
                             });
                     });
+                } else {
+                    var column = this;
+
+                    // Create a container for the filter and clear button
+                    var filterContainer = $('<div class="d-flex align-items-center"></div>').appendTo($('#employee-table_wrapper .top'));
+
+                    // Create a select element
+                    var select = $('<p style="color:white;"></p>').text(userInfoDept + ' Dept')
+                        .appendTo(filterContainer) // Append it to the container
+
+                        // Add event listeners for keyup and change events
+                        .on('keyup change', function() {
+                            column.search($(this).val()).draw();
+                        });
                 }
             }
         });
