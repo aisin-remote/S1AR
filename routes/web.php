@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\SchedulerController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/historyattendance', [EmployeeController::class, 'indexPerson'])->name('person.attendance');
     Route::get('/employee/history/datatables', [EmployeeController::class, 'getDataPerson'])->name('employee.person.datatables');
+
+    Route::get('/holiday', [HolidayController::class, 'index'])->name('master-holiday');
+    Route::post('/upload-holiday', [HolidayController::class, 'upload'])->name('upload-holiday');
+    Route::get('/holiday/datatables', [HolidayController::class, 'getDataHoliday'])->name('holiday.datatables');
 
     Route::get('/test', [EmployeeController::class, 'test']);
 });
