@@ -105,7 +105,7 @@
                                         }
 
                                         // Increment HDR count if rsccd is HDR
-                                        if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3'])) {
+                                        if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3', 'HHO', 'BKT', 'DTA', 'HHL', 'OT>03', 'OT>11', 'PCT', 'PTA', 'SF2', 'SF3', 'SLP', 'TL1', 'TL2', 'TL3', 'OVDAY', 'OVHOL', 'OVSPD', 'DLU', 'TRNT', 'TRT'])) {
                                         $hdrCount++;
                                         }
 
