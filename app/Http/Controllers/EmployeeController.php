@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Holiday;
 
 
 class EmployeeController extends Controller
@@ -577,7 +578,11 @@ class EmployeeController extends Controller
             Cache::put($cacheKey, $groupedData, 7200);
         }
 
-        return view('monthlyAttendance', compact('groupedData', 'bulanSekarang', 'userInfoOccupation', 'userInfoDept'));
+        $holidays = Holiday::whereYear('date', $tahunSekarang)
+            ->whereMonth('date', $bulanSekarang)
+            ->get();
+
+        return view('monthlyAttendance', compact('groupedData', 'holidays', 'bulanSekarang', 'userInfoOccupation', 'userInfoDept'));
     }
 
     public function indexPerson()

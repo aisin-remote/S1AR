@@ -36,9 +36,11 @@
                                     @for ($day = 1; $day <= $jumlah_hari; $day++) <th>
                                         <?php
                                         // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
+                                        $date = "$tahun-$bulanSekarang-$day";
                                         $dayOfWeek = (new DateTime("$tahun-$bulanSekarang-$day"))->format('w');
                                         $isWeekend = $dayOfWeek == 0 || $dayOfWeek == 6;
-                                        $thClass = $isWeekend ? 'text-danger text-center align-middle' : 'text-center align-middle';
+                                        $hasHolidayData = $holidays->where('date', $date)->isNotEmpty();
+                                        $thClass = $isWeekend || $hasHolidayData ? 'text-danger text-center align-middle' : 'text-center align-middle';
                                         ?>
                                         <div class="<?= $thClass ?>">
                                             {{ $day }}
