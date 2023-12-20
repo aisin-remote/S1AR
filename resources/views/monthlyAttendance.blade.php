@@ -150,7 +150,12 @@
                                         @endphp
 
                                         <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
-                                            {!! in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']) ? '✔️' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
+                                            @if(in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']))
+                                            ✔️
+                                            @else
+                                            {!! in_array(trim($rsccd), ['ALP']) ? '<span class="badge badge-danger">'. $rsccd .'</span>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
+                                            @endif
+
                                         </td>
                                         @endfor
 
@@ -302,7 +307,6 @@
         var currentMonth = currentDate[1];
         var currentYear = currentDate[0];
     }
-
 </script>
 @endpush
 @endsection
