@@ -30,13 +30,15 @@ Before you begin, make sure you have the following software installed:
     php artisan key:generate
     ```
 
-4. Create the database 'siar-mysql' in mySQL and Migrate the database (before migrate db, change sqlsrv to local sqlsrv in env file. after that, you can change sqlsrv to AIIA-...):
+4. Create the database 'siar-mysql' in mySQL and import `siar-mysql.sql`
+
+5. For excel, run this command:
 
     ```sh
-    php artisan migrate
+    composer require maatwebsite/excel
     ```
 
-5. Run the web application:
+6. Run the web application:
 
     ```sh
     php artisan serve
@@ -53,3 +55,5 @@ Table Name:
 5. ssmhira
 6. attrn2
 7. atmrscd
+
+Note: The table names mentioned above are the names of tables in SQL Server from which I retrieve the data. Therefore, there is a difference in table names compared to MySQL. In this program, the code that controls the data copying is located in the directory `app\Console\Commands\CopyDataCommand.php`. You can run it by visiting https://your-link/scheduler or by using the command `php artisan data:copy`. Emmm, sorry for the complicated query hehe.
