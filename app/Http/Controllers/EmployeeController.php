@@ -290,18 +290,17 @@ class EmployeeController extends Controller
 
         $npk = auth()->user()->npk;
 
-        $userInfo = DB::select(
-            '
-            SELECT TOP 1 attdly2.empno, pnhhira.hirar, MAX(pnhhira.mutdt) AS mutdt, ssmhira.descr
-            FROM attdly2
-            LEFT JOIN pnhhira ON attdly2.empno = pnhhira.empno
-            LEFT JOIN ssmhira ON pnhhira.hirar = ssmhira.hirar
-            WHERE attdly2.empno = ?
-            GROUP BY attdly2.empno, pnhhira.hirar, ssmhira.descr
-            ORDER BY mutdt DESC;
-            ',
-            [$npk]
-        );
+        $userInfo = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+            FROM kehadiran2
+            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+            WHERE kehadiran2.empno = $npk
+            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr
+            ORDER BY mutdt DESC LIMIT 1;
+            "
+        ));
 
         if (!empty($userInfo)) {
             $npkDesc = $userInfo[0]->hirar; // Use array syntax

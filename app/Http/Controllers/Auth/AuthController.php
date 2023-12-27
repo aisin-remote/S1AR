@@ -50,6 +50,16 @@ class AuthController extends Controller
             'password' => 'required|min:6',
         ]);
 
+        // Periksa apakah NPK ada dalam tabel hirarki.empno
+        $isNpkValid = DB::connection('mysql2')->table('hirarki')
+            ->where('empno', $request->npk)
+            ->exists();
+
+        if (!$isNpkValid) {
+            // NPK tidak terdaftar, tampilkan error
+            return redirect()->back()->withErrors(['registration' => 'NPK is not registered. Please check your NPK and try again.']);
+        }
+
         // Simpan data user ke dalam tabel users menggunakan koneksi mysql2
         DB::connection('mysql2')->beginTransaction();
         try {
