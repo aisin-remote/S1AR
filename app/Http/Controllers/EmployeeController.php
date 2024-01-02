@@ -65,7 +65,6 @@ class EmployeeController extends Controller
 
     public function getData(Request $request)
     {
-        $tahunSekarang = Carbon::now()->year;
         $tanggalSekarang = Carbon::now()->format('Ymd');
 
         $npk = auth()->user()->npk;
@@ -162,8 +161,7 @@ class EmployeeController extends Controller
                     INNER JOIN employee ON kehadiran1.empno = employee.empno
                     LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
                     LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                    WHERE YEAR(kehadiran1.datin) = $tahunSekarang
-                        AND kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+                    WHERE kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
                 ) AS numbered
                 WHERE RowNum = 1
                 ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
