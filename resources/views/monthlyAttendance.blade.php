@@ -169,6 +169,32 @@
                             </tbody>
                         </table>
                     </div>
+                    <br>
+                    <h6 class="mb-2">Legend:</h6>
+                    <div class="row">
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-danger">ALP</span> Mangkir
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">SKT</span> Sakit
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">PTA</span> Pulang Tidak Absen
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">DTA</span> Datang Tidak Absen
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">PCT</span> Pulang Cepat
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">HOF</span> Hari OFF
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">LBN</span> Libur Nasional
+                        </div>
+                    </div>
+                    </ul>
                 </div>
             </div>
         </div>
