@@ -34,7 +34,7 @@
 
                 <div class="col-lg-12 mt-3">
                     <div class="table-responsive">
-                        <table class="table table-striped table-sm table-bordered" id="holiday-table">
+                        <table class="table table-striped table-sm table-bordered text-center align-middle" id="holiday-table">
                             <thead>
                                 <tr>
                                     <th class="text-center align-middle">Date Holiday</th>
