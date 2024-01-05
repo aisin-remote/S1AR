@@ -582,7 +582,7 @@ class EmployeeController extends Controller
             ->whereMonth('date', $bulanSekarang)
             ->get();
 
-        return view('monthlyAttendance', compact('groupedData', 'holidays', 'bulanSekarang', 'userInfoOccupation', 'userInfoDept'));
+        return view('monthlyAttendance', compact('groupedData', 'holidays', 'bulanSekarang', 'tahunSekarang', 'userInfoOccupation', 'userInfoDept'));
     }
 
     public function indexPerson()
