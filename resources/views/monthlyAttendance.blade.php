@@ -36,7 +36,7 @@
                                     @for ($day = 1; $day <= $jumlah_hari; $day++) <th>
                                         <?php
                                         // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
-                                        $date = "$tahunSekarang-$bulanSekarang-$day";
+                                        $date = sprintf("%04d-%02d-%02d", $tahunSekarang, $bulanSekarang, $day);
                                         $dayOfWeek = (new DateTime("$tahunSekarang-$bulanSekarang-$day"))->format('w');
                                         $isWeekend = $dayOfWeek == 0 || $dayOfWeek == 6;
                                         $hasHolidayData = $holidays->where('date', $date)->isNotEmpty();
