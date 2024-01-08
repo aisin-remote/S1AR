@@ -39,7 +39,7 @@ class HolidayController extends Controller
     public function getDataHoliday()
     {
         $twoYearsAgo = Carbon::now()->year;
-        $holidays = Holiday::where('date','like','%'. $twoYearsAgo)->select(['date', 'note'])->get();
+        $holidays = Holiday::where('date','like', $twoYearsAgo . '%')->select(['date', 'note'])->get();
 
         // Gunakan DataTables untuk memformat data
         return DataTables::of($holidays)
