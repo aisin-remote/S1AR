@@ -100,10 +100,10 @@ class CopyDataCommand extends Command
                     'crtdt' => $data2->crtdt,
                     'lupddt' => $data2->lupddt,
                 ]);
-            } else if ($record->lupddt != $data2->lupddt) {
+            } else {
                 DB::connection('mysql2')->table('kehadiran2')
                     ->where('empno', $data2->empno)
-                    ->where('crtdt', $data2->crtdt)
+                    ->where('schdt', $data2->schdt)
                     ->update([
                         'coid' => $data2->coid,
                         'empno' => $data2->empno,
