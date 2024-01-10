@@ -324,10 +324,12 @@ class EmployeeController extends Controller
             $jenis = 'Jenis tidak dikenali';
         }
 
-        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
-        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $cleanedStringDept = trim($userInfo[0]->descr);
+        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
-        $userInfoDept = $cleanedStringDeptFinal;
+        $userInfoDept = $cleanedStringDept;
+
+        // dd($userInfoOccupation);
 
         if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
             $data = DB::connection('mysql2')->select('

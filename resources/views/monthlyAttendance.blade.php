@@ -193,6 +193,12 @@
                         <div class="col-3 mb-2">
                             <span class="badge badge-warning">LBN</span> Libur Nasional
                         </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">HHL</span> Hadir Hari Libur
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge badge-warning">HHO</span> Hadir Hari OFF
+                        </div>
                     </div>
                     </ul>
                 </div>
