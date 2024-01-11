@@ -19,7 +19,7 @@ class CopyDataK2Command extends Command
      *
      * @var string
      */
-    protected $signature = 'data:copy1';
+    protected $signature = 'data:copy2';
 
     /**
      * The console command description.
