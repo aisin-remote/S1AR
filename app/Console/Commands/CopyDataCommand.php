@@ -35,8 +35,9 @@ class CopyDataCommand extends Command
      */
     public function handle()
     {
-        $waktuSekarang = Carbon::now()->format('Y-m-d');
-        // $waktuSekarang = '2023-11-22';
+        require_once 'DateFunctions.php';
+
+        $waktuSekarang = getCurrentDate();
 
         $employee = employee::all();
 

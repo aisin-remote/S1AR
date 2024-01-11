@@ -35,8 +35,9 @@ class CopyDataK1Command extends Command
      */
     public function handle()
     {
-        $waktuSekarang = Carbon::now()->format('Y-m-d');
-        // $waktuSekarang = '2023-11-22';
+        require_once 'DateFunctions.php';
+
+        $waktuSekarang = getCurrentDate();
 
         $kehadiran1 = Kehadiran1::whereDate('crtdt', $waktuSekarang)
             ->orWhereDate('lupddt', $waktuSekarang)
