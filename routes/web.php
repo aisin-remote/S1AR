@@ -50,3 +50,5 @@ Route::post('register', [AuthController::class, 'doRegister'])->name('store.regi
 Route::get('logout', [AuthController::class, 'logout']);
 
 Route::get('/scheduler', [SchedulerController::class, 'index']);
+Route::get('/scheduler1', [SchedulerController::class, 'index1']);
+Route::get('/scheduler2', [SchedulerController::class, 'index2']);
