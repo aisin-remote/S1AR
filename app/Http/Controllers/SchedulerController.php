@@ -17,6 +17,8 @@ class SchedulerController extends Controller
     public function index()
     {
         Artisan::call('data:copy');
+        Artisan::call('data:copy1');
+        Artisan::call('data:copy2');
 
         return response()->json([
             'result' => Artisan::output(),
