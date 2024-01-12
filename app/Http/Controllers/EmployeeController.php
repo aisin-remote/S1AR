@@ -335,92 +335,105 @@ class EmployeeController extends Controller
 
         if ($userInfoOccupation == 'GMR' or strpos($userInfoDept, 'HRD') === 0) {
             $data = DB::connection('mysql2')->select('
-        WITH CTE AS (
-            SELECT 
-                COALESCE(a.coid, b.coid) AS coid,
-                COALESCE(a.empno, b.empno) AS empno,
-                COALESCE(employee_kehadiran2.empnm, employee_kehadiran2.empnm) AS empnm,
-                COALESCE(a.schdt, b.schdt) AS schdt,
-                COALESCE(a.rsccd, b.rsccd) AS rsccd,
-                COALESCE(hirarki_kehadiran2.hirar, hirarki_kehadiranmu.hirar) AS hirar,
-                COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) AS mutdt,
-                COALESCE(hirarkidesc_kehadiran2.descr, hirarkidesc_kehadiranmu.descr) AS descr,
-                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) DESC) AS RowNum
-            FROM kehadiran2 a
-            LEFT JOIN employee employee_kehadiran2 ON a.empno = employee_kehadiran2.empno
-            LEFT JOIN hirarki hirarki_kehadiran2 ON a.empno = hirarki_kehadiran2.empno
-            LEFT JOIN hirarkidesc hirarkidesc_kehadiran2 ON hirarki_kehadiran2.hirar = hirarkidesc_kehadiran2.hirar
-            LEFT JOIN kehadiranmu b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-            LEFT JOIN employee employee_kehadiranmu ON b.empno = employee_kehadiranmu.empno
-            LEFT JOIN hirarki hirarki_kehadiranmu ON b.empno = hirarki_kehadiranmu.empno
-            LEFT JOIN hirarkidesc hirarkidesc_kehadiranmu ON hirarki_kehadiranmu.hirar = hirarkidesc_kehadiranmu.hirar
-            WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
-        )
-
-        SELECT * 
-        FROM CTE
-        WHERE RowNum = 1 
-        ORDER BY empno ASC, schdt ASC;
+            WITH MergedData AS (
+                SELECT
+                    k.coid,
+                    k.empno,
+                    k.schdt,
+                    k.rsccd,
+                    e.empnm,
+                    h.hirar,
+                    hd.descr AS descr,
+                    h.mutdt,
+                    ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
+                FROM (
+                    SELECT coid, empno, schdt, rsccd FROM kehadiran2
+                    UNION ALL
+                    SELECT coid, empno, schdt, rsccd FROM kehadiranmu
+                ) AS k
+                LEFT JOIN hirarki AS h ON k.empno = h.empno
+                LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
+                LEFT JOIN employee AS e ON k.empno = e.empno
+            )
+            SELECT
+                md.coid,
+                md.empno,
+                md.empnm,
+                md.schdt,
+                md.rsccd,
+                md.hirar,
+                md.descr,
+                md.mutdt
+            FROM MergedData md
+            WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ';        
         ');
         } else if ($userInfoOccupation == 'KDP') {
             $data = DB::connection('mysql2')->select('
-        WITH CTE AS (
-            SELECT 
-                COALESCE(a.coid, b.coid) AS coid,
-                COALESCE(a.empno, b.empno) AS empno,
-                COALESCE(employee_kehadiran2.empnm, employee_kehadiran2.empnm) AS empnm,
-                COALESCE(a.schdt, b.schdt) AS schdt,
-                COALESCE(a.rsccd, b.rsccd) AS rsccd,
-                COALESCE(hirarki_kehadiran2.hirar, hirarki_kehadiranmu.hirar) AS hirar,
-                COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) AS mutdt,
-                COALESCE(hirarkidesc_kehadiran2.descr, hirarkidesc_kehadiranmu.descr) AS descr,
-                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) DESC) AS RowNum
-            FROM kehadiran2 a
-            LEFT JOIN employee employee_kehadiran2 ON a.empno = employee_kehadiran2.empno
-            LEFT JOIN hirarki hirarki_kehadiran2 ON a.empno = hirarki_kehadiran2.empno
-            LEFT JOIN hirarkidesc hirarkidesc_kehadiran2 ON hirarki_kehadiran2.hirar = hirarkidesc_kehadiran2.hirar
-            LEFT JOIN kehadiranmu b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-            LEFT JOIN employee employee_kehadiranmu ON b.empno = employee_kehadiranmu.empno
-            LEFT JOIN hirarki hirarki_kehadiranmu ON b.empno = hirarki_kehadiranmu.empno
-            LEFT JOIN hirarkidesc hirarkidesc_kehadiranmu ON hirarki_kehadiranmu.hirar = hirarkidesc_kehadiranmu.hirar
-            WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
-        )
-
-        SELECT * 
-        FROM CTE
-        WHERE RowNum = 1
-        AND descr LIKE \'%' . $userInfoDept . '%\'
-        ORDER BY empno ASC, schdt ASC;
+            WITH MergedData AS (
+                SELECT
+                    k.coid,
+                    k.empno,
+                    k.schdt,
+                    k.rsccd,
+                    e.empnm,
+                    h.hirar,
+                    hd.descr AS descr,
+                    h.mutdt,
+                    ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
+                FROM (
+                    SELECT coid, empno, schdt, rsccd FROM kehadiran2
+                    UNION ALL
+                    SELECT coid, empno, schdt, rsccd FROM kehadiranmu
+                ) AS k
+                LEFT JOIN hirarki AS h ON k.empno = h.empno
+                LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
+                LEFT JOIN employee AS e ON k.empno = e.empno
+            )
+            SELECT
+                md.coid,
+                md.empno,
+                md.empnm,
+                md.schdt,
+                md.rsccd,
+                md.hirar,
+                md.descr,
+                md.mutdt
+            FROM MergedData md
+            WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ' AND md.descr LIKE \'%' . $userInfoDept . '%\'; 
         ');
         } else {
             $data = DB::connection('mysql2')->select('
-        WITH CTE AS (
-            SELECT 
-                COALESCE(a.coid, b.coid) AS coid,
-                COALESCE(a.empno, b.empno) AS empno,
-                COALESCE(employee_kehadiran2.empnm, employee_kehadiran2.empnm) AS empnm,
-                COALESCE(a.schdt, b.schdt) AS schdt,
-                COALESCE(a.rsccd, b.rsccd) AS rsccd,
-                COALESCE(hirarki_kehadiran2.hirar, hirarki_kehadiranmu.hirar) AS hirar,
-                COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) AS mutdt,
-                COALESCE(hirarkidesc_kehadiran2.descr, hirarkidesc_kehadiranmu.descr) AS descr,
-                ROW_NUMBER() OVER (PARTITION BY COALESCE(a.coid, b.coid), COALESCE(a.empno, b.empno), COALESCE(a.schdt, b.schdt) ORDER BY COALESCE(hirarki_kehadiran2.mutdt, hirarki_kehadiranmu.mutdt) DESC) AS RowNum
-            FROM kehadiran2 a
-            LEFT JOIN employee employee_kehadiran2 ON a.empno = employee_kehadiran2.empno
-            LEFT JOIN hirarki hirarki_kehadiran2 ON a.empno = hirarki_kehadiran2.empno
-            LEFT JOIN hirarkidesc hirarkidesc_kehadiran2 ON hirarki_kehadiran2.hirar = hirarkidesc_kehadiran2.hirar
-            LEFT JOIN kehadiranmu b ON a.coid = b.coid AND a.empno = b.empno AND a.schdt = b.schdt
-            LEFT JOIN employee employee_kehadiranmu ON b.empno = employee_kehadiranmu.empno
-            LEFT JOIN hirarki hirarki_kehadiranmu ON b.empno = hirarki_kehadiranmu.empno
-            LEFT JOIN hirarkidesc hirarkidesc_kehadiranmu ON hirarki_kehadiranmu.hirar = hirarkidesc_kehadiranmu.hirar
-            WHERE YEAR(COALESCE(a.schdt, b.schdt)) = ' . $tahunSekarang . ' AND MONTH(COALESCE(a.schdt, b.schdt)) = ' . $bulanSekarang . '
-        )
-
-        SELECT * 
-        FROM CTE
-        WHERE RowNum = 1
-        AND empno = ' . $npk . '
-        ORDER BY empno ASC, schdt ASC;
+            WITH MergedData AS (
+                SELECT
+                    k.coid,
+                    k.empno,
+                    k.schdt,
+                    k.rsccd,
+                    e.empnm,
+                    h.hirar,
+                    hd.descr AS descr,
+                    h.mutdt,
+                    ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
+                FROM (
+                    SELECT coid, empno, schdt, rsccd FROM kehadiran2
+                    UNION ALL
+                    SELECT coid, empno, schdt, rsccd FROM kehadiranmu
+                ) AS k
+                LEFT JOIN hirarki AS h ON k.empno = h.empno
+                LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
+                LEFT JOIN employee AS e ON k.empno = e.empno
+            )
+            SELECT
+                md.coid,
+                md.empno,
+                md.empnm,
+                md.schdt,
+                md.rsccd,
+                md.hirar,
+                md.descr,
+                md.mutdt
+            FROM MergedData md
+            WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ' AND md.empno = ' . $npk . ' ; 
         ');
         }
 
