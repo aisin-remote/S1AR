@@ -55,10 +55,10 @@ class EmployeeController extends Controller
             $jenis = 'Jenis tidak dikenali';
         }
 
-        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
-        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $cleanedStringDept = trim($userInfo[0]->descr);
+        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
-        $userInfoDept = $cleanedStringDeptFinal;
+        $userInfoDept = $cleanedStringDept;
 
         return view('index', compact('userInfoOccupation', 'userInfoDept'));
     }
@@ -106,10 +106,10 @@ class EmployeeController extends Controller
             $jenis = 'Jenis tidak dikenali';
         }
 
-        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
-        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $cleanedStringDept = trim($userInfo[0]->descr);
+        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
-        $userInfoDept = $cleanedStringDeptFinal;
+        $userInfoDept = $cleanedStringDept;
 
         if ($request->input('start_date') != null && $request->input('end_date') != null) {
             $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
@@ -122,7 +122,7 @@ class EmployeeController extends Controller
             $tanggalAkhir = $tanggalSekarang;
         }
 
-        if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
+        if ($userInfoOccupation == 'GMR' or strpos($userInfoDept, 'HRD') === 0) {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
 
             // Execute main query
@@ -329,9 +329,11 @@ class EmployeeController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
+        // dd(strpos($userInfoDept, 'HRD') === 0);
+
         // dd($userInfoOccupation);
 
-        if ($userInfoOccupation == 'GMR' or $userInfoDept == 'HRD') {
+        if ($userInfoOccupation == 'GMR' or strpos($userInfoDept, 'HRD') === 0) {
             $data = DB::connection('mysql2')->select('
         WITH CTE AS (
             SELECT 
