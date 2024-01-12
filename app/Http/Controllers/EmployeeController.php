@@ -164,7 +164,7 @@ class EmployeeController extends Controller
                     WHERE kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
                 ) AS numbered
                 WHERE RowNum = 1
-                ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
+                ORDER BY empno ASC, datin DESC, mutdt DESC;
             "));
         } else if ($userInfoOccupation == 'KDP') {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
@@ -663,7 +663,7 @@ class EmployeeController extends Controller
                 ) AS numbered
                 WHERE RowNum = 1
                 AND empno = $npk
-                ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
+                ORDER BY empno ASC, datin DESC, mutdt DESC;
             "));
 
         // Initialize an associative array to store the latest mutdt for each empno and datin

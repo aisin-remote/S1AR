@@ -149,8 +149,8 @@
                                         }
                                         @endphp
 
-                                        <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
-                                            @if(in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3']))
+                                        <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3', 'SF2', 'SF3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
+                                            @if(in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3', 'SF2', 'SF3']))
                                             ✔️
                                             @else
                                             {!! in_array(trim($rsccd), ['ALP']) ? '<span class="badge badge-danger">'. $rsccd .'</span>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
