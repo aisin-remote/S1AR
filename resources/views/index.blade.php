@@ -106,9 +106,9 @@
             ],
             initComplete: function() {
                 var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
-                var userInfoDept = '<?php echo $userInfoDept; ?>';
+                var userInfoDept = <?php echo (strpos($userInfoDept, 'HRD') === 0) ? 'true' : 'false'; ?>;
 
-                if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
+                if (userInfoOccupation == 'GMR' || userInfoDept == true) {
                     this.api().columns([3]).every(function() {
                         var column = this;
 
