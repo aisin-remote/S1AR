@@ -152,6 +152,8 @@
                                         <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3', 'SF2', 'SF3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
                                             @if(in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3', 'SF2', 'SF3']))
                                             ✔️
+                                            @elseif(in_array(trim($rsccd), ['HHO', 'HHL']))
+                                            {!! '<span class="badge badge-success">'. $rsccd .'</span>' !!}
                                             @else
                                             {!! in_array(trim($rsccd), ['ALP']) ? '<span class="badge badge-danger">'. $rsccd .'</span>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
                                             @endif
@@ -194,10 +196,10 @@
                             <span class="badge badge-warning">LBN</span> Libur Nasional
                         </div>
                         <div class="col-3 mb-2">
-                            <span class="badge badge-warning">HHL</span> Hadir Hari Libur
+                            <span class="badge badge-success">HHL</span> Hadir Hari Libur
                         </div>
                         <div class="col-3 mb-2">
-                            <span class="badge badge-warning">HHO</span> Hadir Hari OFF
+                            <span class="badge badge-success">HHO</span> Hadir Hari OFF
                         </div>
                     </div>
                     </ul>
