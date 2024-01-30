@@ -154,6 +154,12 @@
                                             ✔️
                                             @elseif(in_array(trim($rsccd), ['HHO', 'HHL']))
                                             {!! '<span class="badge badge-success">'. $rsccd .'</span>' !!}
+                                            @elseif(in_array(trim($rsccd), ['SKT']))
+                                            {!! '<span class="badge badge-info">'. $rsccd .'</span>' !!}
+                                            @elseif(in_array(trim($rsccd), ['HOF', 'LBN']))
+                                            {!! '<span class="badge" style="background-color:#97A6A0; color:white;"> '. $rsccd .'</span>' !!}
+                                            @elseif(in_array(trim($rsccd), ['CTH', 'CBS']))
+                                            {!! '<span class="badge" style="background-color:#C38AFF; color:white;"> '. $rsccd .'</span>' !!}
                                             @else
                                             {!! in_array(trim($rsccd), ['ALP']) ? '<span class="badge badge-danger">'. $rsccd .'</span>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
                                             @endif
@@ -178,7 +184,7 @@
                             <span class="badge badge-danger">ALP</span> Mangkir
                         </div>
                         <div class="col-3 mb-2">
-                            <span class="badge badge-warning">SKT</span> Sakit
+                            <span class="badge badge-info">SKT</span> Sakit
                         </div>
                         <div class="col-3 mb-2">
                             <span class="badge badge-warning">PTA</span> Pulang Tidak Absen
@@ -190,10 +196,16 @@
                             <span class="badge badge-warning">PCT</span> Pulang Cepat
                         </div>
                         <div class="col-3 mb-2">
-                            <span class="badge badge-warning">HOF</span> Hari OFF
+                            <span class="badge" style="background-color:#C38AFF; color:white;">CBS</span> Cuti Besar
                         </div>
                         <div class="col-3 mb-2">
-                            <span class="badge badge-warning">LBN</span> Libur Nasional
+                            <span class="badge" style="background-color:#C38AFF; color:white;">CTH</span> Cuti Tahunan
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge" style="background-color:#97A6A0; color:white;">HOF</span> Hari OFF
+                        </div>
+                        <div class="col-3 mb-2">
+                            <span class="badge" style="background-color:#97A6A0; color:white;">LBN</span> Libur Nasional
                         </div>
                         <div class="col-3 mb-2">
                             <span class="badge badge-success">HHL</span> Hadir Hari Libur
