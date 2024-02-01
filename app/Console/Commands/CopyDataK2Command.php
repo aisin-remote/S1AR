@@ -52,8 +52,13 @@ class CopyDataK2Command extends Command
                 ->where('schdt', $data2->schdt)
                 ->first();
 
+            $record2 = DB::connection('mysql2')->table('kehadiranmu')
+                ->where('empno', $data2->empno)
+                ->where('schdt', $data2->schdt)
+                ->first();
+
             // Jika data belum ada, lakukan insert
-            if (!$record) {
+            if (!$record && !$record2) {
                 DB::connection('mysql2')->table('kehadiran2')->insert([
                     'coid' => $data2->coid,
                     'empno' => $data2->empno,
@@ -62,7 +67,7 @@ class CopyDataK2Command extends Command
                     'crtdt' => $data2->crtdt,
                     'lupddt' => $data2->lupddt,
                 ]);
-            } else {
+            } elseif ($record) {
                 DB::connection('mysql2')->table('kehadiran2')
                     ->where('empno', $data2->empno)
                     ->where('schdt', $data2->schdt)
