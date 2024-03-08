@@ -53,8 +53,14 @@
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDeptFinal;
         @endphp
-        @if ($userInfoOccupation == 'GMR' or $userInfoOccupation == 'KDP' or $userInfoDept == 'HRD')
+        @if ($userInfoOccupation == 'GMR' or $userInfoOccupation == 'KDP' or $userInfoDept == 'HRD' or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR' )
         <ul class="sidebar-menu">
+            <li>
+                <a href="/dashboard" class="nav-link{{ request()->is('dashboard*') ? 'text-primary' : '' }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
             <li class="dropdown">
                 <a href="#" class="nav-link has-dropdown {{ request()->is('dailyattendance*')||request()->is('weeklyattendance*')||request()->is('monthlyattendance*') ? 'text-primary' : '' }}"><i class="fas fa-th"></i>
                     <span>Attendance</span></a>
@@ -72,15 +78,66 @@
                 @if ($userInfoDept == 'HRD')
                 <a class="sidebar-menu {{ request()->is('holiday*') ? 'text-primary' : '' }}" href="/holiday"><i class="fas fa-calendar"></i><span>Master Holiday</span></a>
                 @endif
-                <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a>
+                {{-- <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a> --}}
+
+            </li>
+
+            <li>
+                <a href="#" class="nav-link has-dropdown {{ request()->is('cuziacuti*')||request()->is('cuzia*') ? 'text-primary' : '' }}"><i class="fas fa-umbrella-beach"></i>
+                    <span>Cuti </span></a>
+                    <ul class="dropdown-menu">
+                    <li>
+                        <a class="nav-link {{ request()->is('cuziacuti*') ? 'text-primary' : '' }}" href="/cuziacuti">Pengajuan Cuti</a>
+                    </li>
+                    <li>
+                        @if ($userInfoOccupation == 'KDP' or $userInfoOccupation == 'GMR' or  $userInfoOccupation == 'SPV' or $userInfoDept == 'HRD'  or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR')
+                        <a class="nav-link {{ request()->is('cuzia*') ? 'text-primary' : '' }}" href="/cuzia">Approval Cuti</a>
+                        @endif
+                    </li>
+                    </ul>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link has-dropdown {{ request()->is('cuziaizin*')||request()->is('izin*') ? 'text-primary' : '' }}"><i class="fas fa-check-circle"></i>
+                    <span>Izin </span></a>
+                    <ul class="dropdown-menu">
+                    <li>
+                        <a class="nav-link {{ request()->is('cuziaizin*') ? 'text-primary' : '' }}" href="/cuziaizin">Pengajuan Izin</a>
+                    </li>
+                    <li>
+                        @if ($userInfoOccupation == 'KDP' || $userInfoOccupation == 'GMR' ||$userInfoOccupation == 'SPV' || $userInfoDept == 'HRD'  or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR' )
+                        <a class="nav-link {{ request()->is('cuzia*') ? 'text-primary' : '' }}" href="/izin">Approval Izin</a>
+                        @endif
+                    </li>
+                    </ul>
+                </a>
             </li>
         </ul>
         @else
         <ul class="sidebar-menu">
             <li>
+                <a href="#" class="nav-link{{ request()->is('dashboard*') ? 'text-primary' : '' }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="dropdown">
                 <a class="nav-link {{ request()->is('historyattendance*') || request()->is('/') ? 'text-primary' : '' }}" href="/historyattendance"><i class="fas fa-th"></i><span>History attendance</span></a>
                 <a class="nav-link {{ request()->is('monthlyattendance*') ? 'text-primary' : '' }}" href="/monthlyattendance"><i class="fas fa-th"></i><span>Monthly attendance</span></a>
-                <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a>
+                {{-- <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a> --}}
+            </li>
+            <li>
+                <a href="#" class="nav-link has-dropdown {{ request()->is('cuziacuti*')||request()->is('cuziaizin*') ? 'text-primary' : '' }}"><i class="fas fa-check-circle"></i>
+                    <span>Pengajuan </span></a>
+                    <ul class="dropdown-menu">
+                    <li>
+                        <a class="nav-link {{ request()->is('cuziacuti*') ? 'text-primary' : '' }}" href="/cuziapribadi">Cuti</a>
+                    </li>
+                    <li>
+                        <a class="nav-link {{ request()->is('cuziaizin*') ? 'text-primary' : '' }}" href="/cuziaizin">Izin</a>
+                    </li>
+                    </ul>
+                </a>
             </li>
         </ul>
         @endif

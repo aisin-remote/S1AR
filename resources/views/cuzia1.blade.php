@@ -1,9 +1,9 @@
-@extends('layouts.app', ['title' => 'Monthly Attendance Department'])
+@extends('layouts.app', ['title' => 'CUZIA KARYAWAN'])
 @section('content')
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Data Kehadiran Karyawan Bulanan</h1>
+            <h1>Data CUZIA Karyawan</h1>
         </div>
 
         <div class="card">
@@ -29,29 +29,11 @@
                                     <th class="text-center align-middle">Nama</th>
                                     <th class="text-center align-middle">Department</th>
                                     <th class="text-center align-middle">Occupation</th>
-                                    <?php
-                                    // $tahun = date('Y');
-                                    $jumlah_hari = cal_days_in_month(CAL_GREGORIAN, $bulanSekarang, $tahunSekarang);
-                                    ?>
-                                    @for ($day = 1; $day <= $jumlah_hari; $day++) <th>
-                                        <?php
-                                        // Mengatur kelas CSS berdasarkan hari dalam seminggu (0 untuk Minggu, 6 untuk Sabtu)
-                                        $date = sprintf("%04d-%02d-%02d", $tahunSekarang, $bulanSekarang, $day);
-                                        $dayOfWeek = (new DateTime("$tahunSekarang-$bulanSekarang-$day"))->format('w');
-                                        $isWeekend = $dayOfWeek == 0 || $dayOfWeek == 6;
-                                        $hasHolidayData = $holidays->where('date', $date)->isNotEmpty();
-                                        $thClass = $isWeekend || $hasHolidayData ? 'text-danger text-center align-middle' : 'text-center align-middle';
-                                        ?>
-                                        <div class="<?= $thClass ?>">
-                                            {{ $day }}
-                                        </div>
-                                        </th>
-                                        @endfor
-                                        <!-- Tambahkan kolom note setelah kolom terakhir (30 atau 31) -->
-                                        <th class="text-center align-middle">ALP</th>
-                                        <th class="text-center align-middle">SKT</th>
-                                        <th class="text-center align-middle">Cuti</th>
-                                        <th class="text-center align-middle">HDR</th>
+                                    <th class="text-center align-middle">Jenis Cuzia</th>
+                                    <th class="text-center align-middle">Tanggal Cuzia</th>
+                                    <th class="text-center align-middle">Status</th>
+                                    <th class="text-center align-middle">Keterangan</th>
+                                    <th class="text-center align-middle">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -83,128 +65,117 @@
 
                                     echo "<td>{$jenis}</td>";
                                     @endphp
-
-                                    @php
-                                    $alpCount = 0; // Initialize ALP counter
-                                    $sktCount = 0; // Initialize SKT counter
-                                    $hdrCount = 0; // Initialize HDR counter
-                                    $cutiCount = 0; // Initialize Cuti counter
-                                    @endphp
-
-                                    @for ($hari = 1; $hari <= $jumlah_hari; $hari++) @php $rsccd='' ; $today=date('j'); $month=date('m'); if ($bulanSekarang==$month) { if ($hari <=$today) { foreach ($npkData as $data) { if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                        $rsccd = $data->rsccd;
-
-                                        // Increment ALP count if rsccd is ALP
-                                        if (trim($rsccd) == 'ALP') {
-                                        $alpCount++;
-                                        }
-
-                                        // Increment SKT count if rsccd is SKT
-                                        if (trim($rsccd) == 'SKT') {
-                                        $sktCount++;
-                                        }
-
-                                        // Increment HDR count if rsccd is HDR
-                                        if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3', 'HHO', 'BKT', 'DTA', 'HHL', 'OT>03', 'OT>11', 'PCT', 'PTA', 'SF2', 'SF3', 'SLP', 'TL1', 'TL2', 'TL3', 'OVDAY', 'OVHOL', 'OVSPD', 'DLU', 'TRNT', 'TRT'])) {
-                                        $hdrCount++;
-                                        }
-
-                                        // Increment Cuti count if rsccd is Cuti
-                                        if (in_array(trim($rsccd), ['CBS', 'CHD', 'CK', 'CM', 'CML', 'CTH'])) {
-                                        $cutiCount++;
-                                        }
-
-                                        break;
-                                        }
-                                        }
-                                        }
-                                        } else {
-                                        foreach ($npkData as $data) {
-                                        if (!is_null($data->schdt) && date('j', strtotime($data->schdt)) == $hari) {
-                                        $rsccd = $data->rsccd;
-
-                                        // Increment ALP count if rsccd is ALP
-                                        if (trim($rsccd) == 'ALP') {
-                                        $alpCount++;
-                                        }
-
-                                        // Increment SKT count if rsccd is SKT
-                                        if (trim($rsccd) == 'SKT') {
-                                        $sktCount++;
-                                        }
-
-                                        // Increment HDR count if rsccd is HDR
-                                        if (in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3', 'HHO', 'BKT', 'DTA', 'HHL', 'OT>03', 'OT>11', 'PCT', 'PTA', 'SF2', 'SF3', 'SLP', 'TL1', 'TL2', 'TL3', 'OVDAY', 'OVHOL', 'OVSPD', 'DLU', 'TRNT', 'TRT'])) {
-                                        $hdrCount++;
-                                        }
-
-                                        // Increment Cuti count if rsccd is Cuti
-                                        if (in_array(trim($rsccd), ['CBS', 'CHD', 'CK', 'CM', 'CML', 'CTH'])) {
-                                        $cutiCount++;
-                                        }
-
-                                        break;
-                                        }
-                                        }
-                                        }
-                                        @endphp
-
-                                        <td {!! in_array(trim($rsccd), ['HDR', 'TL1' , 'TL2' , 'TL3', 'SF2', 'SF3' ]) ? 'class="text-success text-center"' : 'text-center' !!}>
-                                            @if(in_array(trim($rsccd), ['HDR', 'TL1', 'TL2', 'TL3', 'SF2', 'SF3']))
-                                            ✔️
-                                            @else
-                                            {!! in_array(trim($rsccd), ['ALP']) ? '<span class="badge badge-danger">'. $rsccd .'</span>' : '<span class="badge badge-warning">'. $rsccd .'</span>' !!}
-                                            @endif
-
-                                        </td>
-                                        @endfor
-
-                                        <!-- Display ALP count in the "Note" column -->
-                                        <td>{{ $alpCount }}</td>
-                                        <td>{{ $sktCount }}</td>
-                                        <td>{{ $cutiCount }}</td>
-                                        <td>{{ $hdrCount }}</td>
+                                    <td>{{ $npkData[0]->rsccd }}</td>
+                                    <td>{{ $npkData[0]->schdt }}</td>
+                                    <td>{{ $npkData[0]->stts }}</td>
+                                    <td>{{ $npkData[0]->note }}</td>
+                                    <td class="px-4 py-2 ">
+                                        <div class="d-flex">
+                                        <button type="button" class="btn btn-success btn-sm form-control form-control-sm" data-toggle="modal" >Detail</button>
+                                        <button type="button" class="btn btn-primary btn-sm form-control form-control-sm">Setujui</button>
+                                        <button type="button" class="btn btn-danger btn-sm form-control form-control-sm" >Tolak</button>
+                                        </div>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                    <br>
-                    <h6 class="mb-2">Legend:</h6>
-                    <div class="row">
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-danger">ALP</span> Mangkir
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">SKT</span> Sakit
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">PTA</span> Pulang Tidak Absen
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">DTA</span> Datang Tidak Absen
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">PCT</span> Pulang Cepat
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">HOF</span> Hari OFF
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">LBN</span> Libur Nasional
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">HHL</span> Hadir Hari Libur
-                        </div>
-                        <div class="col-3 mb-2">
-                            <span class="badge badge-warning">HHO</span> Hadir Hari OFF
-                        </div>
-                    </div>
+
                     </ul>
                 </div>
             </div>
         </div>
     </section>
+</div>
+
+<!-- Modal -->
+<!-- Add this modal code at the end of your HTML file, before closing the body tag -->
+<div class="modal fade" id="cuziapribadimodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 80%;"  role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModal">Pengajuan Cuti</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Form Section -->
+                        <div class="col-md-6">
+                            <form id="leaveRequestForm" enctype="multipart/form-data">
+                                <div class="form-group mb-2">
+                                    <label for="nama">Nama:</label>
+                                    <input type="text" class="form-control" id="nama" name="nama">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="npk">NPK:</label>
+                                    <input type="text" class="form-control" id="npk" name="npk">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="bagian">Bagian:</label>
+                                    <input type="text" class="form-control" id="bagian" name="bagian">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6 mb-2">
+                                        <label for="tgl_mulai">Tanggal Mulai:</label>
+                                        <input type="date" class="form-control" id="tgl_mulai" name="tgl_mulai">
+                                    </div>
+                                    <div class="form-group col-md-6 mb-2">
+                                        <label for="tgl_selesai">Tanggal Selesai:</label>
+                                        <input type="date" class="form-control" id="tgl_selesai" name="tgl_selesai">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="jenis_cuzia">Jenis Cuzia:</label>
+                                    <select class="form-control" id="jenis_cuzia" name="jenis_cuzia">
+                                        <option value="" disabled selected>Pilih Jenis Cuzia</option>
+                                        <option value="1">Cuti Tahunan</option>
+                                        <option value="2">Cuti Istimewa</option>
+
+                                        <!-- Add more options as needed -->
+                                    </select>
+                                </div>
+                                <div class="form-group mb-2" id="lampiranContainer" style="display: none;">
+                                    <label for="lampiran">Unggah Dokumen/Lampiran:</label>
+                                    <input type="file" class="form-control-file" id="lampiran" name="lampiran">
+                                </div>
+                                <button type="submit" class="btn btn-success btn-sm">Submit</button>
+                            </form>
+
+                        </div>
+                        <!-- Table Section -->
+                        <div class="col-md-6 table responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Hak Cuti</th>
+                                        <th>Telah Diambil</th>
+                                        <th>Saldo Cuti</th>
+                                        <th>Paraf Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>CT</td>
+                                        <!-- Add data for "Hak Cuti", "Telah Diambil", "Saldo Cuti", "Paraf Tanggal" here -->
+                                    </tr>
+                                    <tr>
+                                        <td>CI</td>
+                                        <!-- Add data for "Hak Cuti", "Telah Diambil", "Saldo Cuti", "Paraf Tanggal" here -->
+                                    </tr>
+                                    <!-- Add more rows as needed -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
@@ -236,6 +207,20 @@
 
     //     XLSX.writeFile(wb, fileName + '.xlsx');
     // }
+
+</script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#jenis_cuzia').change(function() {
+            var selectedValue = $(this).val();
+            if (selectedValue == '1' || selectedValue == '2') {
+                $('#lampiranContainer').show();
+            } else {
+                $('#lampiranContainer').hide();
+            }
+        });
+    });
 </script>
 <script>
     $(document).ready(function() {
@@ -245,7 +230,7 @@
             paging: true,
             pagingType: "simple_numbers",
             scrollY: "400px",
-            scrollX: true,
+            scrollX: false,
             buttons: [{
                 extend: 'excelHtml5',
                 autoFilter: true,
@@ -324,7 +309,7 @@
     // Menambahkan event listener untuk tombol filter
     document.getElementById('filterButton').addEventListener('click', function() {
         var selectedMonth = document.getElementById('monthFilter').value;
-        window.location.href = '{{ route("monthlyattendance") }}/' + selectedMonth;
+        window.location.href = '{{ route("cuziafilter") }}/' + selectedMonth;
     });
 
     // Mendapatkan bulan saat ini (0-11, dimulai dari Januari) dan tahun saat ini

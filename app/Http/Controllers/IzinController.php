@@ -12,20 +12,25 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Holiday;
 
 
-class EmployeeController extends Controller
+class IzinController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         $npk = auth()->user()->npk;
 
         $userInfo = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
-            FROM kehadiran2
-            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            SELECT kehadiranmu.empno, kehadiranmu.rsccd, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+            FROM kehadiranmu
+            LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiran2.empno = $npk
-            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr
+            WHERE kehadiranmu.empno = $npk
+            GROUP BY kehadiranmu.empno, kehadiranmu.rsccd, hirarki.hirar, hirarkidesc.descr
             ORDER BY mutdt DESC LIMIT 1;
             "
         ));
@@ -59,8 +64,11 @@ class EmployeeController extends Controller
         // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
+        $data = collect($userInfo);
 
-        return view('index', compact('userInfoOccupation', 'userInfoDept'));
+        $groupedData = $data->groupBy('rsccd');
+
+        return view('izin', compact('groupedData','userInfoOccupation', 'userInfoDept'));
     }
 
     public function getData(Request $request)
@@ -71,12 +79,12 @@ class EmployeeController extends Controller
 
         $userInfo = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
-            FROM kehadiran2
-            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            SELECT kehadiranmu.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+            FROM kehadiranmu
+            LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiran2.empno = $npk
-            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr
+            WHERE kehadiranmu.empno = $npk
+            GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
             ORDER BY mutdt DESC LIMIT 1;
             "
         ));
@@ -130,41 +138,44 @@ class EmployeeController extends Controller
                 ->select(DB::raw("
                 SELECT
                     empno,
-                    datin,
-                    timin,
-                    datot,
-                    timot,
+                    schdt,
+                    rsccd,
+                    crtdt,
+                    stts,
+                    note,
                     empnm,
                     hirar,
                     mutdt,
                     descr
                 FROM (
                     SELECT
-                        kehadiran1.empno,
-                        kehadiran1.datin,
-                        kehadiran1.timin,
-                        kehadiran1.datot,
-                        kehadiran1.timot,
+                        kehadiranmu.empno,
+                        kehadiranmu.schdt,
+                        kehadiranmu.rsccd,
+                        kehadiranmu.crtdt,
+                        kehadiranmu.stts,
+                        kehadiranmu.note,
                         employee.empnm,
                         hirarki.hirar,
                         hirarki.mutdt,
                         hirarkidesc.descr,
                         @row_number := CASE
-                            WHEN kehadiran1.empno != @empno_prev OR kehadiran1.datin != @datin_prev OR kehadiran1.timin != @timin_prev
+                            WHEN kehadiranmu.empno != @empno_prev OR kehadiranmu.schdt != @schdt_prev OR kehadiranmu.crtdt != @crtdt_prev
                                 THEN 1
                                 ELSE @row_number + 1
                             END AS RowNum,
-                        @empno_prev := kehadiran1.empno,
-                        @datin_prev := kehadiran1.datin,
-                        @timin_prev := kehadiran1.timin
-                    FROM kehadiran1
-                    INNER JOIN employee ON kehadiran1.empno = employee.empno
-                    LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
+                        @empno_prev := kehadiranmu.empno,
+                        @schdt_prev := kehadiranmu.schdt,
+                        @crtdt_prev := kehadiranmu.crtdt
+                    FROM kehadiranmu
+                    INNER JOIN employee ON kehadiranmu.empno = employee.empno
+                    LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
                     LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                    WHERE kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+                    WHERE kehadiranmu.schdt BETWEEN $tanggalMulai AND $tanggalAkhir
+                    AND kehadiranmu.rsccd IN ('SKT', 'IMU','DLU','IMP')
                 ) AS numbered
                 WHERE RowNum = 1
-                ORDER BY empno ASC, datin DESC, mutdt DESC;
+                ORDER BY empno ASC, schdt DESC, mutdt DESC;
             "));
         } else if ($userInfoOccupation == 'KDP') {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
@@ -174,51 +185,54 @@ class EmployeeController extends Controller
                 ->select(DB::raw("
                 SELECT
                     empno,
-                    datin,
-                    timin,
-                    datot,
-                    timot,
+                    schdt,
+                    rsccd,
+                    crtdt,
+                    stts,
+                    note,
                     empnm,
                     hirar,
                     mutdt,
                     descr
                 FROM (
                     SELECT
-                        kehadiran1.empno,
-                        kehadiran1.datin,
-                        kehadiran1.timin,
-                        kehadiran1.datot,
-                        kehadiran1.timot,
+                        kehadiranmu.empno,
+                        kehadiranmu.schdt,
+                        kehadiranmu.rsccd,
+                        kehadiranmu.crtdt,
+                        kehadiranmu.stts,
+                        kehadiranmu.note,
                         employee.empnm,
                         hirarki.hirar,
                         hirarki.mutdt,
                         hirarkidesc.descr,
                         @row_number := CASE
-                            WHEN kehadiran1.empno != @empno_prev OR kehadiran1.datin != @datin_prev OR kehadiran1.timin != @timin_prev
+                            WHEN kehadiranmu.empno != @empno_prev OR kehadiranmu.schdt != @schdt_prev OR kehadiranmu.crtdt != @crtdt_prev
                                 THEN 1
                                 ELSE @row_number + 1
                             END AS RowNum,
-                        @empno_prev := kehadiran1.empno,
-                        @datin_prev := kehadiran1.datin,
-                        @timin_prev := kehadiran1.timin
-                    FROM kehadiran1
-                    INNER JOIN employee ON kehadiran1.empno = employee.empno
-                    LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
+                        @empno_prev := kehadiranmu.empno,
+                        @schdt_prev := kehadiranmu.schdt,
+                        @crtdt_prev := kehadiranmu.crtdt
+                    FROM kehadiranmu
+                    INNER JOIN employee ON kehadiranmu.empno = employee.empno
+                    LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
                     LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                    WHERE kehadiran1.datin BETWEEN $tanggalMulai AND $tanggalAkhir
+                    WHERE kehadiranmu.schdt BETWEEN $tanggalMulai AND $tanggalAkhir
+                    AND kehadiranmu.rsccd IN ('CTH', 'CBS'')
                 ) AS numbered
                 WHERE RowNum = 1
                 AND descr LIKE '%$userInfoDept%'
-                ORDER BY empno ASC, datin ASC, timin ASC, mutdt DESC;
+                ORDER BY empno ASC, schdt ASC, crtdt ASC, mutdt DESC;
             "));
         }
 
-        // Initialize an associative array to store the latest mutdt for each empno and datin
+        // Initialize an associative array to store the latest mutdt for each empno and schdt
         $latestMutdt = [];
 
-        // Filter the data based on the latest mutdt for each empno and datin
+        // Filter the data based on the latest mutdt for each empno and schdt
         $filteredData = array_filter($data, function ($item) use (&$latestMutdt) {
-            $key = $item->empno . $item->datin;
+            $key = $item->empno . $item->schdt;
 
             // Check if the key already exists in $latestMutdt
             if (!isset($latestMutdt[$key]) || $item->mutdt > $latestMutdt[$key]->mutdt) {
@@ -237,22 +251,16 @@ class EmployeeController extends Controller
 
         // Mengubah format tanggal dan jam dalam hasil data
         foreach ($data as $row) {
-            if ($row->datin != "        ") {
-                $row->datin = substr($row->datin, 0, 4) . '-' . substr($row->datin, 4, 2) . '-' . substr($row->datin, 6, 2);
-                $row->timin = substr($row->timin, 0, 2) . ':' . substr($row->timin, 2, 2);
+            if ($row->schdt != "        ") {
+                $row->schdt = substr($row->schdt, 0, 4) . '-' . substr($row->schdt, 4, 2) . '-' . substr($row->schdt, 6, 2);
+                $row->crtdt = substr($row->crtdt, 0, 10);
             } else {
-                $row->datin = "Tidak Ada Data";
-                $row->timin = "Tidak Ada Data";
+                $row->schdt = "Tidak Ada Data";
+                $row->crtdt = "Tidak Ada Data";
             }
 
-            if ($row->datot != "        ") {
-                $row->datot = substr($row->datot, 0, 4) . '-' . substr($row->datot, 4, 2) . '-' . substr($row->datot, 6, 2);
-                $row->timot = substr($row->timot, 0, 2) . ':' . substr($row->timot, 2, 2);
-            } else {
-                $row->datot = "Tidak Ada Data";
-                $row->timot = "Tidak Ada Data";
-            }
         }
+
 
         // Iterate through each row in the collection
         foreach ($data as $row) {
@@ -274,10 +282,11 @@ class EmployeeController extends Controller
             }
         }
 
+
         return DataTables::of($data)->make(true);
     }
 
-    public function getDataMonthly($year = null, $month = null)
+    public function getDataCuzia($year = null, $month = null)
     {
         //set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
         ini_set('max_execution_time', 0);
@@ -289,12 +298,12 @@ class EmployeeController extends Controller
 
         $userInfo = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
-            FROM kehadiran2
-            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            SELECT kehadiranmu.empno, kehadiranmu.rsccd, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+            FROM kehadiranmu
+            LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiran2.empno = $npk
-            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr
+            WHERE kehadiranmu.empno = $npk
+            GROUP BY kehadiranmu.empno, kehadiranmu.rsccd, hirarki.hirar, hirarkidesc.descr
             ORDER BY mutdt DESC LIMIT 1;
             "
         ));
@@ -333,7 +342,7 @@ class EmployeeController extends Controller
 
         // dd($userInfoOccupation);
 
-        if ($userInfoOccupation == 'GMR' or strpos($userInfoDept, 'HRD') === 0) {
+        if ($userInfoOccupation == 'GMR' or strpos($userInfoDept, 'HRD') or strpos($userInfoDept, 'KDP') === 0)  {
             $data = DB::connection('mysql2')->select('
             WITH MergedData AS (
                 SELECT
@@ -341,15 +350,16 @@ class EmployeeController extends Controller
                     k.empno,
                     k.schdt,
                     k.rsccd,
+                    k.stts,
+                    k.note,
                     e.empnm,
                     h.hirar,
                     hd.descr AS descr,
                     h.mutdt,
                     ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
                 FROM (
-                    SELECT coid, empno, schdt, rsccd FROM kehadiran2
-                    UNION ALL
-                    SELECT coid, empno, schdt, rsccd FROM kehadiranmu
+
+                    SELECT coid, empno, schdt, rsccd,stts,note FROM kehadiranmu
                 ) AS k
                 LEFT JOIN hirarki AS h ON k.empno = h.empno
                 LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
@@ -361,46 +371,51 @@ class EmployeeController extends Controller
                 md.empnm,
                 md.schdt,
                 md.rsccd,
+                md.stts,
+                md.note,
                 md.hirar,
                 md.descr,
                 md.mutdt
             FROM MergedData md
             WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ';
         ');
-        } else if ($userInfoOccupation == 'KDP') {
-            $data = DB::connection('mysql2')->select('
-            WITH MergedData AS (
-                SELECT
-                    k.coid,
-                    k.empno,
-                    k.schdt,
-                    k.rsccd,
-                    e.empnm,
-                    h.hirar,
-                    hd.descr AS descr,
-                    h.mutdt,
-                    ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
-                FROM (
-                    SELECT coid, empno, schdt, rsccd FROM kehadiran2
-                    UNION ALL
-                    SELECT coid, empno, schdt, rsccd FROM kehadiranmu
-                ) AS k
-                LEFT JOIN hirarki AS h ON k.empno = h.empno
-                LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
-                LEFT JOIN employee AS e ON k.empno = e.empno
-            )
-            SELECT
-                md.coid,
-                md.empno,
-                md.empnm,
-                md.schdt,
-                md.rsccd,
-                md.hirar,
-                md.descr,
-                md.mutdt
-            FROM MergedData md
-            WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ' AND md.descr LIKE \'%' . $userInfoDept . '%\';
-        ');
+        // } else if ($userInfoOccupation == 'KDP') {
+        //     $data = DB::connection('mysql2')->select('
+        //     WITH MergedData AS (
+        //         SELECT
+        //             k.coid,
+        //             k.empno,
+        //             k.schdt,
+        //             k.rsccd,
+        //             k.stts,
+        //             k.note,
+        //             e.empnm,
+        //             h.hirar,
+        //             hd.descr AS descr,
+        //             h.mutdt,
+        //             ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
+        //         FROM (
+        //             SELECT coid, empno, schdt, rsccd, stts, note FROM kehadiranmu
+        //         ) AS k
+        //         LEFT JOIN hirarki AS h ON k.empno = h.empno
+        //         LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
+        //         LEFT JOIN employee AS e ON k.empno = e.empno
+        //     )
+        //     SELECT
+        //         md.coid,
+        //         md.empno,
+        //         md.empnm,
+        //         md.schdt,
+        //         md.rsccd,
+        //         md.stts,
+        //         md.note,
+        //         md.hirar,
+        //         md.descr,
+        //         md.mutdt
+        //     FROM MergedData md
+        //     WHERE md.RowNum = 3 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ' AND md.descr LIKE \'%' . $userInfoDept . '%\';
+
+        // ');
         } else {
             $data = DB::connection('mysql2')->select('
             WITH MergedData AS (
@@ -409,15 +424,15 @@ class EmployeeController extends Controller
                     k.empno,
                     k.schdt,
                     k.rsccd,
+                    k.stts,
+                    k.note,
                     e.empnm,
                     h.hirar,
                     hd.descr AS descr,
                     h.mutdt,
                     ROW_NUMBER() OVER (PARTITION BY k.empno, k.schdt ORDER BY h.mutdt DESC) AS RowNum
                 FROM (
-                    SELECT coid, empno, schdt, rsccd FROM kehadiran2
-                    UNION ALL
-                    SELECT coid, empno, schdt, rsccd FROM kehadiranmu
+                    SELECT coid, empno, schdt, rsccd, stts, note FROM kehadiranmu
                 ) AS k
                 LEFT JOIN hirarki AS h ON k.empno = h.empno
                 LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
@@ -429,11 +444,13 @@ class EmployeeController extends Controller
                 md.empnm,
                 md.schdt,
                 md.rsccd,
+                md.stts,
+                md.note,
                 md.hirar,
                 md.descr,
                 md.mutdt
             FROM MergedData md
-            WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ' AND md.empno = ' . $npk . ' ;
+            WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ';
         ');
         }
 
@@ -599,134 +616,71 @@ class EmployeeController extends Controller
             ->whereMonth('date', $bulanSekarang)
             ->get();
 
-        return view('monthlyAttendance', compact('groupedData', 'holidays', 'bulanSekarang', 'tahunSekarang', 'userInfoOccupation', 'userInfoDept'));
+        return view('cuzia1', compact('groupedData', 'holidays', 'bulanSekarang', 'tahunSekarang', 'userInfoOccupation', 'userInfoDept'));
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
     }
 
-    public function indexPerson()
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
     {
-        return view('HistoryPerson');
+        //
     }
 
-    public function getDataPerson(Request $request)
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
     {
-        // $tahunSekarang = Carbon::now()->year;
-        $npk = auth()->user()->npk; // Ambil NPK dari user yang sedang login
+        //
+    }
 
-        if ($request->input('start_date') != null) {
-            $startDate = Carbon::parse($request->input('start_date'));
-            $tahunSekarang = $startDate->year;
-            $bulanSekarang = $startDate->month;
-        } else {
-            $tahunSekarang = Carbon::now()->year;
-            $bulanSekarang = Carbon::now()->month;
-        }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
 
-        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
 
-        $data = DB::connection('mysql2')
-            ->select(DB::raw("
-                SELECT
-                    empno,
-                    datin,
-                    timin,
-                    datot,
-                    timot,
-                    empnm,
-                    hirar,
-                    mutdt,
-                    descr
-                FROM (
-                    SELECT
-                        kehadiran1.empno,
-                        kehadiran1.datin,
-                        kehadiran1.timin,
-                        kehadiran1.datot,
-                        kehadiran1.timot,
-                        employee.empnm,
-                        hirarki.hirar,
-                        hirarki.mutdt,
-                        hirarkidesc.descr,
-                        @row_number := CASE
-                            WHEN kehadiran1.empno != @empno_prev OR kehadiran1.datin != @datin_prev OR kehadiran1.timin != @timin_prev
-                                THEN 1
-                                ELSE @row_number + 1
-                            END AS RowNum,
-                        @empno_prev := kehadiran1.empno,
-                        @datin_prev := kehadiran1.datin,
-                        @timin_prev := kehadiran1.timin
-                    FROM kehadiran1
-                    INNER JOIN employee ON kehadiran1.empno = employee.empno
-                    LEFT JOIN hirarki ON kehadiran1.empno = hirarki.empno
-                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                    WHERE YEAR(kehadiran1.datin) = $tahunSekarang
-                        AND MONTH(kehadiran1.datin) = $bulanSekarang
-                ) AS numbered
-                WHERE RowNum = 1
-                AND empno = $npk
-                ORDER BY empno ASC, datin DESC, mutdt DESC;
-            "));
-
-        // Initialize an associative array to store the latest mutdt for each empno and datin
-        $latestMutdt = [];
-
-        // Filter the data based on the latest mutdt for each empno and datin
-        $filteredData = array_filter($data, function ($item) use (&$latestMutdt) {
-            $key = $item->empno . $item->datin;
-
-            // Check if the key already exists in $latestMutdt
-            if (!isset($latestMutdt[$key]) || $item->mutdt > $latestMutdt[$key]->mutdt) {
-                // Update the latest mutdt for this key
-                $latestMutdt[$key] = $item;
-                return true;
-            }
-
-            return false;
-        });
-
-        // Reindex the array to reset keys
-        $filteredData = array_values($filteredData);
-
-        $data = collect($filteredData);
-
-        // Mengubah format tanggal dan jam dalam hasil data
-        foreach ($data as $row) {
-            if ($row->datin != "        ") {
-                $row->datin = substr($row->datin, 0, 4) . '-' . substr($row->datin, 4, 2) . '-' . substr($row->datin, 6, 2);
-                $row->timin = substr($row->timin, 0, 2) . ':' . substr($row->timin, 2, 2);
-            } else {
-                $row->datin = "Tidak Ada Data";
-                $row->timin = "Tidak Ada Data";
-            }
-
-            if ($row->datot != "        ") {
-                $row->datot = substr($row->datot, 0, 4) . '-' . substr($row->datot, 4, 2) . '-' . substr($row->datot, 6, 2);
-                $row->timot = substr($row->timot, 0, 2) . ':' . substr($row->timot, 2, 2);
-            } else {
-                $row->datot = "Tidak Ada Data";
-                $row->timot = "Tidak Ada Data";
-            }
-        }
-
-        // Iterate through each row in the collection
-        foreach ($data as $row) {
-            // Calculate the character count for each row's cleaned hirar
-            $cleanedString = str_replace(' ', '', $row->hirar);
-            $jumlahKarakter = strlen($cleanedString);
-
-            // Determine jenis berdasarkan jumlah karakter
-            if ($jumlahKarakter == 5) {
-                $row->hirar = 'KDP';
-            } elseif ($jumlahKarakter == 7) {
-                $row->hirar = 'SPV';
-            } elseif ($jumlahKarakter == 9) {
-                $row->hirar = 'LDR/OPR';
-            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
-                $row->hirar = 'GMR';
-            } else {
-                $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
-            }
-        }
-
-        return DataTables::of($data)->make(true);
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
     }
 }

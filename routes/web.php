@@ -1,9 +1,16 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CuziaController;
+use App\Http\Controllers\CuziaPribadiController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\SchedulerController;
+use App\Http\Controllers\CuziaIzinController;
+use App\Http\Controllers\CuziaCutiController;
+use App\Http\Controllers\IzinController;
+use App\Http\Controllers\PengajuanIzinController;
+use App\Models\PengajuanIzin;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,7 +46,31 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload-holiday', [HolidayController::class, 'upload'])->name('upload-holiday');
     Route::get('/holiday/datatables', [HolidayController::class, 'getDataHoliday'])->name('holiday.datatables');
 
+    Route::get('/cuzia', [CuziaController::class, 'index'])->name('cuzia');
+    // Route::get('/cuzia/{month?}', [CuziaController::class, 'getdataCuzia'])->name('cuziafilter');
+    Route::get('/dashboard', [CuziaController::class, 'saldocuti'])->name('saldocuti');
+    Route::get('/cuzia/datatables', [CuziaController::class, 'getData'])->name('cuzia.datatables');
+
+    Route::get('/cuziapribadi', [CuziaPribadiController::class, 'index'])->name('cuziapribadi');
+    Route::get('/cuziapribadi/datatables', [CuziaPribadiController::class, 'getData'])->name('cuziapribadi.datatables');
+
+    Route::get('/cuziaizin', [CuziaIzinController::class, 'index'])->name('cuziaizin');
+    Route::get('/cuziaizin/datatables', [CuziaIzinController::class, 'getData'])->name('cuziaizin.datatables');
+    Route::get('/getDetailData', [CuziaIzinController::class, 'getDetailData'])->name('getDetailData');
+    Route::resource('cuziaizin', CuziaIzinController::class);
+
+    Route::get('/cuziacuti', [CuziaCutiController::class, 'index'])->name('cuziacuti');
+    Route::get('/cuziacuti/datatables', [CuziaCutiController::class, 'getData'])->name('cuziacuti.datatables');
+    // Route::post('/cuziacuti/store', [CuziaCutiController::class, 'store'])->name('cuziacuti.store');
+    Route::resource('cuziacuti', CuziaCutiController::class);
+
+    Route::get('/izin', [PengajuanIzinController::class, 'index'])->name('izin');
+    Route::get('/izin/datatables', [PengajuanIzinController::class, 'getData'])->name('izin.datatables');
+    // Route::post('/cuziaizin', [CuziaIzinController::class, 'store'])->name('cuziaizin.store');
+    Route::resource('izin', PengajuanIzinController::class);
+
     Route::get('/test', [EmployeeController::class, 'test']);
+
 });
 
 // Rute otentikasi
@@ -52,3 +83,17 @@ Route::get('logout', [AuthController::class, 'logout']);
 Route::get('/scheduler', [SchedulerController::class, 'index']);
 Route::get('/scheduler1', [SchedulerController::class, 'index1']);
 Route::get('/scheduler2', [SchedulerController::class, 'index2']);
+// routes/web.php
+
+Route::get('/cuti/input', function () {
+    return view('pengajuancuti');
+});
+
+Route::get('/ijin/input', function () {
+    return view('pengajuanijin');
+});
+
+
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// });
