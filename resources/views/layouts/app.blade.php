@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
     <link rel="shortcut icon" href="{{ asset('assets/img/aiia.jpg') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ asset('assets/css/dataTables.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>

@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/holiday/datatables', [HolidayController::class, 'getDataHoliday'])->name('holiday.datatables');
 
     Route::get('/cuzia', [CuziaController::class, 'index'])->name('cuzia');
+    Route::post('/approve', [CuziaController::class, 'approve'])->name('cuzia.approve');
     // Route::get('/cuzia/{month?}', [CuziaController::class, 'getdataCuzia'])->name('cuziafilter');
     Route::get('/dashboard', [CuziaController::class, 'saldocuti'])->name('saldocuti');
     Route::get('/cuzia/datatables', [CuziaController::class, 'getData'])->name('cuzia.datatables');
@@ -70,7 +71,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('izin', PengajuanIzinController::class);
 
     Route::get('/test', [EmployeeController::class, 'test']);
-
 });
 
 // Rute otentikasi

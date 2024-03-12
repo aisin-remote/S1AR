@@ -28,6 +28,7 @@ class PengajuanCuti extends Model
         'approval1_status',
         'approval2_id',
         'approval2_status',
-        'approvalhr_status'
+        'approvalhr_status',
+        'approval_status'
     ];
 }

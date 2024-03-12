@@ -122,23 +122,23 @@ class CuziaCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-            //     return DataTables::of()->make(true);
-            if ($request->input('start_date') != null && $request->input('end_date') != null) {
-                $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
-                $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
-            } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-                $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
-                $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
-            } else {
-                $tanggalMulai = $tanggalSekarang;
-                $tanggalAkhir = $tanggalSekarang;
-            }
+        //     return DataTables::of()->make(true);
+        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
+            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
+        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
+        } else {
+            $tanggalMulai = $tanggalSekarang;
+            $tanggalAkhir = $tanggalSekarang;
+        }
 
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
+        // Execute main query
+        $data = DB::connection('mysql2')
+            ->select(DB::raw("
                 SELECT
                 empno,
                 tgl_mulai,
@@ -185,41 +185,40 @@ class CuziaCutiController extends Controller
             ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
                 "));
 
-            // Mengubah format tanggal dan jam dalam hasil data
-            foreach ($data as $row) {
-                if ($row->tgl_mulai != "        ") {
-                    // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
-                    $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
-                    $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
-                } else {
-                    $row->tgl_mulai = "Tidak Ada Data";
-                    $row->tgl_pengajuan = "Tidak Ada Data";
-                }
+        // Mengubah format tanggal dan jam dalam hasil data
+        foreach ($data as $row) {
+            if ($row->tgl_mulai != "        ") {
+                // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
+                $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
+                $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
+            } else {
+                $row->tgl_mulai = "Tidak Ada Data";
+                $row->tgl_pengajuan = "Tidak Ada Data";
             }
-
-            // Iterate through each row in the collection
-            foreach ($data as $row) {
-                // Calculate the character count for each row's cleaned hirar
-                $cleanedString = str_replace(' ', '', $row->hirar);
-                $jumlahKarakter = strlen($cleanedString);
-
-                // Determine jenis berdasarkan jumlah karakter
-                if ($jumlahKarakter == 5) {
-                    $row->hirar = 'KDP';
-                } elseif ($jumlahKarakter == 7) {
-                    $row->hirar = 'SPV';
-                } elseif ($jumlahKarakter == 9) {
-                    $row->hirar = 'LDR/OPR';
-                } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
-                    $row->hirar = 'GMR';
-                } else {
-                    $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
-                }
-            }
-
-            return DataTables::of($data)->make(true);
-
         }
+
+        // Iterate through each row in the collection
+        foreach ($data as $row) {
+            // Calculate the character count for each row's cleaned hirar
+            $cleanedString = str_replace(' ', '', $row->hirar);
+            $jumlahKarakter = strlen($cleanedString);
+
+            // Determine jenis berdasarkan jumlah karakter
+            if ($jumlahKarakter == 5) {
+                $row->hirar = 'KDP';
+            } elseif ($jumlahKarakter == 7) {
+                $row->hirar = 'SPV';
+            } elseif ($jumlahKarakter == 9) {
+                $row->hirar = 'LDR/OPR';
+            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                $row->hirar = 'GMR';
+            } else {
+                $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+            }
+        }
+
+        return DataTables::of($data)->make(true);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -249,8 +248,8 @@ class CuziaCutiController extends Controller
         $cleanedStringDept = trim($userInfo[0]->hirar);
         // Mengurangi dua digit terakhir dari string
 
-            // $approval2Result now contains the empno with the second largest mutdt for the same hirar as $tempapprov1
-            // $approv1 = trim($approval3Result[0]->empno);
+        // $approval2Result now contains the empno with the second largest mutdt for the same hirar as $tempapprov1
+        // $approv1 = trim($approval3Result[0]->empno);
         $tempapprov2 = substr($cleanedStringDept, 0, -4);
         $approval2Result = DB::connection('mysql2')->select(DB::raw(
             "
@@ -288,15 +287,15 @@ class CuziaCutiController extends Controller
         ));
 
         // Check if approval1Result has 2 hirars
-        if(count($approval1Result) > 1) {
+        if (count($approval1Result) > 1) {
             // There are multiple hirars, find the longest one
             $maxLength = 0;
             $longestHirar = '';
 
             // Find the longest hirar
-            foreach($approval1Result as $result) {
+            foreach ($approval1Result as $result) {
                 $hirarLength = strlen($result->hirar);
-                if($hirarLength > $maxLength) {
+                if ($hirarLength > $maxLength) {
                     $maxLength = $hirarLength;
                     $longestHirar = $result->hirar;
                 }
@@ -354,6 +353,7 @@ class CuziaCutiController extends Controller
         $cuti->tgl_selesai = $request->input('tgl_selesai');
         $cuti->jeniscuti = $request->input('jenis_cuti');
         $cuti->note = $request->input('note');
+        $cuti->approval_status = '0';
         // dd($approval1);
         $cuti->save();
         // Redirect to the index view after successful form submission

@@ -66,47 +66,42 @@
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                    <div class="row">
-                            <form id="leaveRequestForm" enctype="multipart/form-data">
+                    <div class="row" style="display: block">
                                 <div class="form-group ">
                                     <label for="nama">Nama:</label>
-                                    <input type="text" class="form-control" id="nama" name="nama">
+                                    <input type="text" class="form-control" id="nama" name="nama" disabled>
                                 </div>
                                 <div class="form-group ">
                                     <label for="npk">NPK:</label>
-                                    <input type="text" class="form-control" id="npk" name="npk">
+                                    <input type="text" class="form-control" id="npk" name="npk" disabled>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group col-md-6 ">
                                         <label for="tgl_mulai">Tanggal Mulai:</label>
-                                        <input type="date" class="form-control" id="tgl_mulai" name="tgl_mulai">
+                                        <input type="date" class="form-control" id="tgl_mulai" name="tgl_mulai" disabled>
                                     </div>
                                     <div class="form-group col-md-6 ">
                                         <label for="tgl_selesai">Tanggal Selesai:</label>
-                                        <input type="date" class="form-control" id="tgl_selesai" name="tgl_selesai">
+                                        <input type="date" class="form-control" id="tgl_selesai" name="tgl_selesai" disabled>
                                     </div>
                                 </div>
                                 <div class="form-group ">
                                     <label for="jenis_cuzia">Jenis Cuzia:</label>
-                                    <select class="form-control" id="jenis_cuzia" name="jenis_cuzia">
+                                    <select class="form-control" id="jenis_cuzia" name="jenis_cuzia" disabled>
                                         <option value="" disabled selected>Pilih Jenis Cuzia</option>
-                                        <option value="1">Cuti Tahunan</option>
-                                        <option value="2">Cuti Istimewa</option>
+                                        <option value="CT">Cuti Tahunan</option>
+                                        <option value="CL">Cuti Istimewa</option>
                                         <!-- Add more options as needed -->
                                     </select>
                                 </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea class="form-control" id="note" name="note"></textarea>
+                                    <textarea class="form-control" id="note" name="note" disabled></textarea>
                                 </div>
-                                <div class="form-group " id="lampiranContainer" >
-                                    <label for="lampiran">Unggah Dokumen/Lampiran:</label>
-                                    <input type="file" class="form-control-file" id="lampiran" name="lampiran">
-                                </div>
-                                <button type="submit" class="btn btn-danger btn-sm m-1" style="width: 100px;">
+                                <button id="btn-tolak" class="btn btn-danger btn-sm m-1 btn-tolak" style="width: 100px;">
                                     Tolak
                                 </button>
-                                <button type="submit" class="btn btn-primary btn-sm m-1" style="width: 100px;">
+                                <button id="btn-setuju" class="btn btn-primary btn-sm m-1 btn-setuju" style="width: 100px;">
                                     Setuju
                                 </button>
 
@@ -169,7 +164,7 @@
                     searchable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
-                        return `<button type="button" class="btn btn-primary btn-sm"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval1_status}">Detail</button>`;
+                        return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval1_status}" data-note="${row.note}">Detail</button>`;
                     }
 
                 }
@@ -210,6 +205,66 @@
         $('#filter_button').on('click', function() {
             table.ajax.reload();
         });
+
+        $('#employee-table').on('click', '.btn-update', function(){
+            $('#nama').val($(this).data('nama'));
+            $('#npk').val($(this).data('empno'));
+            $('#tgl_mulai').val($(this).data('tgl_mulai'));
+            $('#tgl_selesai').val($(this).data('tgl_selesai'));
+            $('#jenis_cuzia').val($(this).data('jenis'));
+            $('#note').val($(this).data('note'));
+            $('#btn-tolak').attr('data-id', $(this).data('uuid'));
+            $('#btn-setuju').attr('data-id', $(this).data('uuid'));
+        });
+
+        $('#btn-tolak').on('click', function() {
+            var form = document.createElement("form");
+            form.method = "POST";
+            form.action = "{{ route('cuzia.approve') }}";
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            var hiddenToken = document.createElement('input');
+            hiddenToken.type = 'hidden';
+            hiddenToken.name = '_token';
+            hiddenToken.value = csrfToken;
+            form.appendChild(hiddenToken);
+            
+            var input = document.createElement("input");
+            input.name = 'id';
+            input.value = $(this).data('id');
+            form.appendChild(input);
+
+            var input = document.createElement("input");
+            input.name = 'status';
+            input.value = '0';
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+        $('#btn-setuju').on('click', function() {
+            var form = document.createElement("form");
+            form.method = "POST";
+            form.action = "{{ route('cuzia.approve') }}";
+            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            var hiddenToken = document.createElement('input');
+            hiddenToken.type = 'hidden';
+            hiddenToken.name = '_token';
+            hiddenToken.value = csrfToken;
+            form.appendChild(hiddenToken);
+            
+            var input = document.createElement("input");
+            input.name = 'id';
+            input.value = $(this).data('id');
+            form.appendChild(input);
+
+            var input = document.createElement("input");
+            input.name = 'status';
+            input.value = '1';
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        });
+
     });
 </script>
 @endpush
