@@ -183,8 +183,8 @@ class PengajuanIzinController extends Controller
                 ) max_hirarki ON pz.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE (pz.approval1_id LIKE '%$npk%' AND pz.approval_status IS NULL)
-              OR (pz.approval2_id LIKE '%$npk%' AND pz.approval_status IS NULL OR pz.approval_status = 1)
+                WHERE (pz.approval1_id LIKE '%$npk%' AND pz.approval1_status IS NULL)
+                OR (pz.approval2_id LIKE '%$npk%' AND pz.approval2_status IS NULL)
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
@@ -221,10 +221,10 @@ class PengajuanIzinController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-        $is_admin = auth()->user()->is_admin;
-        if ($is_admin == 1) {
-            $data = PengajuanIzin::where('approval_status', '2');
-        }
+        // $is_admin = auth()->user()->is_admin;
+        // if ($is_admin == 1) {
+        //     $data = PengajuanIzin::where('approval_status', '2');
+        // }
         return DataTables::of($data)->make(true);
     }
 

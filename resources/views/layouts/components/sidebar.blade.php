@@ -13,19 +13,20 @@
 
         $userInfo = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr, users.is_admin
             FROM kehadiran2
             LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            LEFT JOIN users ON kehadiran2.empno = users.npk
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
             WHERE kehadiran2.empno = $npk
-            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr
+            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr,users.is_admin
             ORDER BY mutdt DESC LIMIT 1;
             "
         ));
 
         if (!empty($userInfo)) {
         $npkDesc = $userInfo[0]->hirar; // Use array syntax
-
+        $isadmin = $userInfo[0]->is_admin;
         $cleanedString = str_replace(' ', '', $npkDesc);
 
         // Hitung jumlah karakter
@@ -94,6 +95,11 @@
                         <a class="nav-link {{ request()->is('cuzia*') ? 'text-primary' : '' }}" href="/cuzia">Approval Cuti</a>
                         @endif
                     </li>
+                    <li>
+                        @if ( $isadmin == '1')
+                        <a class="nav-link {{ request()->is('rekapcuti*') ? 'text-primary' : '' }}" href="/rekapcuti">Rekap Cuti</a>
+                        @endif
+                    </li>
                     </ul>
                 </a>
             </li>
@@ -107,6 +113,11 @@
                     <li>
                         @if ($userInfoOccupation == 'KDP' || $userInfoOccupation == 'GMR' ||$userInfoOccupation == 'SPV' || $userInfoDept == 'HRD'  or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR' )
                         <a class="nav-link {{ request()->is('cuzia*') ? 'text-primary' : '' }}" href="/izin">Approval Izin</a>
+                        @endif
+                    </li>
+                    <li>
+                        @if ( $isadmin == '1')
+                        <a class="nav-link {{ request()->is('rekapizin*') ? 'text-primary' : '' }}" href="/rekapizin">Rekap Izin</a>
                         @endif
                     </li>
                     </ul>
@@ -130,11 +141,11 @@
                 <a href="#" class="nav-link has-dropdown {{ request()->is('cuziacuti*')||request()->is('cuziaizin*') ? 'text-primary' : '' }}"><i class="fas fa-check-circle"></i>
                     <span>Pengajuan </span></a>
                     <ul class="dropdown-menu">
+                        <li>
+                            <a class="nav-link {{ request()->is('cuziacuti*') ? 'text-primary' : '' }}" href="/cuziacuti">Pengajuan Cuti</a>
+                        </li>
                     <li>
-                        <a class="nav-link {{ request()->is('cuziacuti*') ? 'text-primary' : '' }}" href="/cuziapribadi">Cuti</a>
-                    </li>
-                    <li>
-                        <a class="nav-link {{ request()->is('cuziaizin*') ? 'text-primary' : '' }}" href="/cuziaizin">Izin</a>
+                        <a class="nav-link {{ request()->is('cuziaizin*') ? 'text-primary' : '' }}" href="/cuziaizin">Pengajuan Izin</a>
                     </li>
                     </ul>
                 </a>

@@ -188,10 +188,8 @@ class CuziaController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE (pz.approval1_id LIKE '%$npk%' AND pz.approval1_status IS NULL)
-                OR (pz.approval2_id LIKE '%$npk%' AND pz.approval2_status IS NULL)
-                OR (pz.approval1_id LIKE '%$npk%' AND pz.approval1_status = 1)
-                OR (pz.approval2_id LIKE '%$npk%' AND pz.approval2_status = 1)
+                WHERE (pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NULL)
+                OR (pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NULL)
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
@@ -228,10 +226,10 @@ class CuziaController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-        $is_admin = auth()->user()->is_admin;
-        if ($is_admin == 1) {
-            $data = PengajuanCuti::where('approval_status', '2');
-        }
+        // $is_admin = auth()->user()->is_admin;
+        // if ($is_admin == 1) {
+        //     $data = PengajuanCuti::where('approval_status', '2');
+        // }
 
         return DataTables::of($data)->make(true);
     }
@@ -245,19 +243,27 @@ class CuziaController extends Controller
         // Your existing code to retrieve the saldo cuti data.
         $result = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT CONVERT((clrig - clget), CHAR) AS saldo_cuti
-            FROM pengajuancutikar
-            WHERE pengajuancutikar.empno = $npk
-            ORDER BY expdt DESC
-            LIMIT 1;
+            SELECT
+    (SELECT CONVERT((clrig - clget), CHAR) AS saldocutiistimewa
+    FROM pengajuancutikar
+    WHERE pengajuancutikar.empno = $npk
+    ORDER BY expdt DESC
+    LIMIT 1) AS saldocutiistimewa,
+    (SELECT CONVERT((clrig - clget), CHAR) AS saldocutiistimewa
+    FROM pengajuancutikar
+    WHERE pengajuancutikar.empno = $npk
+    ORDER BY expdt DESC
+    LIMIT 1 OFFSET 2) AS saldocutitahunan;
             "
         ));
 
         // Check if the result is not empty and get the first element of the array.
-        $saldoCuti = !empty($result) ? (string) $result[0]->saldo_cuti : '0';
+        $saldocutiistimewa = !empty($result) ? (string) $result[0]->saldocutiistimewa : '0';
+         // Check if the result is not empty and get the first element of the array.
+         $saldocutitahunan = !empty($result) ? (string) $result[0]->saldocutitahunan : '0';
 
         // Pass the string saldoCuti to the view.
-        return view('dashboard', compact('saldoCuti'));
+        return view('dashboard', compact('saldocutitahunan', 'saldocutiistimewa'));
     }
     public function chartData()
     {

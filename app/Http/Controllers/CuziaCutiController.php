@@ -68,14 +68,36 @@ class CuziaCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
+        // Your existing code to retrieve the saldo cuti data.
+        $result = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT
+            (SELECT CONVERT((clrig - clget), CHAR) AS saldocutiistimewa
+            FROM pengajuancutikar
+            WHERE pengajuancutikar.empno = $npk
+            ORDER BY expdt DESC
+            LIMIT 1) AS saldocutiistimewa,
+            (SELECT CONVERT((clrig - clget), CHAR) AS saldocutiistimewa
+            FROM pengajuancutikar
+            WHERE pengajuancutikar.empno = $npk
+            ORDER BY expdt DESC
+            LIMIT 1 OFFSET 2) AS saldocutitahunan;
+            "
+        ));
 
-        return view('cuziacuti', compact('userInfoOccupation', 'userInfoDept'));
+        // Check if the result is not empty and get the first element of the array.
+        $saldocutiistimewa = !empty($result) ? (string) $result[0]->saldocutiistimewa : '0';
+         // Check if the result is not empty and get the first element of the array.
+         $saldocutitahunan = !empty($result) ? (string) $result[0]->saldocutitahunan : '0';
+
+        return view('cuziacuti', compact('userInfoOccupation', 'userInfoDept','saldocutiistimewa','saldocutitahunan'));
         // dd($request->all());
     }
 
     public function getData(Request $request)
     {
-
+        //set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
+        ini_set('max_execution_time', 0);
         $tanggalSekarang = Carbon::now()->format('Ymd');
 
         $npk = auth()->user()->npk;
@@ -226,10 +248,10 @@ class CuziaCutiController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-        $is_admin = auth()->user()->is_admin;
-        if ($is_admin == 1) {
-            $data = PengajuanCuti::where('approval_status', '2');
-        }
+        // $is_admin = auth()->user()->is_admin;
+        // if ($is_admin == 1) {
+        //     $data = PengajuanCuti::where('approval_status', '2');
+        // }
 
         return DataTables::of($data)->make(true);
     }

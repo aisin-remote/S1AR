@@ -1,11 +1,19 @@
-@extends('layouts.app', ['title' => 'Cuzia Izin Attendance'])
+@extends('layouts.app', ['title' => 'Dashboard'])
 
 @section('content')
+
 @if(session('error'))
 <script>
     alert("{{ session('error') }}");
 </script>
 @endif
+
+@if(session('success'))
+<script>
+    alert("{{ session('success') }}");
+</script>
+@endif
+
 
  <div class="main-content">
         <section class="section">
@@ -26,8 +34,26 @@
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Saldo Cuti</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $saldoCuti }}</div>
+                                                Saldo Cuti Istimewa</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $saldocutiistimewa }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Saldo Cuti Tahunan</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $saldocutitahunan }}</div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar fa-2x text-gray-300"></i>

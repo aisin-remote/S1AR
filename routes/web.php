@@ -10,6 +10,8 @@ use App\Http\Controllers\CuziaIzinController;
 use App\Http\Controllers\CuziaCutiController;
 use App\Http\Controllers\IzinController;
 use App\Http\Controllers\PengajuanIzinController;
+use App\Http\Controllers\RekapCutiController;
+use App\Http\Controllers\RekapIzinController;
 use App\Models\PengajuanIzin;
 use Illuminate\Support\Facades\Route;
 
@@ -52,8 +54,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [CuziaController::class, 'saldocuti'])->name('saldocuti');
     Route::get('/cuzia/datatables', [CuziaController::class, 'getData'])->name('cuzia.datatables');
 
-    Route::get('/cuziapribadi', [CuziaPribadiController::class, 'index'])->name('cuziapribadi');
-    Route::get('/cuziapribadi/datatables', [CuziaPribadiController::class, 'getData'])->name('cuziapribadi.datatables');
+    Route::get('/rekapcuti', [RekapCutiController::class, 'index'])->name('rekapcuti');
+    Route::get('/rekapcuti/datatables', [RekapCutiController::class, 'getData'])->name('rekapcuti.datatables');
+
+    Route::get('/rekapizin', [RekapIzinController::class, 'index'])->name('rekapizin');
+    Route::get('/rekapizin/datatables', [RekapIzinController::class, 'getData'])->name('rekapizin.datatables');
 
     Route::get('/cuziaizin', [CuziaIzinController::class, 'index'])->name('cuziaizin');
     Route::get('/cuziaizin/datatables', [CuziaIzinController::class, 'getData'])->name('cuziaizin.datatables');

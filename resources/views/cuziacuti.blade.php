@@ -32,10 +32,20 @@
                             </div>
                             <div class="form-group ml-auto">
                                 <label for="pengajuan_button">&nbsp;</label>
-                                <button type="button" class="btn btn-primary btn-sm form-control form-control-sm" data-toggle="modal" data-target="#cuziacutimodal" id="pengajuan_button">
-                                    <i class="fas fa-plus"></i> Pengajuan Izin
+                                <?php
+                                // Misalkan $saldocutitahunan dan $saldocutiistimewa sudah diinisialisasi sebelumnya
+                                // Anda harus menggantinya dengan cara Anda mendapatkan nilai saldocutitahunan dan saldocutiistimewa
+                                // Jika $saldocutiistimewa adalah 0, nonaktifkan tombol pengajuan cuti
+                                if ($saldocutiistimewa === 0 || $saldocutitahunan == 0) {
+                                    echo '<button type="button" class="btn btn-primary btn-sm form-control form-control-sm" disabled>';
+                                } else {
+                                    echo '<button type="button" class="btn btn-primary btn-sm form-control form-control-sm" data-toggle="modal" data-target="#cuziacutimodal" id="pengajuan_button">';
+                                }
+                                ?>
+                                    <i class="fas fa-plus"></i> Pengajuan Cuti
                                 </button>
                             </div>
+
                         </div>
                     </form>
                     <div class="table-responsive">
@@ -179,16 +189,6 @@
 @push('scripts')
 
 <script>
-//   $(document).ready(function() {
-//         $('#jenis_cuzia').change(function() {
-//             var selectedValue = $(this).val();
-//             if (selectedValue == 'SKT' || selectedValue == 'DLU') {
-//                 $('#lampiranContainer').show();
-//             } else {
-//                 $('#lampiranContainer').hide();
-//             }
-//         })
-//         });
 $(document).ready(function() {
         var table = $('#employee-table').DataTable({
             dom: '<"top"f>rt<"bottom"lip><"clear">',
