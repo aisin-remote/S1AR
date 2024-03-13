@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/izin', [PengajuanIzinController::class, 'index'])->name('izin');
     Route::get('/izin/datatables', [PengajuanIzinController::class, 'getData'])->name('izin.datatables');
+    Route::post('/izinapprove', [PengajuanIzinController::class, 'approve'])->name('izin.approve');
     // Route::post('/cuziaizin', [CuziaIzinController::class, 'store'])->name('cuziaizin.store');
     Route::resource('izin', PengajuanIzinController::class);
 

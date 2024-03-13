@@ -150,8 +150,26 @@
                     name: 'tgl_mulai'
                 },
                 {
-                    data: 'approval1_status',
-                    name: 'approval1_status'
+                    data: 'approval_status',
+                    name: 'approval_status',
+                    render: function(data, type, row) {
+                    var statusText = '';
+                    switch(data) {
+                        case '1':
+                            statusText = 'Disetujui oleh Atasan 1';
+                            break;
+                        case '2':
+                            statusText = 'Disetujui oleh Atasan 2';
+                            break;
+                        case '-1':
+                            statusText = 'Ditolak';
+                            break;
+                        default:
+                            statusText = 'Menunggu Persetujuan';
+                            break;
+                    }
+                    return statusText;
+                }
                 },
                 {
                     data: 'note',
@@ -164,7 +182,7 @@
                     searchable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
-                        return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval1_status}" data-note="${row.note}">Detail</button>`;
+                        return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                     }
 
                 }
@@ -207,6 +225,7 @@
         });
 
         $('#employee-table').on('click', '.btn-update', function(){
+            console.log($(this).data('tgl_mulai'));
             $('#nama').val($(this).data('nama'));
             $('#npk').val($(this).data('empno'));
             $('#tgl_mulai').val($(this).data('tgl_mulai'));
@@ -227,7 +246,7 @@
             hiddenToken.name = '_token';
             hiddenToken.value = csrfToken;
             form.appendChild(hiddenToken);
-            
+
             var input = document.createElement("input");
             input.name = 'id';
             input.value = $(this).data('id');
@@ -251,7 +270,7 @@
             hiddenToken.name = '_token';
             hiddenToken.value = csrfToken;
             form.appendChild(hiddenToken);
-            
+
             var input = document.createElement("input");
             input.name = 'id';
             input.value = $(this).data('id');

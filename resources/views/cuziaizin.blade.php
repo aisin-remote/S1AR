@@ -62,17 +62,17 @@
 
 <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
 <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog"  role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editModal">Pengajuan izin</h5>
+                <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                    <div class="row">
+                    <div class="row" style="display: block">
                         <form action="{{ route('cuziaizin.store') }}" method="POST" enctype="multipart/form-data">
                             <!-- Isi formulir di sini -->
                             @csrf
@@ -127,42 +127,38 @@
 
 <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
 <div class="modal fade" id="cuziaDetailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog"  role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editModal">Pengajuan izin</h5>
+                <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                    <div class="row">
-                        <form enctype="multipart/form-data">
-                            <!-- Isi formulir di sini -->
-                            @csrf
-                            <div class="form-group mb-2">
+                    <div class="row" style="display: block">
+                                <div class="form-group ">
                                     <label for="nama">Nama:</label>
-                                    <input type="text" required class="form-control" id="nama" name="nama" value="{{ Auth::user()->name }}" readonly>
+                                    <input type="text" class="form-control" id="nama3" name="nama" disabled>
                                 </div>
-                                <div class="form-group mb-2">
-                                    <label for="empno">NPK:</label>
-                                    <input type="text" class="form-control"  required id="empno" name="empno" value="{{ Auth::user()->npk }}" readonly>
+                                <div class="form-group ">
+                                    <label for="npk">NPK:</label>
+                                    <input type="text" class="form-control" id="npk" name="npk" disabled>
                                 </div>
-
                                 <div class="form-row">
-                                    <div class="form-group mb-2 col-md-6 ">
+                                    <div class="form-group col-md-6 ">
                                         <label for="tgl_mulai">Tanggal Mulai:</label>
-                                        <input type="date" required class="form-control" id="tgl_mulai" name="tgl_mulai">
+                                        <input type="date" class="form-control" id="tgl_mulai3" name="tgl_mulai" disabled>
                                     </div>
-                                    <div class="form-group mb-2 col-md-6 ">
+                                    <div class="form-group col-md-6 ">
                                         <label for="tgl_selesai">Tanggal Selesai:</label>
-                                        <input type="date" required class="form-control" id="tgl_selesai" name="tgl_selesai">
+                                        <input type="date" class="form-control" id="tgl_selesai3" name="tgl_selesai" disabled>
                                     </div>
                                 </div>
-                                <div class="form-group mb-2 ">
-                                    <label for="jenis_cuzia">Jenis Izin:</label>
-                                    <select class="form-control" id="jenisizin" name="jenisizin">
+                                <div class="form-group ">
+                                    <label for="jenis_cuzia">Jenis Cuzia:</label>
+                                    <select class="form-control" id="jenis_cuzia3" name="jenis_cuzia" disabled>
                                         <option value="" disabled selected>Pilih Jenis Izin</option>
                                         <option value="IMU">IMP Mendapatkan Upah</option>
                                         <option value="IMP">IMP Tidak Mendapatkan Upah</option>
@@ -173,19 +169,12 @@
                                 </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea class="form-control" id="note" name="note"></textarea>
+                                    <textarea class="form-control" id="note3" name="note" disabled></textarea>
                                 </div>
-                                <div class="form-group " id="lampiranContainer" >
-                                    <label for="lampiran">Unggah Dokumen/Lampiran:</label>
-                                    <input type="file" class="form-control-file" id="data_verifikasi" name="data_verifikasi">
+
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
-                                </div>
-                            </div>
-                        </form>
                     </div>
                 </div>
-        </div>
         </div>
     </div>
 </div>
@@ -242,8 +231,26 @@
                     name: 'tgl_mulai'
                 },
                 {
-                    data: 'approval1_status',
-                    name: 'approval1_status'
+                    data: 'approval_status',
+                    name: 'approval_status',
+                    render: function(data, type, row) {
+                    var statusText = '';
+                    switch(data) {
+                        case '1':
+                            statusText = 'Disetujui oleh Atasan 1';
+                            break;
+                        case '2':
+                            statusText = 'Disetujui oleh Atasan 2';
+                            break;
+                        case '-1':
+                            statusText = 'Ditolak';
+                            break;
+                        default:
+                            statusText = 'Menunggu Persetujuan';
+                            break;
+                    }
+                    return statusText;
+                }
                 },
                 {
                     data: 'note',
@@ -256,7 +263,7 @@
                     searchable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
-                        return `<button type="button" class="btn btn-primary btn-sm"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval1_status}">Detail</button>`;
+                        return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                     }
 
                 }
@@ -296,6 +303,15 @@
 
         $('#filter_button').on('click', function() {
             table.ajax.reload();
+        });
+        $('#employee-table').on('click', '.btn-update', function(){
+            console.log($(this).data('tgl_selesai'));
+            $('#nama3').val($(this).data('nama'));
+            $('#npk').val($(this).data('empno'));
+            $('#tgl_mulai3').val($(this).data('tgl_mulai'));
+            $('#tgl_selesai3').val($(this).data('tgl_selesai'));
+            $('#jenis_cuzia3').val($(this).data('jenis'));
+            $('#note3').val($(this).data('note'));
         });
     });
 </script>

@@ -65,11 +65,12 @@ class PengajuanIzinController extends Controller
 
         $groupedData = $data->groupBy('rsccd');
 
-        return view('cuziaizin', compact('groupedData','userInfoOccupation', 'userInfoDept'));
+        return view('izin', compact('groupedData','userInfoOccupation', 'userInfoDept'));
     }
 
     public function getData(Request $request)
     {
+
         $tanggalSekarang = Carbon::now()->format('Ymd');
 
         $npk = auth()->user()->npk;
@@ -116,6 +117,7 @@ class PengajuanIzinController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
+        //     return DataTables::of()->make(true);
         if ($request->input('start_date') != null && $request->input('end_date') != null) {
             $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
             $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
@@ -126,138 +128,79 @@ class PengajuanIzinController extends Controller
             $tanggalMulai = $tanggalSekarang;
             $tanggalAkhir = $tanggalSekarang;
         }
-        if ($userInfoOccupation == 'GMR' or strpos($userInfoDept, 'HRD') === 0) {
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
+
+        // Execute main query
+        $data = DB::connection('mysql2')
+            ->select(DB::raw("
                 SELECT
-                    empno,
-                    schdt,
-                    rsccd,
-                    crtdt,
-                    stts,
-                    note,
-                    empnm,
-                    hirar,
-                    mutdt,
-                    descr
-                FROM (
-                    SELECT
-                        kehadiranmu.empno,
-                        kehadiranmu.schdt,
-                        kehadiranmu.rsccd,
-                        kehadiranmu.crtdt,
-                        kehadiranmu.stts,
-                        kehadiranmu.note,
-                        employee.empnm,
-                        hirarki.hirar,
-                        hirarki.mutdt,
-                        hirarkidesc.descr,
-                        @row_number := CASE
-                            WHEN kehadiranmu.empno != @empno_prev OR kehadiranmu.schdt != @schdt_prev OR kehadiranmu.crtdt != @crtdt_prev
-                                THEN 1
-                                ELSE @row_number + 1
-                            END AS RowNum,
-                        @empno_prev := kehadiranmu.empno,
-                        @schdt_prev := kehadiranmu.schdt,
-                        @crtdt_prev := kehadiranmu.crtdt
-                    FROM kehadiranmu
-                    INNER JOIN employee ON kehadiranmu.empno = employee.empno
-                    LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
-                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                    WHERE kehadiranmu.schdt BETWEEN $tanggalMulai AND $tanggalAkhir
-                        AND kehadiranmu.rsccd IN ('CTH', 'CL')  -- Filter rsccd sesuai dengan nilai 'CTH' atau 'CL'
-                ) AS numbered
-                WHERE RowNum = 1
-                ORDER BY empno ASC, schdt DESC, mutdt DESC;
-            "));
-        } else if ($userInfoOccupation == 'KDP') {
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @schdt_prev = NULL');
-
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
+                id,
+                empno,
+                tgl_mulai,
+                tgl_selesai,
+                jenisizin,
+                tgl_pengajuan,
+                approval1_status,
+                approval1_id,
+                approval2_id,
+                approval_status,
+                note,
+                empnm,
+                hirar,
+                mutdt,
+                descr
+            FROM (
                 SELECT
-                    empno,
-                    schdt,
-                    rsccd,
-                    crtdt,
-                    stts,
-                    note,
-                    empnm,
-                    hirar,
-                    mutdt,
-                    descr
-                FROM (
-                    SELECT
-                        kehadiranmu.empno,
-                        kehadiranmu.schdt,
-                        kehadiranmu.rsccd,
-                        kehadiranmu.crtdt,
-                        kehadiranmu.stts,
-                        kehadiranmu.note,
-                        employee.empnm,
-                        hirarki.hirar,
-                        hirarki.mutdt,
-                        hirarkidesc.descr,
-                        @row_number := CASE
-                            WHEN kehadiranmu.empno != @empno_prev OR kehadiranmu.schdt != @schdt_prev OR kehadiranmu.crtdt != @crtdt_prev
-                                THEN 1
-                                ELSE @row_number + 1
-                            END AS RowNum,
-                        @empno_prev := kehadiranmu.empno,
-                        @schdt_prev := kehadiranmu.schdt,
-                        @crtdt_prev := kehadiranmu.crtdt
-                    FROM kehadiranmu
-                    INNER JOIN employee ON kehadiranmu.empno = employee.empno
-                    LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
-                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-                    WHERE kehadiranmu.schdt BETWEEN $tanggalMulai AND $tanggalAkhir
-                    AND kehadiranmu.rsccd IN ('IMU', 'SKT','DLU')
-                ) AS numbered
-                WHERE RowNum = 1
-                AND descr LIKE '%$userInfoDept%'
-                ORDER BY empno ASC, schdt ASC, crtdt ASC, mutdt DESC;
-            "));
+                    pz.id,
+                    pz.empno,
+                    pz.tgl_mulai,
+                    pz.tgl_selesai,
+                    pz.jenisizin,
+                    pz.tgl_pengajuan,
+                    pz.approval1_status,
+                    pz.approval1_id,
+                    pz.approval2_id,
+                    pz.approval_status,
+                    pz.note,
+                    e.empnm,
+                    h.hirar,
+                    h.mutdt,
+                    hd.descr,
+                    @row_number := CASE
+                        WHEN pz.empno != @empno_prev OR pz.tgl_mulai != @tgl_mulai_prev
+                            THEN 1
+                            ELSE @row_number + 1
+                        END AS RowNum,
+                    @empno_prev := pz.empno,
+                    @tgl_mulai_prev := pz.tgl_mulai
+                FROM pengajuanizin pz
+                INNER JOIN employee e ON pz.empno = e.empno
+                INNER JOIN (
+                    SELECT empno, MAX(mutdt) AS max_mutdt
+                    FROM hirarki
+                    GROUP BY empno
+                ) max_hirarki ON pz.empno = max_hirarki.empno
+                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+                WHERE (pz.approval1_id LIKE '%$npk%' AND pz.approval_status IS NULL)
+              OR (pz.approval2_id LIKE '%$npk%' AND pz.approval_status IS NULL OR pz.approval_status = 1)
+            ) AS numbered
+            WHERE RowNum = 1
+            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+                "));
+
+        // Mengubah format tanggal dan jam dalam hasil data
+        foreach ($data as $row) {
+            if ($row->tgl_mulai != "        ") {
+                // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
+                $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
+                $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
+            } else {
+                $row->tgl_mulai = "Tidak Ada Data";
+                $row->tgl_pengajuan = "Tidak Ada Data";
+            }
         }
-
-
-                // Initialize an associative array to store the latest mutdt for each empno and schdt
-                $latestMutdt = [];
-
-                // Filter the data based on the latest mutdt for each empno and schdt
-                $filteredData = array_filter($data, function ($item) use (&$latestMutdt) {
-                    $key = $item->empno . $item->schdt;
-
-                    // Check if the key already exists in $latestMutdt
-                    if (!isset($latestMutdt[$key]) || $item->mutdt > $latestMutdt[$key]->mutdt) {
-                        // Update the latest mutdt for this key
-                        $latestMutdt[$key] = $item;
-                        return true;
-                    }
-
-                    return false;
-                });
-
-            // Reindex the array to reset keys
-            $filteredData = array_values($filteredData);
-
-            $data = collect($filteredData);
-
-            // Mengubah format tanggal dan jam dalam hasil data
-            foreach ($data as $row) {
-                if ($row->schdt != "        ") {
-                    $row->schdt = substr($row->schdt, 0, 4) . '-' . substr($row->schdt, 4, 2) . '-' . substr($row->schdt, 6, 2);
-                    $row->crtdt = substr($row->crtdt, 0, 10);
-                } else {
-                    $row->schdt = "Tidak Ada Data";
-                    $row->crtdt = "Tidak Ada Data";
-                        }
-
-        }
-
 
         // Iterate through each row in the collection
         foreach ($data as $row) {
@@ -278,22 +221,38 @@ class PengajuanIzinController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-
-
-        return DataTables::of($data)->make(true);
+        $is_admin = auth()->user()->is_admin;
+        if ($is_admin == 1) {
+            $data = PengajuanIzin::where('approval_status', '2');
         }
+        return DataTables::of($data)->make(true);
+    }
 
-
-
-            /**
-             * Show the form for creating a new resource.
-             *
-             * @return \Illuminate\Http\Response
-             */
-            public function create()
-            {
-                //
+    public function approve(Request $request)
+    {
+        $npk = auth()->user()->npk;
+        $pengajuanCuti = PengajuanIzin::where('id', $request->id)->first();
+        if ($pengajuanCuti->approval1_id == $npk) {
+            $pengajuanCuti->approval1_status = Carbon::now();
+            if ($request->status == '0') {
+                $pengajuanCuti->approval_status = '-1';
+            } else {
+                $pengajuanCuti->approval_status = '1';
             }
+        } else if ($pengajuanCuti->approval2_id == $npk) {
+            $pengajuanCuti->approval2_status = Carbon::now();
+            if ($request->status == '0') {
+                $pengajuanCuti->approval_status = '-2';
+            } else {
+                $pengajuanCuti->approval_status = '2';
+            }
+        }
+        $pengajuanCuti->save();
+
+        return redirect()->back()->with([
+            'success' => true
+        ]);
+    }
 
         /**
      * Store a newly created resource in storage.
@@ -303,7 +262,7 @@ class PengajuanIzinController extends Controller
      */
 
 
-    public function store(Request $request)
+     public function store(Request $request)
     {
         $request->validate([
             'npk' => 'required|string',
@@ -315,7 +274,7 @@ class PengajuanIzinController extends Controller
         // Isi kolom-kolom dalam model PengajuanIzin sesuai dengan data yang ingin disimpan
         $pengajuanizin->part_number = $request->input('part_number');
         $pengajuanizin->part_name = $request->input('part_name');
-        $pengajuanizin->pcr_number = $request->input('pcr_number');
+        $pengajuanizin->pzr_number = $request->input('pzr_number');
         $pengajuanizin->status = $request->input('status');
         $pengajuanizin->PIC = $request->input('PIC');
         $pengajuanizin->content_change = $request->input('content_change');
@@ -343,7 +302,7 @@ class PengajuanIzinController extends Controller
         // Isi kolom-kolom dalam model PengajuanIzin sesuai dengan data yang ingin disimpan
         $pengajuanizin->part_number = $request->input('part_number');
         $pengajuanizin->part_name = $request->input('part_name');
-        $pengajuanizin->pcr_number = $request->input('pcr_number');
+        $pengajuanizin->pzr_number = $request->input('pzr_number');
         $pengajuanizin->status = $request->input('status');
         $pengajuanizin->PIC = $request->input('PIC');
         $pengajuanizin->content_change = $request->input('content_change');

@@ -149,6 +149,7 @@ class CuziaController extends Controller
                 approval1_status,
                 approval1_id,
                 approval2_id,
+                approval_status,
                 note,
                 empnm,
                 hirar,
@@ -165,6 +166,7 @@ class CuziaController extends Controller
                     pc.approval1_status,
                     pc.approval1_id,
                     pc.approval2_id,
+                    pc.approval_status,
                     pc.note,
                     e.empnm,
                     h.hirar,
@@ -186,8 +188,10 @@ class CuziaController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.approval1_id LIKE '%$npk%'
-
+                WHERE (pz.approval1_id LIKE '%$npk%' AND pz.approval1_status IS NULL)
+                OR (pz.approval2_id LIKE '%$npk%' AND pz.approval2_status IS NULL)
+                OR (pz.approval1_id LIKE '%$npk%' AND pz.approval1_status = 1)
+                OR (pz.approval2_id LIKE '%$npk%' AND pz.approval2_status = 1)
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;

@@ -62,17 +62,17 @@
 
 <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
 <div class="modal fade" id="cuziacutimodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog"  role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editModal">Pengajuan Cuti</h5>
+                <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                    <div class="row">
+                    <div class="row" style="display: block">
                         <form action="{{ route('cuziacuti.store') }}" method="POST" enctype="multipart/form-data">
                             <!-- Isi formulir di sini -->
                             @csrf
@@ -121,59 +121,52 @@
 
 <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
 <div class="modal fade" id="cuziaDetailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog"  role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editModal">Pengajuan Cuti</h5>
+                <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                    <div class="row">
-                        <form enctype="multipart/form-data">
-                            <!-- Isi formulir di sini -->
-                            @csrf
-                            <div class="form-group mb-2">
+                    <div class="row" style="display: block">
+                                <div class="form-group ">
                                     <label for="nama">Nama:</label>
-                                    <input type="text" required class="form-control" id="nama" name="nama" value="{{ Auth::user()->name }}" readonly>
+                                    <input type="text" class="form-control" id="nama1" name="nama" disabled>
                                 </div>
-                                <div class="form-group mb-2">
-                                    <label for="empno">NPK:</label>
-                                    <input type="text" class="form-control"  required id="empno" name="empno" value="{{ Auth::user()->npk }}" readonly>
+                                <div class="form-group ">
+                                    <label for="npk">NPK:</label>
+                                    <input type="text" class="form-control" id="npk" name="npk" disabled>
                                 </div>
-
                                 <div class="form-row">
-                                    <div class="form-group mb-2 col-md-6 ">
+                                    <div class="form-group col-md-6 ">
                                         <label for="tgl_mulai">Tanggal Mulai:</label>
-                                        <input type="date" required class="form-control" id="tgl_mulai" name="tgl_mulai">
+                                        <input type="date" class="form-control" id="tgl_mulai1" name="tgl_mulai" disabled>
                                     </div>
-                                    <div class="form-group mb-2 col-md-6 ">
+                                    <div class="form-group col-md-6 ">
                                         <label for="tgl_selesai">Tanggal Selesai:</label>
-                                        <input type="date" required class="form-control" id="tgl_selesai" name="tgl_selesai">
+                                        <input type="date" class="form-control" id="tgl_selesai1" name="tgl_selesai" disabled>
                                     </div>
                                 </div>
-                                <div class="form-group mb-2 ">
-                                    <label for="jenis_cuti">Jenis Cuti:</label>
-                                    <select required class="form-control" id="jenis_cuti" name="jenis_cuti">
-                                        <option value="" disabled selected>Pilih Jenis Cuti</option>
+                                <div class="form-group ">
+                                    <label for="jenis_cuzia">Jenis Cuzia:</label>
+                                    <select class="form-control" id="jenis_cuzia" name="jenis_cuzia" disabled>
+                                        <option value="" disabled selected>Pilih Jenis Cuzia</option>
                                         <option value="CT">Cuti Tahunan</option>
                                         <option value="CL">Cuti Istimewa</option>
+                                        <!-- Add more options as needed -->
                                     </select>
                                 </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea class="form-control" id="note" name="note"></textarea>
+                                    <textarea class="form-control" id="note1" name="note" disabled></textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
                                 </div>
-                            </div>
-                        </form>
                     </div>
                 </div>
-        </div>
         </div>
     </div>
 </div>
@@ -196,7 +189,7 @@
 //             }
 //         })
 //         });
-    $(document).ready(function() {
+$(document).ready(function() {
         var table = $('#employee-table').DataTable({
             dom: '<"top"f>rt<"bottom"lip><"clear">',
             processing: true,
@@ -230,9 +223,27 @@
                     name: 'tgl_mulai'
                 },
                 {
-                    data: 'approval1_status',
-                    name: 'approval1_status'
-                },
+                data: 'approval_status',
+                name: 'approval_status',
+                render: function(data, type, row) {
+                    var statusHtml = '';
+                    switch(data) {
+                        case '1':
+                            statusHtml = '<span style="background-color: lightblue; padding: 5px; border-radius: 5px;">Disetujui oleh Atasan 1</span>';
+                            break;
+                        case '2':
+                            statusHtml = '<span style="background-color: darkblue; color: white; padding: 5px; border-radius: 5px;">Disetujui oleh Atasan 2</span>';
+                            break;
+                        case '-1':
+                            statusHtml = '<span style="background-color: red; padding: 5px; border-radius: 5px; color: white;">Ditolak</span>';
+                            break;
+                        default:
+                            statusHtml = '<span style="background-color: #4186cf; color: black; padding: 5px; border-radius: 5px;">Menunggu Persetujuan</span>';
+                            break;
+                    }
+                    return statusHtml;
+                }
+            },
                 {
                     data: 'note',
                     name: 'note'
@@ -244,7 +255,7 @@
                     searchable: false,
                     className: 'text-center',
                     render: function(data, type, row) {
-                        return `<button type="button" class="btn btn-primary btn-sm"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval1_status}">Detail</button>`;
+                        return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                     }
 
                 }
@@ -284,6 +295,16 @@
         $('#filter_button').on('click', function() {
             table.ajax.reload();
         });
+        $('#employee-table').on('click', '.btn-update', function(){
+            console.log($(this).data('tgl_mulai'));
+            $('#nama1').val($(this).data('nama'));
+            $('#npk').val($(this).data('empno'));
+            $('#tgl_mulai1').val($(this).data('tgl_mulai'));
+            $('#tgl_selesai1').val($(this).data('tgl_selesai'));
+            $('#jenis_cuzia').val($(this).data('jenis'));
+            $('#note1').val($(this).data('note'));
+        });
+
     });
 </script>
 @endpush

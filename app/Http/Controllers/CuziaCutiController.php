@@ -140,11 +140,16 @@ class CuziaCutiController extends Controller
         $data = DB::connection('mysql2')
             ->select(DB::raw("
                 SELECT
+                id,
                 empno,
                 tgl_mulai,
+                tgl_selesai,
                 jeniscuti,
                 tgl_pengajuan,
                 approval1_status,
+                approval1_id,
+                approval2_id,
+                approval_status,
                 note,
                 empnm,
                 hirar,
@@ -152,11 +157,16 @@ class CuziaCutiController extends Controller
                 descr
             FROM (
                 SELECT
+                    pc.id,
                     pc.empno,
                     pc.tgl_mulai,
+                    pc.tgl_selesai,
                     pc.jeniscuti,
                     pc.tgl_pengajuan,
                     pc.approval1_status,
+                    pc.approval1_id,
+                    pc.approval2_id,
+                    pc.approval_status,
                     pc.note,
                     e.empnm,
                     h.hirar,
@@ -216,6 +226,10 @@ class CuziaCutiController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
+        $is_admin = auth()->user()->is_admin;
+        if ($is_admin == 1) {
+            $data = PengajuanCuti::where('approval_status', '2');
+        }
 
         return DataTables::of($data)->make(true);
     }
@@ -247,6 +261,24 @@ class CuziaCutiController extends Controller
 
         $cleanedStringDept = trim($userInfo[0]->hirar);
         // Mengurangi dua digit terakhir dari string
+        $tempapprov1 = substr($cleanedStringDept, 0, -2);
+
+        $approval1Result = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT
+            empno,
+            MAX(hirar) AS hirar
+          FROM
+            hirarki
+          WHERE
+            hirar = '$tempapprov1'
+          GROUP BY
+            empno
+          ORDER BY
+            MAX(mutdt) DESC
+
+            "
+        ));
 
         // $approval2Result now contains the empno with the second largest mutdt for the same hirar as $tempapprov1
         // $approv1 = trim($approval3Result[0]->empno);
@@ -267,25 +299,7 @@ class CuziaCutiController extends Controller
         $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
         $cuti->kodepengajuan = 'CUTI' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
 
-        $tempapprov1 = substr($cleanedStringDept, 0, -2);
-
-        $approval1Result = DB::connection('mysql2')->select(DB::raw(
-            "
-            SELECT
-            empno,
-            MAX(hirar) AS hirar
-          FROM
-            hirarki
-          WHERE
-            hirar = '$tempapprov1'
-          GROUP BY
-            empno
-          ORDER BY
-            MAX(mutdt) DESC
-
-            "
-        ));
-
+        // Check if approval1Result has 2 hirars
         // Check if approval1Result has 2 hirars
         if (count($approval1Result) > 1) {
             // There are multiple hirars, find the longest one
@@ -324,20 +338,49 @@ class CuziaCutiController extends Controller
                 "
             ));
 
-            // Periksa apakah ada hasil yang ditemukan
-            if (!empty($approval3Result)) {
-                // Ambil nilai empno dari objek pertama dalam hasil
-                $approval1 = $approval3Result[0]->empno;
-                // Setelah memastikan $approval1 adalah string, Anda dapat memberikannya ke properti atau variabel yang diharapkan bertipe string
-                $cuti->approval1_id = $approval1;
+                // Periksa apakah ada hasil yang ditemukan
+                if (!empty($approval3Result)) {
+                    // Ambil nilai empno dari objek pertama dalam hasil
+                    $approval1 = $approval3Result[0]->empno;
+
+                    // Check if approval1_id is same as logged in user's NPK
+                    if ($approval1 == $npk) {
+                        // If approval1_id is same as logged in user's NPK,
+                        // perform additional check to find third largest mutdt
+                        $thirdLargestResult = DB::connection('mysql2')->select(DB::raw(
+                            "
+                            SELECT MAX(mutdt) AS third_largest_mutdt, empno
+                            FROM hirarki
+                            WHERE hirar = '$tempapprov1'
+                            AND empno != '$npk' -- Exclude logged in user's NPK
+                            GROUP BY empno
+                            ORDER BY MAX(mutdt) DESC
+                            LIMIT 1
+                            "
+                        ));
+
+                        // Periksa apakah ada hasil yang ditemukan untuk third largest
+                        if (!empty($thirdLargestResult)) {
+                            // Ambil nilai empno dari hasil
+                            $approval1 = $thirdLargestResult[0]->empno;
+                            $cuti->approval1_id = $approval1;
+                        } else {
+                            // Jika tidak ada third largest, set approval1_id menjadi null
+                            $cuti->approval1_id = null;
+                        }
+                    } else {
+                        // Jika approval1_id tidak sama dengan NPK yang login, set approval1_id ke nilai yang ditemukan
+                        $cuti->approval1_id = $approval1;
+                    }
+                } else {
+                    // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
+                    $cuti->approval1_id = null;
+                }
             } else {
-                // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
-                $cuti->approval1_id = null;
+                // There is only one hirar, use the result from approval1Result
+                $cuti->approval1_id = $approval1Result[0]->empno;
             }
-        } else {
-            // There is only one hirar, use the result from approval1Result
-            $cuti->approval1_id = $approval1Result[0]->empno;
-        }
+
 
         // Periksa apakah ada hasil yang ditemukan
         if (!empty($approval2Result)) {

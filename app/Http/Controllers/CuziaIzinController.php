@@ -145,6 +145,7 @@ class CuziaIzinController extends Controller
                 jenisizin,
                 tgl_pengajuan,
                 approval1_status,
+                approval_status,
                 note,
                 empnm,
                 hirar,
@@ -157,6 +158,7 @@ class CuziaIzinController extends Controller
                     pc.jenisizin,
                     pc.tgl_pengajuan,
                     pc.approval1_status,
+                    pc.approval_status,
                     pc.note,
                     e.empnm,
                     h.hirar,
@@ -248,26 +250,6 @@ class CuziaIzinController extends Controller
 
         $cleanedStringDept = trim($userInfo[0]->hirar);
         // Mengurangi dua digit terakhir dari string
-
-            // $approval2Result now contains the empno with the second largest mutdt for the same hirar as $tempapprov1
-            // $approv1 = trim($approval3Result[0]->empno);
-        $tempapprov2 = substr($cleanedStringDept, 0, -4);
-        $approval2Result = DB::connection('mysql2')->select(DB::raw(
-            "
-            SELECT empno
-            FROM hirarki
-            WHERE hirar = '$tempapprov2'
-            GROUP BY empno
-            ORDER BY MAX(mutdt) DESC
-            LIMIT 1
-            "
-        ));
-        // dd($approval1);
-        $izin = new Pengajuanizin();
-        $izin->empno = $request->input('empno');
-        $izin->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
-        $izin->kodepengajuan = 'izin' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
-
         $tempapprov1 = substr($cleanedStringDept, 0, -2);
 
         $approval1Result = DB::connection('mysql2')->select(DB::raw(
@@ -287,16 +269,37 @@ class CuziaIzinController extends Controller
             "
         ));
 
+        // $approval2Result now contains the empno with the second largest mutdt for the same hirar as $tempapprov1
+        // $approv1 = trim($approval3Result[0]->empno);
+        $tempapprov2 = substr($cleanedStringDept, 0, -4);
+        $approval2Result = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT empno
+            FROM hirarki
+            WHERE hirar = '$tempapprov2'
+            GROUP BY empno
+            ORDER BY MAX(mutdt) DESC
+            LIMIT 1
+            "
+        ));
+        // dd($approval1);
+        $cuti = new PengajuanIzin();
+        $cuti->empno = $request->input('empno');
+        $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
+        $cuti->kodepengajuan = 'CUTI' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
+
         // Check if approval1Result has 2 hirars
-        if(count($approval1Result) > 1) {
+        // Check if approval1Result has 2 hirars
+       // Check if approval1Result has 2 hirars
+        if (count($approval1Result) > 1) {
             // There are multiple hirars, find the longest one
             $maxLength = 0;
             $longestHirar = '';
 
             // Find the longest hirar
-            foreach($approval1Result as $result) {
+            foreach ($approval1Result as $result) {
                 $hirarLength = strlen($result->hirar);
-                if($hirarLength > $maxLength) {
+                if ($hirarLength > $maxLength) {
                     $maxLength = $hirarLength;
                     $longestHirar = $result->hirar;
                 }
@@ -325,52 +328,61 @@ class CuziaIzinController extends Controller
                 "
             ));
 
-            // Periksa apakah ada hasil yang ditemukan
-            if (!empty($approval3Result)) {
-                // Ambil nilai empno dari objek pertama dalam hasil
+            // Check if the empno from approval1 is the same as the logged in user's NPK
+            if (!empty($approval3Result) && $approval3Result[0]->empno == $npk) {
+                // If approval1_id is the same as the logged in user's NPK,
+                // recheck to get empno from the trimmed hirar
+                $tempapprov2 = substr($longestHirar, 0, -4); // Trim 4 characters from the longestHirar
+                $approval3Result = DB::connection('mysql2')->select(DB::raw(
+                    "
+                    SELECT empno
+                    FROM hirarki
+                    WHERE hirar = '$tempapprov2'
+                    GROUP BY empno
+                    ORDER BY MAX(mutdt) DESC
+                    LIMIT 1
+                    "
+                ));
+
+                // Periksa apakah ada hasil yang ditemukan
+                if (!empty($approval3Result)) {
+                    // Ambil nilai empno dari objek pertama dalam hasil
+                    $approval1 = $approval3Result[0]->empno;
+                    // Setelah memastikan $approval1 adalah string, Anda dapat memberikannya ke properti atau variabel yang diharapkan bertipe string
+                    $cuti->approval1_id = $approval1;
+                } else {
+                    // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
+                    $cuti->approval1_id = null;
+                }
+            } else {
+                // Jika hasil dari approval3Result bukan NPK yang login, lanjutkan dengan penggunaan empno tersebut
                 $approval1 = $approval3Result[0]->empno;
                 // Setelah memastikan $approval1 adalah string, Anda dapat memberikannya ke properti atau variabel yang diharapkan bertipe string
-                $izin->approval1_id = $approval1;
-            } else {
-                // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
-                $izin->approval1_id = null;
+                $cuti->approval1_id = $approval1;
             }
         } else {
             // There is only one hirar, use the result from approval1Result
-            $izin->approval1_id = $approval1Result[0]->empno;
+            $cuti->approval1_id = $approval1Result[0]->empno;
         }
-
-        // Periksa apakah ada hasil yang ditemukan
+// Periksa apakah ada hasil yang ditemukan
         if (!empty($approval2Result)) {
             // Ambil nilai empno dari objek pertama dalam hasil
             $approval2 = $approval2Result[0]->empno;
             // Setelah memastikan $approval1 adalah string, Anda dapat memberikannya ke properti atau variabel yang diharapkan bertipe string
-            $izin->approval2_id = $approval2;
+            $cuti->approval2_id = $approval2;
         } else {
             // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
-            $izin->approval2_id = null;
+            $cuti->approval2_id = null;
         }
-        $izin->tgl_mulai = $request->input('tgl_mulai');
-        $izin->tgl_selesai = $request->input('tgl_selesai');
-        $izin->jenisizin = $request->input('jenisizin');
-        $izin->note = $request->input('note');
-        // dd($izin);
-        $izin->save();
-        $document = new PengajuanIzin_Document();
-        // Simpan data dokumen jika ada
-        if ($request->hasFile('data_verifikasi')) {
-            $uploadedFile = $request->file('data_verifikasi');
-            $fileName = uniqid() . '.' . $uploadedFile->getClientOriginalExtension();
-            $uploadedFile->storeAs('public/document/', $fileName);
-
-            $pengajuanIzinDocument = new PengajuanIzin_Document();
-            $pengajuanIzinDocument->id_pengajuanizin = $izin->id; // Menggunakan id pengajuan izin yang baru saja disimpan
-            $pengajuanIzinDocument->data_verifikasi = $fileName;
-            $pengajuanIzinDocument->save();
-        }
-        // dd($pengajuanIzinDocument);
+        $cuti->tgl_mulai = $request->input('tgl_mulai');
+        $cuti->tgl_selesai = $request->input('tgl_selesai');
+        $cuti->jenisizin = $request->input('jenis_cuti');
+        $cuti->note = $request->input('note');
+        $cuti->approval_status = '0';
+        // dd($approval1);
+        $cuti->save();
         // Redirect to the index view after successful form submission
-        return redirect()->route('cuziaizin.index')->with('success', 'Pengajuan izin berhasil disimpan.');
+        return redirect()->route('cuziacuti.index')->with('success', 'Pengajuan cuti berhasil disimpan.');
     }
 
     /**
