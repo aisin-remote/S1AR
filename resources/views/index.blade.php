@@ -32,7 +32,6 @@
                             </div>
                         </div>
                     </form>
-
                     <div class="table-responsive">
                         <table class="table table-striped table-sm table-bordered" id="employee-table">
                             <thead>

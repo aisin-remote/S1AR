@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\jenisizin;
 use Carbon\Carbon;
 use App\Models\saldoCuti;
 use Illuminate\Http\Request;
@@ -68,8 +69,8 @@ class RekapCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
-
-        return view('rekapcuti', compact('userInfoOccupation', 'userInfoDept'));
+        $jenisizin = jenisizin::where('jenisizin', 'LIKE', '%Cuti%')->get();
+        return view('rekapcuti', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
 
@@ -122,19 +123,21 @@ class RekapCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-        //     return DataTables::of()->make(true);
-        if ($request->input('start_date') != null && $request->input('end_date') != null) {
-            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
-            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
-        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
-            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        // Memeriksa apakah data tanggal tersedia
+        if (!empty($start_date) && !empty($end_date)) {
+            // Memproses data tanggal jika ada
+            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
+            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
         } else {
-            $tanggalMulai = $tanggalSekarang;
-            $tanggalAkhir = $tanggalSekarang;
+            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
+            $tanggalMulai = Carbon::now()->format('d-m-Y');
+            $tanggalAkhir = Carbon::now()->format('d-m-Y');
         }
 
-        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
 
         // Execute main query
         $data = DB::connection('mysql2')
@@ -173,12 +176,12 @@ class RekapCutiController extends Controller
                 h.mutdt,
                 hd.descr,
                 @row_number := CASE
-                    WHEN pc.empno != @empno_prev OR pc.tgl_mulai != @tgl_mulai_prev
-                        THEN 1
-                        ELSE @row_number + 1
-                    END AS RowNum,
+                WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
+                    THEN 1
+                    ELSE @row_number + 1
+                END AS RowNum,
                 @empno_prev := pc.empno,
-                @tgl_mulai_prev := pc.tgl_mulai
+                @tgl_pengajuan_prev := pc.tgl_pengajuan
             FROM pengajuancuti pc
             INNER JOIN employee e ON pc.empno = e.empno
             INNER JOIN (
@@ -188,23 +191,23 @@ class RekapCutiController extends Controller
             ) max_hirarki ON pc.empno = max_hirarki.empno
             INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
             INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-            WHERE  pc.approval_status LIKE 2
+            WHERE pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
         ) AS numbered
         WHERE RowNum = 1
-        ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+        ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
                 "));
 
-        // Mengubah format tanggal dan jam dalam hasil data
-        foreach ($data as $row) {
-            if ($row->tgl_mulai != "        ") {
-                // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
-                $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
-                $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
-            } else {
-                $row->tgl_mulai = "Tidak Ada Data";
-                $row->tgl_pengajuan = "Tidak Ada Data";
-            }
-        }
+        // // Mengubah format tanggal dan jam dalam hasil data
+        // foreach ($data as $row) {
+        //     if ($row->tgl_mulai != "        ") {
+        //         // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
+        //         $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
+        //         $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
+        //     } else {
+        //         $row->tgl_mulai = "Tidak Ada Data";
+        //         $row->tgl_pengajuan = "Tidak Ada Data";
+        //     }
+        // }
 
         // Iterate through each row in the collection
         foreach ($data as $row) {

@@ -27,7 +27,9 @@ class PengajuanIzin extends Model
         'approval1_status',
         'approval2_id',
         'approval2_status',
-        'approvalhr_status'
+        'approvalhr_status',
+        'total_hari',
+        'lampiran'
     ];
 
     public function pengajuanizin_document()

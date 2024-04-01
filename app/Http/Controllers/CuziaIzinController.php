@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\jenisizin;
 use App\Models\Pengajuanizin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,8 +69,8 @@ class CuziaIzinController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
-
-        return view('cuziaizin', compact('userInfoOccupation', 'userInfoDept'));
+        $jenisizin = jenisizin::where('jenisizin', 'NOT LIKE', '%Cuti%')->get();
+        return view('cuziaizin', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
 
@@ -121,31 +122,34 @@ class CuziaIzinController extends Controller
         // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
 
-            //     return DataTables::of()->make(true);
-            if ($request->input('start_date') != null && $request->input('end_date') != null) {
-                $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
-                $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
-            } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-                $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
-                $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
-            } else {
-                $tanggalMulai = $tanggalSekarang;
-                $tanggalAkhir = $tanggalSekarang;
-            }
+        // Memeriksa apakah data tanggal tersedia
+        if (!empty($start_date) && !empty($end_date)) {
+            // Memproses data tanggal jika ada
+            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
+            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
+        } else {
+            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
+            $tanggalMulai = Carbon::now()->format('d-m-Y');
+            $tanggalAkhir = Carbon::now()->format('d-m-Y');
+        }
 
-            DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
+        // Execute main query
+        $data = DB::connection('mysql2')
+            ->select(DB::raw("
                 SELECT
                 empno,
                 tgl_mulai,
+                tgl_selesai,
                 jenisizin,
                 tgl_pengajuan,
                 approval1_status,
                 approval_status,
+                lampiran,
                 note,
                 empnm,
                 hirar,
@@ -155,22 +159,24 @@ class CuziaIzinController extends Controller
                 SELECT
                     pc.empno,
                     pc.tgl_mulai,
+                    pc.tgl_selesai,
                     pc.jenisizin,
                     pc.tgl_pengajuan,
                     pc.approval1_status,
                     pc.approval_status,
+                    pc.lampiran,
                     pc.note,
                     e.empnm,
                     h.hirar,
                     h.mutdt,
                     hd.descr,
                     @row_number := CASE
-                        WHEN pc.empno != @empno_prev OR pc.tgl_mulai != @tgl_mulai_prev
-                            THEN 1
-                            ELSE @row_number + 1
-                        END AS RowNum,
+                    WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
+                        THEN 1
+                        ELSE @row_number + 1
+                    END AS RowNum,
                     @empno_prev := pc.empno,
-                    @tgl_mulai_prev := pc.tgl_mulai
+                    @tgl_pengajuan_prev := pc.tgl_pengajuan
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN (
@@ -180,48 +186,34 @@ class CuziaIzinController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno LIKE '%$npk%'
-
+                WHERE pc.empno LIKE '%$npk%' AND (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
             ) AS numbered
             WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
                 "));
 
-            // Mengubah format tanggal dan jam dalam hasil data
-            foreach ($data as $row) {
-                if ($row->tgl_mulai != "        ") {
-                    // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
-                    $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
-                    $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
-                } else {
-                    $row->tgl_mulai = "Tidak Ada Data";
-                    $row->tgl_pengajuan = "Tidak Ada Data";
-                }
+        // Iterate through each row in the collection
+        foreach ($data as $row) {
+            // Calculate the character count for each row's cleaned hirar
+            $cleanedString = str_replace(' ', '', $row->hirar);
+            $jumlahKarakter = strlen($cleanedString);
+
+            // Determine jenis berdasarkan jumlah karakter
+            if ($jumlahKarakter == 5) {
+                $row->hirar = 'KDP';
+            } elseif ($jumlahKarakter == 7) {
+                $row->hirar = 'SPV';
+            } elseif ($jumlahKarakter == 9) {
+                $row->hirar = 'LDR/OPR';
+            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                $row->hirar = 'GMR';
+            } else {
+                $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
-
-            // Iterate through each row in the collection
-            foreach ($data as $row) {
-                // Calculate the character count for each row's cleaned hirar
-                $cleanedString = str_replace(' ', '', $row->hirar);
-                $jumlahKarakter = strlen($cleanedString);
-
-                // Determine jenis berdasarkan jumlah karakter
-                if ($jumlahKarakter == 5) {
-                    $row->hirar = 'KDP';
-                } elseif ($jumlahKarakter == 7) {
-                    $row->hirar = 'SPV';
-                } elseif ($jumlahKarakter == 9) {
-                    $row->hirar = 'LDR/OPR';
-                } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
-                    $row->hirar = 'GMR';
-                } else {
-                    $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
-                }
-            }
-
-            return DataTables::of($data)->make(true);
-
         }
+
+        return DataTables::of($data)->make(true);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -286,11 +278,11 @@ class CuziaIzinController extends Controller
         $cuti = new PengajuanIzin();
         $cuti->empno = $request->input('empno');
         $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
-        $cuti->kodepengajuan = 'CUTI' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
+        $cuti->kodepengajuan = 'IZIN' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
 
         // Check if approval1Result has 2 hirars
         // Check if approval1Result has 2 hirars
-       // Check if approval1Result has 2 hirars
+        // Check if approval1Result has 2 hirars
         if (count($approval1Result) > 1) {
             // There are multiple hirars, find the longest one
             $maxLength = 0;
@@ -364,7 +356,7 @@ class CuziaIzinController extends Controller
             // There is only one hirar, use the result from approval1Result
             $cuti->approval1_id = $approval1Result[0]->empno;
         }
-// Periksa apakah ada hasil yang ditemukan
+        // Periksa apakah ada hasil yang ditemukan
         if (!empty($approval2Result)) {
             // Ambil nilai empno dari objek pertama dalam hasil
             $approval2 = $approval2Result[0]->empno;
@@ -376,13 +368,22 @@ class CuziaIzinController extends Controller
         }
         $cuti->tgl_mulai = $request->input('tgl_mulai');
         $cuti->tgl_selesai = $request->input('tgl_selesai');
-        $cuti->jenisizin = $request->input('jenis_cuti');
+        $cuti->jenisizin = $request->input('jenisizin');
         $cuti->note = $request->input('note');
         $cuti->approval_status = '0';
         // dd($approval1);
+        if ($request->hasFile('data_verifikasi')) {
+        $file = $request->file('data_verifikasi');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        // Tentukan folder penyimpanan, contohnya 'public/lampiran'
+        $path = $file->storeAs('public/lampiran', $filename);
+
+        // Simpan path file ke database
+        $cuti->lampiran = $path;
+    }
         $cuti->save();
         // Redirect to the index view after successful form submission
-        return redirect()->route('cuziacuti.index')->with('success', 'Pengajuan cuti berhasil disimpan.');
+        return redirect()->route('cuziaizin.index')->with('success', 'Pengajuan cuti berhasil disimpan.');
     }
 
     /**

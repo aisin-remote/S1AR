@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\jenisizin;
 use App\Models\PengajuanCuti;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 // use App\Models\PengajuanCuti;
 use App\Models\pengajuancuti_document;
+use DateTime;
 
 class CuziaCutiController extends Controller
 {
@@ -86,11 +88,12 @@ class CuziaCutiController extends Controller
         ));
 
         // Check if the result is not empty and get the first element of the array.
-        $saldocutiistimewa = !empty($result) ? (string) $result[0]->saldocutiistimewa : '0';
-         // Check if the result is not empty and get the first element of the array.
-         $saldocutitahunan = !empty($result) ? (string) $result[0]->saldocutitahunan : '0';
+        $saldocutiistimewa = !empty($result) ? (string) $result[0]->saldocutiistimewa : 'Tidak ada saldo';
+        // Check if the result is not empty and get the first element of the array.
+        $saldocutitahunan = !empty($result) ? (string) $result[0]->saldocutitahunan : 'Tidak ada saldo';
 
-        return view('cuziacuti', compact('userInfoOccupation', 'userInfoDept','saldocutiistimewa','saldocutitahunan'));
+        $jenisizin = jenisizin::where('jenisizin', 'LIKE', '%Cuti%')->get();
+        return view('cuziacuti', compact('userInfoOccupation', 'userInfoDept', 'jenisizin', 'saldocutiistimewa', 'saldocutitahunan'));
         // dd($request->all());
     }
 
@@ -144,19 +147,21 @@ class CuziaCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-        //     return DataTables::of()->make(true);
-        if ($request->input('start_date') != null && $request->input('end_date') != null) {
-            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
-            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
-        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
-            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        // Memeriksa apakah data tanggal tersedia
+        if (!empty($start_date) && !empty($end_date)) {
+            // Memproses data tanggal jika ada
+            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
+            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
         } else {
-            $tanggalMulai = $tanggalSekarang;
-            $tanggalAkhir = $tanggalSekarang;
+            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
+            $tanggalMulai = Carbon::now()->format('d-m-Y');
+            $tanggalAkhir = Carbon::now()->format('d-m-Y');
         }
 
-        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
 
         // Execute main query
         $data = DB::connection('mysql2')
@@ -195,12 +200,12 @@ class CuziaCutiController extends Controller
                     h.mutdt,
                     hd.descr,
                     @row_number := CASE
-                        WHEN pc.empno != @empno_prev OR pc.tgl_mulai != @tgl_mulai_prev
-                            THEN 1
-                            ELSE @row_number + 1
-                        END AS RowNum,
+                    WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
+                        THEN 1
+                        ELSE @row_number + 1
+                    END AS RowNum,
                     @empno_prev := pc.empno,
-                    @tgl_mulai_prev := pc.tgl_mulai
+                    @tgl_pengajuan_prev := pc.tgl_pengajuan
                 FROM pengajuancuti pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN (
@@ -210,24 +215,11 @@ class CuziaCutiController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno LIKE '%$npk%'
-
+                WHERE pc.empno LIKE '%$npk%' AND (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
             ) AS numbered
             WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+            ORDER BY empno ASC, tgl_pengajuan ASC;
                 "));
-
-        // Mengubah format tanggal dan jam dalam hasil data
-        foreach ($data as $row) {
-            if ($row->tgl_mulai != "        ") {
-                // $row->tgl_mulai = substr($row->tgl_mulai, 0, 4) . '-' . substr($row->tgl_mulai, 4, 2) . '-' . substr($row->tgl_mulai, 6, 2);
-                $row->tgl_mulai = substr($row->tgl_mulai, 0, 10);
-                $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 10);
-            } else {
-                $row->tgl_mulai = "Tidak Ada Data";
-                $row->tgl_pengajuan = "Tidak Ada Data";
-            }
-        }
 
         // Iterate through each row in the collection
         foreach ($data as $row) {
@@ -360,17 +352,17 @@ class CuziaCutiController extends Controller
                 "
             ));
 
-                // Periksa apakah ada hasil yang ditemukan
-                if (!empty($approval3Result)) {
-                    // Ambil nilai empno dari objek pertama dalam hasil
-                    $approval1 = $approval3Result[0]->empno;
+            // Periksa apakah ada hasil yang ditemukan
+            if (!empty($approval3Result)) {
+                // Ambil nilai empno dari objek pertama dalam hasil
+                $approval1 = $approval3Result[0]->empno;
 
-                    // Check if approval1_id is same as logged in user's NPK
-                    if ($approval1 == $npk) {
-                        // If approval1_id is same as logged in user's NPK,
-                        // perform additional check to find third largest mutdt
-                        $thirdLargestResult = DB::connection('mysql2')->select(DB::raw(
-                            "
+                // Check if approval1_id is same as logged in user's NPK
+                if ($approval1 == $npk) {
+                    // If approval1_id is same as logged in user's NPK,
+                    // perform additional check to find third largest mutdt
+                    $thirdLargestResult = DB::connection('mysql2')->select(DB::raw(
+                        "
                             SELECT MAX(mutdt) AS third_largest_mutdt, empno
                             FROM hirarki
                             WHERE hirar = '$tempapprov1'
@@ -379,29 +371,29 @@ class CuziaCutiController extends Controller
                             ORDER BY MAX(mutdt) DESC
                             LIMIT 1
                             "
-                        ));
+                    ));
 
-                        // Periksa apakah ada hasil yang ditemukan untuk third largest
-                        if (!empty($thirdLargestResult)) {
-                            // Ambil nilai empno dari hasil
-                            $approval1 = $thirdLargestResult[0]->empno;
-                            $cuti->approval1_id = $approval1;
-                        } else {
-                            // Jika tidak ada third largest, set approval1_id menjadi null
-                            $cuti->approval1_id = null;
-                        }
-                    } else {
-                        // Jika approval1_id tidak sama dengan NPK yang login, set approval1_id ke nilai yang ditemukan
+                    // Periksa apakah ada hasil yang ditemukan untuk third largest
+                    if (!empty($thirdLargestResult)) {
+                        // Ambil nilai empno dari hasil
+                        $approval1 = $thirdLargestResult[0]->empno;
                         $cuti->approval1_id = $approval1;
+                    } else {
+                        // Jika tidak ada third largest, set approval1_id menjadi null
+                        $cuti->approval1_id = null;
                     }
                 } else {
-                    // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
-                    $cuti->approval1_id = null;
+                    // Jika approval1_id tidak sama dengan NPK yang login, set approval1_id ke nilai yang ditemukan
+                    $cuti->approval1_id = $approval1;
                 }
             } else {
-                // There is only one hirar, use the result from approval1Result
-                $cuti->approval1_id = $approval1Result[0]->empno;
+                // Setel nilai menjadi null atau sesuai kebutuhan jika tidak ada hasil yang ditemukan
+                $cuti->approval1_id = null;
             }
+        } else {
+            // There is only one hirar, use the result from approval1Result
+            $cuti->approval1_id = $approval1Result[0]->empno;
+        }
 
 
         // Periksa apakah ada hasil yang ditemukan
@@ -416,7 +408,16 @@ class CuziaCutiController extends Controller
         }
         $cuti->tgl_mulai = $request->input('tgl_mulai');
         $cuti->tgl_selesai = $request->input('tgl_selesai');
-        $cuti->jeniscuti = $request->input('jenis_cuti');
+        $cuti->jeniscuti = $request->input('jenisizin');
+        // Ambil nilai tanggal mulai dan tanggal selesai dari input pengguna
+        $tanggal_mulai = new DateTime($request->input('tgl_mulai'));
+        $tanggal_selesai = new DateTime($request->input('tgl_selesai'));
+
+        // Hitung selisih hari antara tanggal mulai dan tanggal selesai
+        $selisih = $tanggal_mulai->diff($tanggal_selesai);
+        $total_hari = $selisih->days + 1; // Jumlah hari termasuk tanggal mulai dan tanggal selesai
+        $cuti->total_hari = $total_hari;
+
         $cuti->note = $request->input('note');
         $cuti->approval_status = '0';
         // dd($approval1);

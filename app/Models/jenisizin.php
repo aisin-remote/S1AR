@@ -5,16 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class holiday extends Model
+class jenisizin extends Model
 {
     use HasFactory;
-
-    public $timestamps = false;
     protected $connection = 'mysql2';
-    protected $table = 'holiday';
+    protected $table = 'jenisizin';
 
     protected $fillable = [
-        'date',
-        'note',
+        'jenisizin',
     ];
 }

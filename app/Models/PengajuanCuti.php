@@ -21,6 +21,7 @@ class PengajuanCuti extends Model
         'tgl_mulai',
         'tgl_selesai',
         'tgl_pengajuan',
+        'total_hari',
         'note',
         'lampiran',
         'jeniscuti',

@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CuziaController;
 use App\Http\Controllers\CuziaPribadiController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\JenisIzinController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\SchedulerController;
 use App\Http\Controllers\CuziaIzinController;
@@ -48,11 +49,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload-holiday', [HolidayController::class, 'upload'])->name('upload-holiday');
     Route::get('/holiday/datatables', [HolidayController::class, 'getDataHoliday'])->name('holiday.datatables');
 
+    Route::get('/jenisizin', [JenisIzinController::class, 'index'])->name('master-jenisizin');
+    Route::post('/upload-jenisizin', [JenisIzinController::class, 'upload'])->name('upload-jenisizin');
+    Route::get('/jenisizin/datatables', [JenisIzinController::class, 'getDataJenisIzin'])->name('jenisizin.datatables');
+    Route::resource('jenisizin', JenisIzinController::class);
+
     Route::get('/cuzia', [CuziaController::class, 'index'])->name('cuzia');
     Route::post('/approve', [CuziaController::class, 'approve'])->name('cuzia.approve');
     // Route::get('/cuzia/{month?}', [CuziaController::class, 'getdataCuzia'])->name('cuziafilter');
     Route::get('/dashboard', [CuziaController::class, 'saldocuti'])->name('saldocuti');
+    Route::get('/chartdashboard', [CuziaController::class, 'getDashboardData'])->name('getDashboardData');
     Route::get('/cuzia/datatables', [CuziaController::class, 'getData'])->name('cuzia.datatables');
+    // Route::put('/cuzia/reject', [CuziaController::class, 'reject'])->name('cuzia.reject');
+
 
     Route::get('/rekapcuti', [RekapCutiController::class, 'index'])->name('rekapcuti');
     Route::get('/rekapcuti/datatables', [RekapCutiController::class, 'getData'])->name('rekapcuti.datatables');

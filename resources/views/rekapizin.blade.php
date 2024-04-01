@@ -1,75 +1,141 @@
-@extends('layouts.app', ['title' => 'Cuzia Attendance'])
+@extends('layouts.app', ['title' => 'Cuzia izin Attendance'])
 
 @section('content')
-@if(session('error'))
-<script>
-    alert("{{ session('error') }}");
-</script>
-@endif
+    @if (session('error'))
+        <script>
+            alert("{{ session('error') }}");
+        </script>
+    @endif
 
-<div class="main-content">
-    <section class="section">
-        <div class="section-header">
-            <h1>Data Rekap Izin Karyawan </h1>
-        </div>
+    <div class="main-content">
+        <section class="section">
+            <div class="section-header">
+                <h1>Rekap Data izin Pribadi Karyawan </h1>
+            </div>
 
-        <div class="card">
-            <div class="row px-3 py-3">
-                <div class="col-lg-12">
-                    <form id="filter-form">
-                        <div class="form-row">
-                            <div class="form-group col-auto">
-                                <label for="start_date">Start Date:</label>
-                                <input type="date" class="form-control form-control-sm" id="start_date" name="start_date">
+            <div class="card">
+                <div class="row px-3 py-3">
+                    <div class="col-lg-12">
+                        <form id="filter-form">
+                            <div class="form-row">
+                                <div class="form-group col-auto">
+                                    <label for="start_date">Start Date:</label>
+                                    <input type="date" class="form-control form-control-sm" id="start_date"
+                                        name="start_date">
+                                </div>
+                                <div class="form-group col-auto">
+                                    <label for="end_date">End Date:</label>
+                                    <input type="date" class="form-control form-control-sm" id="end_date"
+                                        name="end_date">
+                                </div>
+                                <div class="form-group col-auto">
+                                    <label for="filter_button">&nbsp;</label>
+                                    <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
+                                        id="filter_button">Apply Filter</button>
+                                </div>
                             </div>
-                            <div class="form-group col-auto">
-                                <label for="end_date">End Date:</label>
-                                <input type="date" class="form-control form-control-sm" id="end_date" name="end_date">
-                            </div>
-                            <div class="form-group col-auto">
-                                <label for="filter_button">&nbsp;</label>
-                                <button type="button" class="btn btn-primary btn-sm form-control form-control-sm" id="filter_button">Apply Filter</button>
-                            </div>
+                        </form>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm table-bordered" id="employee-table">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">Tanggal Pengajuan</th>
+                                        <th class="text-center align-middle">NPK</th>
+                                        <th class="text-center align-middle">Nama</th>
+                                        <th class="align-middle">Jenis</th>
+                                        <th class="align-middle">Tanggal Mulai izin</th>
+                                        <th class="align-middle">Tanggal Selesai izin</th>
+                                        <th class="align-middle">Status</th>
+                                        <th class="align-middle">Keterangan</th>
+                                        <th class="align-middle">Action</th>
+                                    </tr>
+                                </thead>
+                            </table>
                         </div>
-                    </form>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-sm table-bordered" id="employee-table">
-                            <thead>
-                                <tr>
-                                    <th class="align-middle">Tanggal Pengajuan</th>
-                                    <th class="text-center align-middle">NPK</th>
-                                    <th class="text-center align-middle">Nama</th>
-                                    <th class="align-middle">Jenis</th>
-                                    <th class="align-middle">Tanggal Izin</th>
-                                    <th class="align-middle">Status</th>
-                                    <th class="align-middle">Keterangan</th>
-                                    <th class="align-middle">Action</th>
-                                </tr>
-                            </thead>
-                        </table>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</div>
+        </section>
+    </div>
 
-<!-- Add this modal code at the end of your HTML file, before closing the body tag -->
-<div class="modal fade" id="cuziaDetailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog"  role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editModal">Detail Pengajuan Izin</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+    <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
+    <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModal">Detail Pengajuan izin</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row" style="display: block">
+                            <form action="{{ route('cuziaizin.store') }}" method="POST" enctype="multipart/form-data">
+                                <!-- Isi formulir di sini -->
+                                @csrf
+                                <div class="form-group mb-2">
+                                    <label for="nama">Nama:</label>
+                                    <input type="text" required class="form-control" id="nama" name="nama"
+                                        value="{{ Auth::user()->name }}" readonly>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="empno">NPK:</label>
+                                    <input type="text" class="form-control" required id="empno" name="empno"
+                                        value="{{ Auth::user()->npk }}" readonly>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group mb-2 col-md-6 ">
+                                        <label for="tgl_mulai">Tanggal Mulai:</label>
+                                        <input type="date" required class="form-control" id="tgl_mulai" name="tgl_mulai">
+                                    </div>
+                                    <div class="form-group mb-2 col-md-6 ">
+                                        <label for="tgl_selesai">Tanggal Selesai:</label>
+                                        <input type="date" required class="form-control" id="tgl_selesai"
+                                            name="tgl_selesai">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-2 ">
+                                    <label for="jenis_izin">Jenis izin:</label>
+                                    <select required class="form-control" id="jenis_izin" name="jenis_izin">
+                                        <option value="" disabled selected>Pilih Jenis izin</option>
+                                        @foreach ($jenisizin as $izin)
+                                            <option value="{{ $izin->jenisizin }}">{{ $izin->jenisizin }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label for="note">Keterangan:</label>
+                                    <textarea class="form-control" id="note" name="note"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                        </div>
+                    </div>
+                    </form>
+                </div>
             </div>
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <div class="row" style="display: block">
+        </div>
+
+
+        <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
+        <div class="modal fade" id="cuziaDetailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModal">Detail Pengajuan izin</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row" style="display: block">
                                 <div class="form-group ">
                                     <label for="nama">Nama:</label>
-                                    <input type="text" class="form-control" id="nama" name="nama" disabled>
+                                    <input type="text" class="form-control" id="nama1" name="nama" disabled>
                                 </div>
                                 <div class="form-group ">
                                     <label for="npk">NPK:</label>
@@ -78,215 +144,325 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6 ">
                                         <label for="tgl_mulai">Tanggal Mulai:</label>
-                                        <input type="date" class="form-control" id="tgl_mulai" name="tgl_mulai" disabled>
+                                        <input type="date" class="form-control" id="tgl_mulai1" name="tgl_mulai"
+                                            disabled>
                                     </div>
                                     <div class="form-group col-md-6 ">
                                         <label for="tgl_selesai">Tanggal Selesai:</label>
-                                        <input type="date" class="form-control" id="tgl_selesai" name="tgl_selesai" disabled>
+                                        <input type="date" class="form-control" id="tgl_selesai1" name="tgl_selesai"
+                                            disabled>
                                     </div>
                                 </div>
                                 <div class="form-group ">
                                     <label for="jenis_cuzia">Jenis Cuzia:</label>
-                                    <select class="form-control" id="jenis_cuzia" name="jenis_cuzia" disabled>
-                                        <option value="" disabled selected>Pilih Jenis Izin</option>
-                                        <option value="IMU">IMP Mendapatkan Upah</option>
-                                        <option value="IMP">IMP Tidak Mendapatkan Upah</option>
-                                        <option value="SKT">Sakit</option>
-                                        <option value="DLU">Dinas Luar</option>
-                                        <!-- Add more options as needed -->
+                                    <select required class="form-control" id="jenisizin4" name="jenis_izin"disabled>
+                                        <option value="" disabled selected>Pilih Jenis izin</option>
+                                        @foreach ($jenisizin as $izin)
+                                            <option value="{{ $izin->jenisizin }}">{{ $izin->jenisizin }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea class="form-control" id="note" name="note" disabled></textarea>
+                                    <textarea class="form-control" id="note1" name="note" disabled></textarea>
                                 </div>
-                                <button id="btn-tolak" class="btn btn-danger btn-sm m-1 btn-tolak" style="width: 100px;">
-                                    Tolak
-                                </button>
-                                <button id="btn-setuju" class="btn btn-primary btn-sm m-1 btn-setuju" style="width: 100px;">
-                                    Setuju
-                                </button>
 
-                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
         </div>
-    </div>
-</div>
 
-@push('scripts')
 
-<script>
 
-    $(document).ready(function() {
-        var table = $('#employee-table').DataTable({
-            dom: '<"top"f>rt<"bottom"lip><"clear">',
-            processing: true,
-            ajax: {
-                url: '{{ url("/rekapizin/datatables") }}',
-                data: function(d) {
-                    d.start_date = $('#start_date').val();
-                    d.end_date = $('#end_date').val();
+        @push('scripts')
+            <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+            <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+            <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
+            <?php
+            $result = DB::connection('mysql2')->select(DB::raw('SELECT date FROM holiday'));
+
+            $holidays = []; // Array to store national holiday dates
+
+            // Process query results
+            if (!empty($result)) {
+                // Storing data from each row of the query result into the $holidays array
+                foreach ($result as $row) {
+                    $holidays[] = $row->date; // Assuming the result is an object. Use $row['date'] if it's an array.
                 }
-            },
-            columns: [
-                {
-                    data: 'tgl_pengajuan',
-                    name: 'tgl_pengajuan'
-                },{
-                    data: 'empno',
-                    name: 'empno'
-                },
-                {
-                    data: 'empnm',
-                    name: 'empnm',
-                    orderable: false
-                },
-
-                {
-                    data: 'jenisizin',
-                    name: 'jenisizin'
-                },
-                {
-                    data: 'tgl_mulai',
-                    name: 'tgl_mulai'
-                },
-                {
-                    data: 'approval_status',
-                    name: 'approval_status',
-                    render: function(data, type, row) {
-                    var statusText = '';
-                    switch(data) {
-                        case '1':
-                            statusText = 'Disetujui oleh Atasan 1';
-                            break;
-                        case '2':
-                            statusText = 'Disetujui oleh Atasan 2';
-                            break;
-                        case '-1':
-                            statusText = 'Ditolak';
-                            break;
-                        default:
-                            statusText = 'Menunggu Persetujuan';
-                            break;
-                    }
-                    return statusText;
-                }
-                },
-                {
-                    data: 'note',
-                    name: 'note'
-                },
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-center',
-                    render: function(data, type, row) {
-                        return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
-                    }
-
-                }
-
-            ],
-
-            initComplete: function() {
-                var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
-                var userInfoDept = '<?php echo $userInfoDept; ?>';
-
-                if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
-                    this.api().columns([3]).every(function() {
-                        var column = this;
-
-                        // Create a container for the filter and clear button
-                        var filterContainer = $('<div class="d-flex align-items-center"></div>').appendTo($('#employee-table_wrapper .top'));
-
-                        // Create a select element
-                        var select = $('<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>')
-                            .appendTo(filterContainer) // Append it to the container
-
-                            // Add event listeners for keyup and change events
-                            .on('keyup change', function() {
-                                column.search($(this).val()).draw();
-                            });
-
-                        // Add a clear button to reset the filter
-                        $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
-                            .appendTo(filterContainer)
-                            .on('click', function() {
-                                select.val('').change(); // Reset the select and trigger change event
-                            });
-                    });
-                }
+            } else {
+                echo 'Tidak ada data libur nasional.';
             }
-        });
+            ?>
 
-        $('#filter_button').on('click', function() {
-            table.ajax.reload();
-        });
 
-        $('#employee-table').on('click', '.btn-update', function(){
-            console.log($(this).data('tgl_mulai'));
-            $('#nama').val($(this).data('nama'));
-            $('#npk').val($(this).data('empno'));
-            $('#tgl_mulai').val($(this).data('tgl_mulai'));
-            $('#tgl_selesai').val($(this).data('tgl_selesai'));
-            $('#jenis_cuzia').val($(this).data('jenis'));
-            $('#note').val($(this).data('note'));
-            $('#btn-tolak').attr('data-id', $(this).data('uuid'));
-            $('#btn-setuju').attr('data-id', $(this).data('uuid'));
-        });
+            <script>
+                // Tanggal-tanggal libur nasional dari PHP disalin ke dalam skrip JavaScript
+                var holidays = <?php echo json_encode($holidays); ?>;
 
-        $('#btn-tolak').on('click', function() {
-            var form = document.createElement("form");
-            form.method = "POST";
-            form.action = "{{ route('izin.approve') }}";
-            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            var hiddenToken = document.createElement('input');
-            hiddenToken.type = 'hidden';
-            hiddenToken.name = '_token';
-            hiddenToken.value = csrfToken;
-            form.appendChild(hiddenToken);
+                document.addEventListener("DOMContentLoaded", function() {
+                    var inputTanggalMulai = document.getElementById('tgl_mulai');
+                    var inputTanggalSelesai = document.getElementById('tgl_selesai');
 
-            var input = document.createElement("input");
-            input.name = 'id';
-            input.value = $(this).data('id');
-            form.appendChild(input);
+                    var today = new Date();
+                    var dd = String(today.getDate()).padStart(2, '0');
+                    var mm = String(today.getMonth() + 1).padStart(2, '0');
+                    var yyyy = today.getFullYear();
+                    today = yyyy + '-' + mm + '-' + dd;
 
-            var input = document.createElement("input");
-            input.name = 'status';
-            input.value = '0';
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        });
+                    inputTanggalMulai.setAttribute("min", today);
 
-        $('#btn-setuju').on('click', function() {
-            var form = document.createElement("form");
-            form.method = "POST";
-            form.action = "{{ route('izin.approve') }}";
-            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            var hiddenToken = document.createElement('input');
-            hiddenToken.type = 'hidden';
-            hiddenToken.name = '_token';
-            hiddenToken.value = csrfToken;
-            form.appendChild(hiddenToken);
+                    inputTanggalMulai.addEventListener('change', function() {
+                        var selectedDate = new Date(inputTanggalMulai.value);
 
-            var input = document.createElement("input");
-            input.name = 'id';
-            input.value = $(this).data('id');
-            form.appendChild(input);
+                        // Memeriksa apakah tanggal yang dipilih adalah hari libur nasional
+                        var isHoliday = holidays.includes(inputTanggalMulai.value);
 
-            var input = document.createElement("input");
-            input.name = 'status';
-            input.value = '1';
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        });
+                        if (isHoliday) {
+                            inputTanggalMulai.value = '';
+                            alert("Maaf, tanggal yang dipilih adalah hari libur nasional.");
+                            return;
+                        }
 
-    });
-</script>
-@endpush
-@endsection
+                        inputTanggalSelesai.setAttribute("min", inputTanggalMulai.value);
+                    });
+                });
+            </script>
+
+            <script>
+                $(document).ready(function() {
+                    var table = $('#employee-table').DataTable({
+                        dom: '<"top"f>Brt<"bottom"lip><"clear">',
+                        "ordering": true,
+                        paging: true,
+                        pagingType: "simple_numbers",
+                        scrollY: "400px",
+                        scrollX: false,
+                        buttons: [{
+                            text: 'Export to Excel',
+                            action: function(e, dt, button, config) {
+                                var dataToExport = [];
+
+                                dt.rows({
+                                    search: 'applied'
+                                }).every(function(rowIdx, tableLoop, rowLoop) {
+                                    var data = this.data();
+                                    var startDate = new Date(data.tgl_mulai);
+                                    var endDate = new Date(data.tgl_selesai);
+                                    var currentDate = new Date(startDate);
+
+                                    while (currentDate <= endDate) {
+                                        var newRow = {
+                                            tanggal: currentDate.getFullYear() + '-' + (
+                                                    currentDate.getMonth() + 1).toString()
+                                                .padStart(2, '0') + '-' + currentDate
+                                                .getDate().toString().padStart(2, '0'),
+                                            shift: '',
+                                            nip: data.empno,
+                                            reason: data.jeniscuti,
+                                            note: data.note
+                                        };
+                                        dataToExport.push(newRow);
+
+                                        currentDate.setDate(currentDate.getDate() + 1);
+                                    }
+                                });
+
+                                if (dataToExport.length > 0) {
+                                    // Convert dataToExport to a format suitable for Excel export
+                                    var excelData = dataToExport.map(function(row) {
+                                        return [
+                                            row.tanggal,
+                                            row.shift,
+                                            row.nip,
+                                            row.reason,
+                                            row.note
+                                        ];
+                                    });
+
+                                    // Prepend headers
+                                    excelData.unshift(['Tanggal', 'Shift', 'NIP', 'Reason', 'Note']);
+
+                                    // Convert to XLSX
+                                    var wb = XLSX.utils.book_new();
+                                    var ws = XLSX.utils.aoa_to_sheet(excelData);
+                                    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+                                    // Save file
+                                    XLSX.writeFile(wb, 'data rekap.xlsx');
+                                } else {
+                                    console.log('No data to export');
+                                }
+                            },
+                            className: 'btn btn-success btn-sm float-above',
+                        }],
+                        ajax: {
+                            url: '{{ url('/rekapizin/datatables') }}',
+                            data: function(d) {
+                                console.log(d);
+                                d.start_date = $('#start_date').val(); // Mengambil nilai tanggal mulai
+                                d.end_date = $('#end_date').val(); // Mengambil nilai tanggal akhir
+                            }
+                        },
+                        columns: [{
+                                data: 'tgl_pengajuan',
+                                name: 'tgl_pengajuan'
+                            },
+                            {
+                                data: 'empno',
+                                name: 'empno'
+                            },
+                            {
+                                data: 'empnm',
+                                name: 'empnm',
+                                orderable: false
+                            },
+
+                            {
+                                data: 'jenisizin',
+                                name: 'jenisizin'
+                            },
+                            {
+                                data: 'tgl_mulai',
+                                name: 'tgl_mulai'
+                            },
+                            {
+                                data: 'tgl_selesai',
+                                name: 'tgl_selesai'
+                            },
+                            {
+                                data: 'approval_status',
+                                name: 'approval_status',
+                                render: function(data, type, row) {
+                                    var statusText = '';
+                                    var userInfoOccupation =
+                                        '<?php echo $userInfoOccupation; ?>'; // Asumsikan nilai ini diambil dari server-side
+                                    switch (data) {
+                                        case '1':
+                                            if (userInfoOccupation === 'LDR/OPR') {
+                                                statusText = 'Disetujui oleh SPV';
+                                            } else if (userInfoOccupation === 'SPV') {
+                                                statusText = 'Disetujui oleh MGR';
+                                            } else if (userInfoOccupation === 'KDP') {
+                                                statusText = 'Disetujui oleh GMR';
+                                            } else {
+                                                statusText = 'Disetujui oleh Atasan 1';
+                                            }
+                                            break;
+                                        case '2':
+                                            if (userInfoOccupation === 'LDR/OPR') {
+                                                statusText = 'Disetujui oleh MGR';
+                                            } else if (userInfoOccupation === 'SPV') {
+                                                statusText = 'Disetujui oleh GMR';
+                                            } else if (userInfoOccupation === 'KDP') {
+                                                statusText = 'Disetujui oleh DIR';
+                                            } else {
+                                                statusText = 'Disetujui oleh Atasan 2';
+                                            }
+                                            break;
+                                        case '-1':
+                                            if (userInfoOccupation === 'LDR/OPR') {
+                                                statusText = 'Ditolak oleh SPV';
+                                            } else if (userInfoOccupation === 'SPV') {
+                                                statusText = 'Ditolak oleh MGR';
+                                            } else if (userInfoOccupation === 'KDP') {
+                                                statusText = 'Ditolak oleh GMR';
+                                            } else {
+                                                statusText = 'Ditolak oleh Atasan 1';
+                                            }
+                                            break;
+                                        case '-2':
+                                            if (userInfoOccupation === 'LDR/OPR') {
+                                                statusText = 'Ditolak oleh MGR';
+                                            } else if (userInfoOccupation === 'SPV') {
+                                                statusText = 'Ditolak oleh GMR';
+                                            } else if (userInfoOccupation === 'KDP') {
+                                                statusText = 'Ditolak oleh DIR';
+                                            } else {
+                                                statusText = 'Ditolak oleh Atasan 2';
+                                            }
+                                            break;
+                                        default:
+                                            statusText = 'Menunggu Persetujuan';
+                                            break;
+                                    }
+                                    return statusText;
+                                }
+                            },
+                            {
+                                data: 'note',
+                                name: 'note'
+                            },
+                            {
+                                data: 'action',
+                                name: 'action',
+                                orderable: false,
+                                searchable: false,
+                                className: 'text-center',
+                                render: function(data, type, row) {
+                                    return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
+                                }
+
+                            }
+
+                        ],
+
+                        initComplete: function() {
+                            var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
+                            var userInfoDept = '<?php echo $userInfoDept; ?>';
+
+                            if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
+                                this.api().columns([3]).every(function() {
+                                    var column = this;
+
+                                    // Create a container for the filter and clear button
+                                    var filterContainer = $(
+                                        '<div class="d-flex align-items-center"></div>').appendTo($(
+                                        '#employee-table_wrapper .top'));
+
+                                    // Create a select element
+                                    var select = $(
+                                            '<select class="form-control form-control-sm col-md-3  mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>'
+                                        )
+                                        .appendTo(filterContainer) // Append it to the container
+
+                                        // Add event listeners for keyup and change events
+                                        .on('keyup change', function() {
+                                            column.search($(this).val()).draw();
+                                        });
+
+                                    // Add a clear button to reset the filter
+                                    $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
+                                        .appendTo(filterContainer)
+                                        .on('click', function() {
+                                            select.val('')
+                                                .change(); // Reset the select and trigger change event
+                                        });
+                                });
+                            }
+                        }
+                    });
+
+                    $('#filter_button').on('click', function() {
+                        table.ajax.reload();
+                    });
+
+                    $('#employee-table').on('click', '.btn-update', function() {
+                        console.log($(this).data('jenis_cuzia'));
+                        $('#nama1').val($(this).data('nama'));
+                        $('#npk').val($(this).data('empno'));
+                        $('#tgl_mulai1').val($(this).data('tgl_mulai'));
+                        $('#tgl_selesai1').val($(this).data('tgl_selesai'));
+                        $('#jenisizin4').val($(this).data('jenis'));
+                        $('#note1').val($(this).data('note'));
+                    });
+
+                });
+            </script>
+        @endpush
+    @endsection

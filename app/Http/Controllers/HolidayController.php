@@ -32,7 +32,6 @@ class HolidayController extends Controller
         // Ambil nilai date_holiday dan note_holiday
         $dateHoliday = $import->getDateHoliday();
         $noteHoliday = $import->getNoteHoliday();
-
         return redirect()->route('master-holiday')->with('success', 'Dokumen berhasil diunggah.');
     }
 

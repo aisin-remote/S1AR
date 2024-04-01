@@ -78,11 +78,11 @@
                 </ul>
                 @if ($userInfoDept == 'HRD')
                 <a class="sidebar-menu {{ request()->is('holiday*') ? 'text-primary' : '' }}" href="/holiday"><i class="fas fa-calendar"></i><span>Master Holiday</span></a>
+                <a class="sidebar-menu {{ request()->is('jenisizin*') ? 'text-primary' : '' }}" href="/jenisizin"><i class="fas fa-calendar"></i><span>Master Jenis Izin</span></a>
                 @endif
                 {{-- <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a> --}}
 
             </li>
-
             <li>
                 <a href="#" class="nav-link has-dropdown {{ request()->is('cuziacuti*')||request()->is('cuzia*') ? 'text-primary' : '' }}"><i class="fas fa-umbrella-beach"></i>
                     <span>Cuti </span></a>
@@ -152,6 +152,5 @@
             </li>
         </ul>
         @endif
-
     </aside>
 </div>
