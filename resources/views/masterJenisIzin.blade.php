@@ -94,37 +94,4 @@
             </div>
         </div>
     </div>
-
-     <!-- Modal -->
-<div class="modal fade" id="editModal{{$izin->jenisizin}}" tabindex="-1" role="dialog" aria-labelledby="editModal{{$izin->jenisizin}}Label" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editModal{{$izin->jenisizin}}Label">Edit Izin</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Isi form untuk mengedit izin -->
-          <form>
-            <div class="form-group">
-              <label for="jenisizin">Jenis Izin</label>
-              <input type="text" class="form-control" id="jenisizin" placeholderY="Masukkan jenis izin">
-            </div>
-            <!-- Tambahkan form lainnya sesuai kebutuhan -->
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-          <button type="button" class="btn btn-primary">Simpan Perubahan</button>
-        </div>
-      </div>
-    </div>
-  </div>
- </div>
-    </div>
-    </div>
-    </div>
-    </div>
 @endsection

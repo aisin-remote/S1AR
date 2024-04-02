@@ -24,7 +24,7 @@ class JenisIzinController extends Controller
     public function index()
     {
         $jenisIzin = JenisIzin::all();
-        return view('masterjenisizin', compact('jenisIzin'));
+        return view('masterJenisIzin', compact('jenisIzin'));
     }
 
     /**

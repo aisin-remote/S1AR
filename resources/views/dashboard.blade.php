@@ -120,7 +120,7 @@
         </section>
     </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         var ctx = document.getElementById('cutiChart').getContext('2d');
         var cutiChart = new Chart(ctx, {
@@ -175,5 +175,5 @@
                 }
             }
         });
-    </script>
+    </script> --}}
     @endsection
