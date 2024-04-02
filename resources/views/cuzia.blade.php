@@ -169,8 +169,8 @@
                             },
 
                             {
-                                data: 'jeniscuti',
-                                name: 'jeniscuti'
+                                data: 'jenisizin',
+                                name: 'jenisizin'
                             },
                             {
                                 data: 'tgl_mulai',
@@ -275,7 +275,7 @@
                                 searchable: false,
                                 className: 'text-center',
                                 render: function(data, type, row) {
-                                    return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
+                                    return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                                 }
 
                             }

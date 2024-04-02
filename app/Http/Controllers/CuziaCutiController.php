@@ -92,7 +92,10 @@ class CuziaCutiController extends Controller
         // Check if the result is not empty and get the first element of the array.
         $saldocutitahunan = !empty($result) ? (string) $result[0]->saldocutitahunan : 'Tidak ada saldo';
 
-        $jenisizin = jenisizin::where('jenisizin', 'LIKE', '%Cuti%')->get();
+        $jenisizin = jenisizin::select('id', 'jenisizin')
+            ->where('jenisizin', 'LIKE', '%Cuti%')
+            ->get();
+
         return view('cuziacuti', compact('userInfoOccupation', 'userInfoDept', 'jenisizin', 'saldocutiistimewa', 'saldocutitahunan'));
         // dd($request->all());
     }
@@ -177,6 +180,7 @@ class CuziaCutiController extends Controller
                 approval1_id,
                 approval2_id,
                 approval_status,
+                jenisizin,
                 note,
                 empnm,
                 hirar,
@@ -195,6 +199,7 @@ class CuziaCutiController extends Controller
                     pc.approval2_id,
                     pc.approval_status,
                     pc.note,
+                    jz.jenisizin,
                     e.empnm,
                     h.hirar,
                     h.mutdt,
@@ -207,6 +212,7 @@ class CuziaCutiController extends Controller
                     @empno_prev := pc.empno,
                     @tgl_pengajuan_prev := pc.tgl_pengajuan
                 FROM pengajuancuti pc
+                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN (
                     SELECT empno, MAX(mutdt) AS max_mutdt

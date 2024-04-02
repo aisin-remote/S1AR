@@ -69,7 +69,9 @@ class RekapIzinController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
-        $jenisizin = jenisizin::where('jenisizin', 'NOT LIKE', '%Cuti%')->get();
+        $jenisizin = jenisizin::select('id', 'jenisizin')
+        ->where('jenisizin', 'LIKE', '%Cuti%')
+        ->get();
         return view('rekapizin', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
@@ -159,12 +161,13 @@ class RekapIzinController extends Controller
             empno,
             tgl_mulai,
             tgl_selesai,
-            jenisizin,
+            pjenisizin,
             tgl_pengajuan,
             approval1_status,
             approval1_id,
             approval2_id,
             approval_status,
+            jenisizin,
             note,
             empnm,
             hirar,
@@ -176,13 +179,14 @@ class RekapIzinController extends Controller
                 pc.empno,
                 pc.tgl_mulai,
                 pc.tgl_selesai,
-                pc.jenisizin,
+                pc.pjenisizin,
                 pc.tgl_pengajuan,
                 pc.approval1_status,
                 pc.approval1_id,
                 pc.approval2_id,
                 pc.approval_status,
                 pc.note,
+                jz.jenisizin,
                 e.empnm,
                 h.hirar,
                 h.mutdt,
@@ -196,6 +200,7 @@ class RekapIzinController extends Controller
                 @tgl_pengajuan_prev := pc.tgl_pengajuan
             FROM pengajuanizin pc
             INNER JOIN employee e ON pc.empno = e.empno
+            INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
             INNER JOIN (
                 SELECT empno, MAX(mutdt) AS max_mutdt
                 FROM hirarki
@@ -206,7 +211,6 @@ class RekapIzinController extends Controller
             WHERE pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
         ) AS numbered
         WHERE RowNum = 1
-
         ORDER BY empno ASC, tgl_pengajuan ASC;
                 "));
         // return $data;

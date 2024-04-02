@@ -69,8 +69,9 @@ class PengajuanIzinController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
-        $jenisIzin = jenisizin::where('jenisizin', 'NOT LIKE', '%Cuti%')->get();
-        // dd($userInfoOccupation);
+        $jenisIzin = jenisizin::select('id', 'jenisizin')
+            ->where('jenisizin', 'NOT LIKE', '%Cuti%')
+            ->get();
         return view('izin', compact('userInfoOccupation', 'userInfoDept', 'jenisIzin'));
         // dd($request->all());
     }
@@ -150,13 +151,14 @@ class PengajuanIzinController extends Controller
                     empno,
                     tgl_mulai,
                     tgl_selesai,
-                    jenisizin,
+                    pjenisizin,
                     tgl_pengajuan,
                     approval1_status,
                     approval1_id,
                     approval2_id,
                     approval_status,
                     lampiran,
+                    jenisizin,
                     note,
                     empnm,
                     hirar,
@@ -169,7 +171,7 @@ class PengajuanIzinController extends Controller
                         pc.empno,
                         pc.tgl_mulai,
                         pc.tgl_selesai,
-                        pc.jenisizin,
+                        pc.pjenisizin,
                         pc.tgl_pengajuan,
                         pc.approval1_status,
                         pc.approval1_id,
@@ -177,6 +179,7 @@ class PengajuanIzinController extends Controller
                         pc.approval_status,
                         pc.lampiran,
                         pc.note,
+                        jz.jenisizin,
                         u.is_admin,
                         e.empnm,
                         h.hirar,
@@ -191,6 +194,7 @@ class PengajuanIzinController extends Controller
                         @tgl_pengajuan_prev := pc.tgl_pengajuan
                     FROM pengajuanizin pc
                     INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
                     INNER JOIN users u ON pc.empno = u.npk
                     INNER JOIN (
                         SELECT empno, MAX(mutdt) AS max_mutdt
@@ -215,7 +219,7 @@ class PengajuanIzinController extends Controller
                 empno,
                 tgl_mulai,
                 tgl_selesai,
-                jenisizin,
+                pjenisizin,
                 tgl_pengajuan,
                 approval1_status,
                 approval1_id,
@@ -223,6 +227,7 @@ class PengajuanIzinController extends Controller
                 approval_status,
                 lampiran,
                 note,
+                jenisizin,
                 empnm,
                 hirar,
                 mutdt,
@@ -234,7 +239,7 @@ class PengajuanIzinController extends Controller
                     pc.empno,
                     pc.tgl_mulai,
                     pc.tgl_selesai,
-                    pc.jenisizin,
+                    pc.pjenisizin,
                     pc.tgl_pengajuan,
                     pc.approval1_status,
                     pc.approval1_id,
@@ -242,6 +247,7 @@ class PengajuanIzinController extends Controller
                     pc.approval_status,
                     pc.lampiran,
                     pc.note,
+                    jz.jenisizin,
                     u.is_admin,
                     e.empnm,
                     h.hirar,
@@ -256,6 +262,7 @@ class PengajuanIzinController extends Controller
                     @tgl_pengajuan_prev := pc.tgl_pengajuan
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
+                INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
                 INNER JOIN users u ON pc.empno = u.npk
                 INNER JOIN (
                     SELECT empno, MAX(mutdt) AS max_mutdt

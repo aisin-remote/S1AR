@@ -69,7 +69,9 @@ class CuziaIzinController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
-        $jenisizin = jenisizin::where('jenisizin', 'NOT LIKE', '%Cuti%')->get();
+        $jenisizin = jenisizin::select('id', 'jenisizin')
+            ->where('jenisizin', 'NOT LIKE', '%Cuti%')
+            ->get();
         return view('cuziaizin', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
@@ -145,11 +147,12 @@ class CuziaIzinController extends Controller
                 empno,
                 tgl_mulai,
                 tgl_selesai,
-                jenisizin,
+                pjenisizin,
                 tgl_pengajuan,
                 approval1_status,
                 approval_status,
                 lampiran,
+                jenisizin,
                 note,
                 empnm,
                 hirar,
@@ -160,12 +163,13 @@ class CuziaIzinController extends Controller
                     pc.empno,
                     pc.tgl_mulai,
                     pc.tgl_selesai,
-                    pc.jenisizin,
+                    pc.pjenisizin,
                     pc.tgl_pengajuan,
                     pc.approval1_status,
                     pc.approval_status,
                     pc.lampiran,
                     pc.note,
+                    jz.jenisizin,
                     e.empnm,
                     h.hirar,
                     h.mutdt,
@@ -179,6 +183,7 @@ class CuziaIzinController extends Controller
                     @tgl_pengajuan_prev := pc.tgl_pengajuan
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
+                INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
                 INNER JOIN (
                     SELECT empno, MAX(mutdt) AS max_mutdt
                     FROM hirarki
@@ -368,7 +373,7 @@ class CuziaIzinController extends Controller
         }
         $cuti->tgl_mulai = $request->input('tgl_mulai');
         $cuti->tgl_selesai = $request->input('tgl_selesai');
-        $cuti->jenisizin = $request->input('jenisizin');
+        $cuti->pjenisizin = $request->input('jenisizin');
         $cuti->note = $request->input('note');
         $cuti->approval_status = '0';
         // dd($approval1);

@@ -109,7 +109,7 @@
                                     <select required class="form-control" id="jenisizin" name="jenisizin">
                                         <option value="" disabled selected>Pilih Jenis Izin</option>
                                         @foreach ($jenisizin as $cuti)
-                                            <option value="{{ $cuti->jenisizin }}">{{ $cuti->jenisizin }}</option>
+                                            <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
                                         @endforeach
                                     </select>
                                 </div>

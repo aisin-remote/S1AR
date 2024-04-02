@@ -69,7 +69,9 @@ class RekapCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
-        $jenisizin = jenisizin::where('jenisizin', 'LIKE', '%Cuti%')->get();
+        $jenisizin = jenisizin::select('id', 'jenisizin')
+        ->where('jenisizin', 'LIKE', '%Cuti%')
+        ->get();
         return view('rekapcuti', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
@@ -153,6 +155,7 @@ class RekapCutiController extends Controller
             approval1_id,
             approval2_id,
             approval_status,
+            jenisizin,
             note,
             empnm,
             hirar,
@@ -171,6 +174,7 @@ class RekapCutiController extends Controller
                 pc.approval2_id,
                 pc.approval_status,
                 pc.note,
+                jz.jenisizin,
                 e.empnm,
                 h.hirar,
                 h.mutdt,
@@ -184,6 +188,7 @@ class RekapCutiController extends Controller
                 @tgl_pengajuan_prev := pc.tgl_pengajuan
             FROM pengajuancuti pc
             INNER JOIN employee e ON pc.empno = e.empno
+            INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
             INNER JOIN (
                 SELECT empno, MAX(mutdt) AS max_mutdt
                 FROM hirarki

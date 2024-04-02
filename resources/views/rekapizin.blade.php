@@ -264,7 +264,7 @@
                                                 .getDate().toString().padStart(2, '0'),
                                             shift: '',
                                             nip: data.empno,
-                                            reason: data.jeniscuti,
+                                            reason: data.jenisizin,
                                             note: data.note
                                         };
                                         dataToExport.push(newRow);
@@ -294,7 +294,7 @@
                                     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
 
                                     // Save file
-                                    XLSX.writeFile(wb, 'data rekap.xlsx');
+                                    XLSX.writeFile(wb, 'rekap pengajuan izin.xlsx');
                                 } else {
                                     console.log('No data to export');
                                 }

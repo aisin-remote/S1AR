@@ -106,7 +106,7 @@
                                     <select required class="form-control" id="jenisizin" name="jenisizin">
                                         <option value="" disabled selected>Pilih Jenis Cuti</option>
                                         @foreach ($jenisizin as $cuti)
-                                            <option value="{{ $cuti->jenisizin }}">{{ $cuti->jenisizin }}</option>
+                                            <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -196,7 +196,6 @@
                                 <label for="note">Keterangan:</label>
                                 <textarea class="form-control" id="note1" name="note" disabled></textarea>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -320,8 +319,8 @@
                         },
 
                         {
-                            data: 'jeniscuti',
-                            name: 'jeniscuti'
+                            data: 'jenisizin',
+                            name: 'jenisizin'
                         },
                         {
                             data: 'tgl_mulai',
@@ -407,7 +406,7 @@
                             searchable: false,
                             className: 'text-center',
                             render: function(data, type, row) {
-                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
+                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                             }
 
                         }
