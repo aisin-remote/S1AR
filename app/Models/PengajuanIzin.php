@@ -22,7 +22,7 @@ class PengajuanIzin extends Model
         'tgl_selesai',
         'tgl_pengajuan',
         'note',
-        'jenisizin',
+        'pjenisizin',
         'approval1_id',
         'approval1_status',
         'approval2_id',
