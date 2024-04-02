@@ -70,7 +70,7 @@ class RekapIzinController extends Controller
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
         $jenisizin = jenisizin::select('id', 'jenisizin')
-        ->where('jenisizin', 'LIKE', '%Cuti%')
+        ->where('jenisizin', 'NOT LIKE', '%Cuti%')
         ->get();
         return view('rekapizin', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
