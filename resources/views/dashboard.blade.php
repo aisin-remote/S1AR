@@ -103,17 +103,7 @@
                                     </div>
                                 </div>
                             </div>
-                            {{-- @endif --}}
-                            {{-- @if ($isadmin == '1') --}}
-                            <!-- Chart -->
-                            <div class="col-xl-6 col-md-12 mb-4">
-                                <div class="card shadow h-100 py-2">
-                                    <div class="card-body">
-                                        <canvas id="cutiChart" width="600" height="400"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            {{-- @endif --}}
+
                         </div>
                     </div>
                 </div>
