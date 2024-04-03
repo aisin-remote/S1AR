@@ -72,7 +72,7 @@ class CopyDataK1Command extends Command
                         'timin' => $data1->timin,
                         'datot' => $data1->datot,
                         'timot' => $data1->timot,
-                        'crtdt' => $data1->crtdt,
+                        // 'crtdt' => $data1->crtdt,
                         'lupddt' => $data1->lupddt,
                     ]);
             }

@@ -71,7 +71,7 @@ class CopyDataK2Command extends Command
                         'empno' => $data2->empno,
                         'schdt' => $data2->schdt,
                         'rsccd' => $data2->rsccd,
-                        'crtdt' => $data2->crtdt,
+                        // 'crtdt' => $data2->crtdt,
                         'lupddt' => $data2->lupddt,
                     ]);
             }
@@ -107,7 +107,7 @@ class CopyDataK2Command extends Command
                         'empno' => $dataAttrn2->empno,
                         'schdt' => $dataAttrn2->schdt,
                         'rsccd' => $dataAttrn2->rsccd,
-                        'crtdt' => $dataAttrn2->crtdt,
+                        // 'crtdt' => $dataAttrn2->crtdt,
                         'lupddt' => $dataAttrn2->lupddt,
                     ]);
             }
