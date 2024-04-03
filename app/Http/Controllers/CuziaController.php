@@ -251,13 +251,7 @@ class CuziaController extends Controller
                     h.hirar,
                     h.mutdt,
                     hd.descr,
-                    @row_number := CASE
-                    WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
-                        THEN 1
-                        ELSE @row_number + 1
-                    END AS RowNum,
-                    @empno_prev := pc.empno,
-                    @tgl_pengajuan_prev := pc.tgl_pengajuan
+                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
                 FROM pengajuancuti pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
@@ -504,7 +498,7 @@ class CuziaController extends Controller
                 $total_hari_cuti = $pengajuanCuti->total_hari;
                 // Tambahkan total hari cuti ke clget
                 switch ($pengajuanCuti->jeniscuti) {
-                    case 'CBS  Cuti Besar                    ':
+                    case 3:
                         $maxEnddt = DB::connection('mysql2')
                             ->table('pengajuancutikar')
                             ->where('empno', 'LIKE', $pengajuanCuti->empno)
@@ -518,7 +512,7 @@ class CuziaController extends Controller
 
                         break;
 
-                    case 'CTH  Cuti Tahunan                  ':
+                    case 9 :
                         $currentYear = date('Y');
                         // Lakukan perubahan pada tabel pengajuancutikar
                         DB::connection('mysql2')->table('pengajuancutikar')

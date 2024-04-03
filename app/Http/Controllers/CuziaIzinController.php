@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\jenisizin;
-use App\Models\Pengajuanizin;
+use App\Models\PengajuanIzin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Termwind\Components\Raw;
@@ -143,21 +143,7 @@ class CuziaIzinController extends Controller
         // Execute main query
         $data = DB::connection('mysql2')
             ->select(DB::raw("
-                SELECT
-                empno,
-                tgl_mulai,
-                tgl_selesai,
-                pjenisizin,
-                tgl_pengajuan,
-                approval1_status,
-                approval_status,
-                lampiran,
-                jenisizin,
-                note,
-                empnm,
-                hirar,
-                mutdt,
-                descr
+            SELECT *
             FROM (
                 SELECT
                     pc.empno,
@@ -174,13 +160,7 @@ class CuziaIzinController extends Controller
                     h.hirar,
                     h.mutdt,
                     hd.descr,
-                    @row_number := CASE
-                    WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
-                        THEN 1
-                        ELSE @row_number + 1
-                    END AS RowNum,
-                    @empno_prev := pc.empno,
-                    @tgl_pengajuan_prev := pc.tgl_pengajuan
+                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
@@ -191,12 +171,13 @@ class CuziaIzinController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno LIKE '%$npk%' AND (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
+                WHERE pc.empno LIKE '%$npk%' OR (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
-                "));
 
+                "));
+                    // dd($data);
         // Iterate through each row in the collection
         foreach ($data as $row) {
             // Calculate the character count for each row's cleaned hirar
@@ -262,7 +243,6 @@ class CuziaIzinController extends Controller
             empno
           ORDER BY
             MAX(mutdt) DESC
-
             "
         ));
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\holiday;
 use App\Models\jenisizin;
 use App\Models\PengajuanCuti;
 use Illuminate\Http\Request;
@@ -169,34 +170,15 @@ class CuziaCutiController extends Controller
         // Execute main query
         $data = DB::connection('mysql2')
             ->select(DB::raw("
-                SELECT
-                id,
-                empno,
-                tgl_mulai,
-                tgl_selesai,
-                jeniscuti,
-                tgl_pengajuan,
-                approval1_status,
-                approval1_id,
-                approval2_id,
-                approval_status,
-                jenisizin,
-                note,
-                empnm,
-                hirar,
-                mutdt,
-                descr
+            SELECT *
             FROM (
                 SELECT
-                    pc.id,
                     pc.empno,
                     pc.tgl_mulai,
                     pc.tgl_selesai,
                     pc.jeniscuti,
                     pc.tgl_pengajuan,
                     pc.approval1_status,
-                    pc.approval1_id,
-                    pc.approval2_id,
                     pc.approval_status,
                     pc.note,
                     jz.jenisizin,
@@ -204,16 +186,10 @@ class CuziaCutiController extends Controller
                     h.hirar,
                     h.mutdt,
                     hd.descr,
-                    @row_number := CASE
-                    WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
-                        THEN 1
-                        ELSE @row_number + 1
-                    END AS RowNum,
-                    @empno_prev := pc.empno,
-                    @tgl_pengajuan_prev := pc.tgl_pengajuan
+                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
                 FROM pengajuancuti pc
-                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
                 INNER JOIN employee e ON pc.empno = e.empno
+                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
                 INNER JOIN (
                     SELECT empno, MAX(mutdt) AS max_mutdt
                     FROM hirarki
@@ -221,10 +197,11 @@ class CuziaCutiController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno LIKE '%$npk%' AND (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
+                WHERE pc.empno LIKE '%$npk%' OR (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
             ) AS numbered
             WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_pengajuan ASC;
+            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
+
                 "));
 
         // Iterate through each row in the collection
@@ -415,6 +392,7 @@ class CuziaCutiController extends Controller
         $cuti->tgl_mulai = $request->input('tgl_mulai');
         $cuti->tgl_selesai = $request->input('tgl_selesai');
         $cuti->jeniscuti = $request->input('jenisizin');
+
         // Ambil nilai tanggal mulai dan tanggal selesai dari input pengguna
         $tanggal_mulai = new DateTime($request->input('tgl_mulai'));
         $tanggal_selesai = new DateTime($request->input('tgl_selesai'));
@@ -422,7 +400,32 @@ class CuziaCutiController extends Controller
         // Hitung selisih hari antara tanggal mulai dan tanggal selesai
         $selisih = $tanggal_mulai->diff($tanggal_selesai);
         $total_hari = $selisih->days + 1; // Jumlah hari termasuk tanggal mulai dan tanggal selesai
+
+        // Inisialisasi variabel untuk menghitung jumlah hari libur dan akhir pekan
+        $jumlah_hari_libur_dan_akhir_pekan = 0;
+
+        // Loop melalui setiap hari antara tanggal mulai dan tanggal selesai
+        for ($i = 0; $i < $selisih->days; $i++) {
+            $tanggal = $tanggal_mulai->modify('+1 day'); // Tambahkan satu hari pada setiap iterasi
+
+            // Periksa apakah hari adalah hari Sabtu (6) atau Minggu (0)
+            if ($tanggal->format('N') >= 6) {
+                $jumlah_hari_libur_dan_akhir_pekan++;
+            }
+
+            // Periksa apakah tanggal ada di tabel holiday
+            $holiday_exists = holiday::where('date', $tanggal->format('Y-m-d'))->exists();
+            if ($holiday_exists) {
+                $jumlah_hari_libur_dan_akhir_pekan++;
+            }
+        }
+
+        // Kurangi jumlah hari libur dan akhir pekan dari total hari
+        $total_hari -= $jumlah_hari_libur_dan_akhir_pekan;
+
+        // Simpan total hari ke properti $cuti->total_hari
         $cuti->total_hari = $total_hari;
+
 
         $cuti->note = $request->input('note');
         $cuti->approval_status = '0';

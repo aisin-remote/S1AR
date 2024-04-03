@@ -119,7 +119,8 @@
                                 </div>
                                 <div class="form-group " id="lampiranContainer">
                                     <label for="lampiran">Unggah Dokumen/Lampiran:</label>
-                                        <input type="file" multiple name="data_verifikasi" id="data_verifikasi" class="w-full border-2 border-gray-300 px-3 py-2 rounded-md">
+                                    <input type="file" multiple name="data_verifikasi" id="data_verifikasi"
+                                        class="w-full border-2 border-gray-300 px-3 py-2 rounded-md">
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-sm">Submit</button>
                         </div>
@@ -228,9 +229,13 @@
                     // Memeriksa apakah tanggal yang dipilih adalah hari libur nasional
                     var isHoliday = holidays.includes(inputTanggalMulai.value);
 
-                    if (isHoliday) {
+                    // Memeriksa apakah tanggal yang dipilih jatuh pada hari Sabtu atau Minggu
+                    var dayOfWeek = selectedDate.getDay();
+                    var isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+                    if (isHoliday || isWeekend) {
                         inputTanggalMulai.value = '';
-                        alert("Maaf, tanggal yang dipilih adalah hari libur nasional.");
+                        alert("Maaf, tanggal yang dipilih adalah hari libur nasional atau akhir pekan.");
                         return;
                     }
 
@@ -238,35 +243,11 @@
                 });
             });
         </script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                // Mendapatkan elemen input tanggal mulai
-                var inputTanggalMulai = document.getElementById('tgl_mulai');
-                // Mendapatkan elemen input tanggal selesai
-                var inputTanggalSelesai = document.getElementById('tgl_selesai');
 
-                // Mendapatkan tanggal hari ini
-                var today = new Date();
-                var dd = String(today.getDate()).padStart(2, '0');
-                var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
-                var yyyy = today.getFullYear();
-                today = yyyy + '-' + mm + '-' + dd;
-
-                // Mengatur nilai minimum untuk input tanggal mulai
-                inputTanggalMulai.setAttribute("min", today);
-
-                // Mendefinisikan fungsi untuk menangani perubahan nilai input tanggal mulai
-                inputTanggalMulai.addEventListener('change', function() {
-                    // Mendapatkan tanggal yang dipilih
-                    var selectedDate = new Date(inputTanggalMulai.value);
-                    // Mengatur nilai minimum untuk input tanggal selesai
-                    inputTanggalSelesai.setAttribute("min", inputTanggalMulai.value);
-                });
-            });
-        </script>
         <script>
             $(document).ready(function() {
                 var table = $('#employee-table').DataTable({
+                    destroy: true,
                     dom: '<"top"f>rt<"bottom"lip><"clear">',
                     processing: true,
                     ajax: {
@@ -431,6 +412,7 @@
 
                 $('#filter_button').on('click', function() {
                     table.ajax.reload();
+
                 });
                 $('#employee-table').on('click', '.btn-update', function() {
                     console.log($(this).data('jenisizin'));

@@ -185,13 +185,7 @@ class PengajuanIzinController extends Controller
                         h.hirar,
                         h.mutdt,
                         hd.descr,
-                        @row_number := CASE
-                        WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
-                            THEN 1
-                            ELSE @row_number + 1
-                        END AS RowNum,
-                        @empno_prev := pc.empno,
-                        @tgl_pengajuan_prev := pc.tgl_pengajuan
+                        ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
                     FROM pengajuanizin pc
                     INNER JOIN employee e ON pc.empno = e.empno
                     INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
@@ -253,13 +247,7 @@ class PengajuanIzinController extends Controller
                     h.hirar,
                     h.mutdt,
                     hd.descr,
-                    @row_number := CASE
-                    WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
-                        THEN 1
-                        ELSE @row_number + 1
-                    END AS RowNum,
-                    @empno_prev := pc.empno,
-                    @tgl_pengajuan_prev := pc.tgl_pengajuan
+                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id

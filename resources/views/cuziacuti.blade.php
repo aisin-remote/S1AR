@@ -276,27 +276,6 @@
                 var table = $('#employee-table').DataTable({
                     dom: '<"top"f>rt<"bottom"lip><"clear">',
                     processing: true,
-                    // buttons: [{
-                    //     extend: 'excelHtml5',
-                    //     autoFilter: true,
-                    //     text: 'Export to Excel', // customize button text
-                    //     className: 'btn btn-success btn-sm float-above', // apply Bootstrap button classes
-                    //     exportOptions: {
-                    //         columns: [4, 5, 1, 3, 7], // Assumed columns: Date, NIP, Reason, Note
-                    //         format: {
-                    //             header: function(data, columnIdx) {
-                    //                 var customHeaders = {
-                    //                     4: 'Tanggal Mulai',
-                    //                     5: 'Tanggal Selesai',
-                    //                     1: 'NIP',
-                    //                     3: 'Reason',
-                    //                     7: 'Note'
-                    //                 };
-                    //                 return customHeaders[columnIdx];
-                    //             }
-                    //         },
-                    //     },
-                    // }],
                     ajax: {
                         url: '{{ url('/cuziacuti/datatables') }}',
                         data: function(d) {
