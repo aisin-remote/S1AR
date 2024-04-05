@@ -340,7 +340,7 @@ class EmployeeController extends Controller
                     k.coid,
                     k.empno,
                     k.schdt,
-                    k.rsccd,
+                    COALESCE(kmu.rsccd, k.rsccd) AS rsccd,
                     e.empnm,
                     h.hirar,
                     hd.descr AS descr,
@@ -354,6 +354,7 @@ class EmployeeController extends Controller
                 LEFT JOIN hirarki AS h ON k.empno = h.empno
                 LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
                 LEFT JOIN employee AS e ON k.empno = e.empno
+                LEFT JOIN kehadiranmu AS kmu ON k.empno = kmu.empno AND k.schdt = kmu.schdt
             )
             SELECT
                 md.coid,
@@ -366,6 +367,7 @@ class EmployeeController extends Controller
                 md.mutdt
             FROM MergedData md
             WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ';
+            
         ');
         } else if ($userInfoOccupation == 'KDP') {
             $data = DB::connection('mysql2')->select('
@@ -374,7 +376,7 @@ class EmployeeController extends Controller
                     k.coid,
                     k.empno,
                     k.schdt,
-                    k.rsccd,
+                    COALESCE(kmu.rsccd, k.rsccd) AS rsccd,
                     e.empnm,
                     h.hirar,
                     hd.descr AS descr,
@@ -388,6 +390,7 @@ class EmployeeController extends Controller
                 LEFT JOIN hirarki AS h ON k.empno = h.empno
                 LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
                 LEFT JOIN employee AS e ON k.empno = e.empno
+                LEFT JOIN kehadiranmu AS kmu ON k.empno = kmu.empno AND k.schdt = kmu.schdt
             )
             SELECT
                 md.coid,
@@ -408,7 +411,7 @@ class EmployeeController extends Controller
                     k.coid,
                     k.empno,
                     k.schdt,
-                    k.rsccd,
+                    COALESCE(kmu.rsccd, k.rsccd) AS rsccd,
                     e.empnm,
                     h.hirar,
                     hd.descr AS descr,
@@ -422,6 +425,7 @@ class EmployeeController extends Controller
                 LEFT JOIN hirarki AS h ON k.empno = h.empno
                 LEFT JOIN hirarkidesc AS hd ON h.hirar = hd.hirar
                 LEFT JOIN employee AS e ON k.empno = e.empno
+                LEFT JOIN kehadiranmu AS kmu ON k.empno = kmu.empno AND k.schdt = kmu.schdt
             )
             SELECT
                 md.coid,
