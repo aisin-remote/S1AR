@@ -25,7 +25,7 @@ class CuziaCutiController extends Controller
      */
     public function index()
     {
-        $tanggalSekarang = Carbon::now()->format('Ymd');
+        $tanggalSekarang = Carbon::now()->format('Y-m-d');
 
         $npk = auth()->user()->npk;
 
@@ -103,9 +103,8 @@ class CuziaCutiController extends Controller
 
     public function getData(Request $request)
     {
-        //set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
-        ini_set('max_execution_time', 0);
-        $tanggalSekarang = Carbon::now()->format('Ymd');
+
+        $tanggalSekarang = Carbon::now()->format('Y-m-d');
 
         $npk = auth()->user()->npk;
 
@@ -151,59 +150,80 @@ class CuziaCutiController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-
-        // Memeriksa apakah data tanggal tersedia
-        if (!empty($start_date) && !empty($end_date)) {
-            // Memproses data tanggal jika ada
-            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
-            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
+        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
+            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
+        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
         } else {
-            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
-            $tanggalMulai = Carbon::now()->format('d-m-Y');
-            $tanggalAkhir = Carbon::now()->format('d-m-Y');
+            $tanggalMulai = $tanggalSekarang;
+            $tanggalAkhir = $tanggalSekarang;
         }
 
-        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
+        DB::connection('mysql2')->select(' SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL;');
 
         // Execute main query
         $data = DB::connection('mysql2')
             ->select(DB::raw("
-            SELECT *
-            FROM (
-                SELECT
-                    pc.empno,
-                    pc.tgl_mulai,
-                    pc.tgl_selesai,
-                    pc.jeniscuti,
-                    pc.tgl_pengajuan,
-                    pc.approval1_status,
-                    pc.approval_status,
-                    pc.note,
-                    jz.jenisizin,
-                    e.empnm,
-                    h.hirar,
-                    h.mutdt,
-                    hd.descr,
-                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
-                FROM pengajuancuti pc
-                INNER JOIN employee e ON pc.empno = e.empno
-                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-                INNER JOIN (
-                    SELECT empno, MAX(mutdt) AS max_mutdt
-                    FROM hirarki
-                    GROUP BY empno
-                ) max_hirarki ON pc.empno = max_hirarki.empno
-                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-                INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno LIKE '%$npk%' OR (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
-            ) AS numbered
-            WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
+            SELECT
+    id,
+    empno,
+    tgl_mulai,
+    tgl_selesai,
+    jeniscuti,
+    tgl_pengajuan,
+    approval1_status,
+    approval1_id,
+    approval2_id,
+    approval_status,
+    jenisizin,
+    note,
+    empnm,
+    hirar,
+    mutdt,
+    descr,
+    is_admin
+FROM (
+    SELECT
+        pc.id,
+        pc.empno,
+        pc.tgl_mulai,
+        pc.tgl_selesai,
+        pc.jeniscuti,
+        pc.tgl_pengajuan,
+        pc.approval1_status,
+        pc.approval1_id,
+        pc.approval2_id,
+        pc.approval_status,
+        pc.note,
+        jz.jenisizin,
+        u.is_admin,
+        e.empnm,
+        h.hirar,
+        h.mutdt,
+        hd.descr,
+        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_pengajuan DESC) AS RowNum
+    FROM pengajuancuti pc
+    INNER JOIN employee e ON pc.empno = e.empno
+    INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+    INNER JOIN users u ON pc.empno = u.npk
+    INNER JOIN (
+        SELECT empno, MAX(mutdt) AS max_mutdt
+        FROM hirarki
+        GROUP BY empno
+    ) max_hirarki ON pc.empno = max_hirarki.empno
+    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+    WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_pengajuan, '%d-%m-%Y') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+) AS numbered
+WHERE RowNum = 1
+ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+
+
 
                 "));
-
+        // dd($data);
         // Iterate through each row in the collection
         foreach ($data as $row) {
             // Calculate the character count for each row's cleaned hirar
@@ -223,10 +243,6 @@ class CuziaCutiController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-        // $is_admin = auth()->user()->is_admin;
-        // if ($is_admin == 1) {
-        //     $data = PengajuanCuti::where('approval_status', '2');
-        // }
 
         return DataTables::of($data)->make(true);
     }
@@ -293,7 +309,7 @@ class CuziaCutiController extends Controller
         // dd($approval1);
         $cuti = new PengajuanCuti();
         $cuti->empno = $request->input('empno');
-        $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
+        $cuti->tgl_pengajuan = date('Y-m-d'); // Menyimpan tanggal hari ini
         $cuti->kodepengajuan = 'CUTI' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
 
         // Check if approval1Result has 2 hirars

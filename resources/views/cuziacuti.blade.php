@@ -29,26 +29,17 @@
                                         name="end_date">
                                 </div>
                                 <div class="form-group col-auto">
-                                    <label for="filter_button">:</label>
+                                    <label for="filter_button">&nbsp;</label>
                                     <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
                                         id="filter_button">Apply Filter</button>
                                 </div>
                                 <div class="form-group ml-auto">
                                     <label for="pengajuan_button">&nbsp;</label>
-                                    <?php
-                                    // Misalkan $saldocutitahunan dan $saldocutiistimewa sudah diinisialisasi sebelumnya
-                                    // Anda harus menggantinya dengan cara Anda mendapatkan nilai saldocutitahunan dan saldocutiistimewa
-                                    // Jika $saldocutiistimewa adalah 0, nonaktifkan tombol pengajuan cuti
-                                    if ($saldocutiistimewa === 0 || $saldocutitahunan == 0) {
-                                        echo '<button type="button" class="btn btn-primary btn-sm form-control form-control-sm" disabled>';
-                                    } else {
-                                        echo '<button type="button" class="btn btn-primary btn-sm form-control form-control-sm" data-toggle="modal" data-target="#cuziacutimodal" id="pengajuan_button">';
-                                    }
-                                    ?>
-                                    <i class="fas fa-plus"></i> Pengajuan Cuti
+                                    <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
+                                        data-toggle="modal" data-target="#cuziacutimodal" id="pengajuan_button">
+                                        <i class="fas fa-plus"></i> Pengajuan Izin
                                     </button>
                                 </div>
-
                             </div>
                         </form>
                         <div class="table-responsive">
@@ -59,8 +50,8 @@
                                         <th class="text-center align-middle">NPK</th>
                                         <th class="text-center align-middle">Nama</th>
                                         <th class="align-middle">Jenis</th>
-                                        <th class="align-middle">Tanggal Mulai Cuti</th>
-                                        <th class="align-middle">Tanggal Selesai Cuti</th>
+                                        <th class="align-middle">Tanggal Mulai</th>
+                                        <th class="align-middle">Tanggal Selesai</th>
                                         <th class="align-middle">Status</th>
                                         <th class="align-middle">Keterangan</th>
                                         <th class="align-middle">Action</th>
@@ -101,15 +92,7 @@
                                     <input type="text" class="form-control" required id="empno" name="empno"
                                         value="{{ Auth::user()->npk }}" readonly>
                                 </div>
-                                <div class="form-group mb-2 ">
-                                    <label for="jenisizin">Jenis Cuti:</label>
-                                    <select required class="form-control" id="jenisizin" name="jenisizin">
-                                        <option value="" disabled selected>Pilih Jenis Cuti</option>
-                                        @foreach ($jenisizin as $cuti)
-                                            <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+
                                 <div class="form-row">
                                     <div class="form-group mb-2 col-md-6 ">
                                         <label for="tgl_mulai">Tanggal Mulai:</label>
@@ -133,9 +116,18 @@
                                             name="saldocutiistimewa" value="{{ $saldocutiistimewa }}" readonly>
                                     </div>
                                 </div>
+                                <div class="form-group mb-2 ">
+                                    <label for="jenis_cuzia">Jenis Izin:</label>
+                                    <select required class="form-control" id="jenisizin" name="jenisizin">
+                                        <option value="" disabled selected>Pilih Jenis Izin</option>
+                                        @foreach ($jenisizin as $cuti)
+                                            <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea class="form-control" id="note" name="note"></textarea>
+                                    <textarea class="form-control" required class="form-control" id="note" name="note"></textarea>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary btn-sm">Submit</button>
@@ -155,7 +147,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
+                    <h5 class="modal-title" id="editModal">Detail Pengajuan Izin</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -165,7 +157,7 @@
                         <div class="row" style="display: block">
                             <div class="form-group ">
                                 <label for="nama">Nama:</label>
-                                <input type="text" class="form-control" id="nama1" name="nama" disabled>
+                                <input type="text" class="form-control" id="nama3" name="nama" disabled>
                             </div>
                             <div class="form-group ">
                                 <label for="npk">NPK:</label>
@@ -174,27 +166,27 @@
                             <div class="form-row">
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_mulai">Tanggal Mulai:</label>
-                                    <input type="date" class="form-control" id="tgl_mulai1" name="tgl_mulai"
+                                    <input type="date" class="form-control" id="tgl_mulai3" name="tgl_mulai"
                                         disabled>
                                 </div>
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_selesai">Tanggal Selesai:</label>
-                                    <input type="date" class="form-control" id="tgl_selesai1" name="tgl_selesai"
+                                    <input type="date" class="form-control" id="tgl_selesai4" name="tgl_selesai"
                                         disabled>
                                 </div>
                             </div>
                             <div class="form-group ">
                                 <label for="jenis_cuzia">Jenis Cuzia:</label>
-                                <select required class="form-control" id="jenisizin2" name="jenisizin"disabled>
-                                    <option value="" disabled selected>Pilih Jenis Cuti</option>
+                                <select required class="form-control" id="jeniscuti2" name="jeniscuti" disabled>
+                                    <option value="" disabled selected>Pilih Jenis Izin</option>
                                     @foreach ($jenisizin as $cuti)
-                                        <option value="{{ $cuti->jenisizin }}">{{ $cuti->jenisizin }}</option>
+                                        <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-group mb-2">
                                 <label for="note">Keterangan:</label>
-                                <textarea class="form-control" id="note1" name="note" disabled></textarea>
+                                <textarea class="form-control" id="note3" name="note" disabled></textarea>
                             </div>
                         </div>
                     </div>
@@ -202,20 +194,11 @@
             </div>
         </div>
     </div>
-
-
     </div>
     </div>
     </div>
     </div>
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-        <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-        <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
         <?php
         $result = DB::connection('mysql2')->select(DB::raw('SELECT date FROM holiday'));
 
@@ -231,7 +214,6 @@
             echo 'Tidak ada data libur nasional.';
         }
         ?>
-
 
         <script>
             // Tanggal-tanggal libur nasional dari PHP disalin ke dalam skrip JavaScript
@@ -270,10 +252,10 @@
             });
         </script>
 
-
         <script>
             $(document).ready(function() {
                 var table = $('#employee-table').DataTable({
+                    destroy: true,
                     dom: '<"top"f>rt<"bottom"lip><"clear">',
                     processing: true,
                     ajax: {
@@ -286,8 +268,7 @@
                     columns: [{
                             data: 'tgl_pengajuan',
                             name: 'tgl_pengajuan'
-                        },
-                        {
+                        }, {
                             data: 'empno',
                             name: 'empno'
                         },
@@ -385,7 +366,7 @@
                             searchable: false,
                             className: 'text-center',
                             render: function(data, type, row) {
-                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
+                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                             }
 
                         }
@@ -430,62 +411,17 @@
 
                 $('#filter_button').on('click', function() {
                     table.ajax.reload();
+
                 });
                 $('#employee-table').on('click', '.btn-update', function() {
-                    console.log($(this).data('jenisizin2'));
-                    $('#nama1').val($(this).data('nama'));
+                    console.log($(this).data('jeniscuti'));
+                    $('#nama3').val($(this).data('nama'));
                     $('#npk').val($(this).data('empno'));
-                    $('#tgl_mulai1').val($(this).data('tgl_mulai'));
-                    $('#tgl_selesai1').val($(this).data('tgl_selesai'));
-                    $('#jenisizin2').val($(this).data('jenis'));
-                    $('#note1').val($(this).data('note'));
+                    $('#tgl_mulai3').val($(this).data('tgl_mulai'));
+                    $('#tgl_selesai4').val($(this).data('tgl_selesai'));
+                    $('#jeniscuti2').val($(this).data('jenis'));
+                    $('#note3').val($(this).data('note'));
                 });
-
-            });
-        </script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var jenisizinSelect = document.getElementById('jenisizin');
-                var tglMulaiInput = document.getElementById('tgl_mulai');
-                var tglSelesaiInput = document.getElementById('tgl_selesai');
-                var saldoCutiTahunan = parseInt("{{ $saldocutitahunan }}");
-                var saldoCutiIstimewa = parseInt("{{ $saldocutiistimewa }}");
-                var saldoCutiInput = document.getElementById('saldocutitahunan');
-                var saldoCutiIstimewaInput = document.getElementById('saldocutiistimewa');
-
-                jenisizinSelect.addEventListener('change', validateDateRange);
-                tglMulaiInput.addEventListener('change', validateDateRange);
-                tglSelesaiInput.addEventListener('change', validateDateRange);
-
-                function isWeekend(date) {
-                    var day = date.getDay();
-                    return (day === 0 || day === 6); // Sabtu (6) dan Minggu (0)
-                }
-
-                function validateDateRange() {
-                    var jenisizin = jenisizinSelect.value;
-                    var tglMulai = new Date(tglMulaiInput.value);
-                    var tglSelesai = new Date(tglSelesaiInput.value);
-                    var diffDays = 0;
-
-                    // Menghitung jumlah hari kerja dalam rentang tanggal
-                    while (tglMulai <= tglSelesai) {
-                        if (!isWeekend(tglMulai)) {
-                            diffDays++;
-                        }
-                        tglMulai.setDate(tglMulai.getDate() + 1);
-                    }
-
-                    if (jenisizin === 'CTH  Cuti Tahunan                  ' && diffDays > saldoCutiTahunan) {
-                        alert('Rentang tanggal melebihi saldo cuti tahunan yang tersedia.');
-                        tglSelesaiInput.value = tglMulaiInput.value;
-                        return;
-                    } else if (jenisizin === 'CBS  Cuti Besar                    ' && diffDays > saldoCutiIstimewa) {
-                        alert('Rentang tanggal melebihi saldo cuti istimewa yang tersedia.');
-                        tglSelesaiInput.value = tglMulaiInput.value;
-                        return;
-                    }
-                }
             });
         </script>
     @endpush

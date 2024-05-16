@@ -259,6 +259,13 @@
                     "ordering": true,
                     paging: true,
                     pagingType: "simple_numbers",
+                    ajax: {
+                        url: '{{ url('/rekapcuti/datatables') }}',
+                        data: function(d) {
+                            d.start_date = $('#start_date').val();
+                            d.end_date = $('#end_date').val();
+                        }
+                    },
                     scrollY: "400px",
                     scrollX: false,
                     buttons: [{
@@ -320,13 +327,6 @@
                         className: 'btn btn-success btn-sm float-above',
                     }],
 
-                    ajax: {
-                        url: '{{ url('/rekapcuti/datatables') }}',
-                        data: function(d) {
-                            d.start_date = $('#start_date').val();
-                            d.end_date = $('#end_date').val();
-                        }
-                    },
 
                     columns: [{
                             data: 'tgl_pengajuan',
@@ -343,8 +343,8 @@
                         },
 
                         {
-                            data: 'jenisizin',
-                            name: 'jenisizin'
+                            data: 'jeniscuti',
+                            name: 'jeniscuti'
                         },
                         {
                             data: 'tgl_mulai',
@@ -424,7 +424,7 @@
                             searchable: false,
                             className: 'text-center',
                             render: function(data, type, row) {
-                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
+                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                             }
 
                         }
@@ -469,6 +469,7 @@
 
                 $('#filter_button').on('click', function() {
                     table.ajax.reload();
+
                 });
                 $('#employee-table').on('click', '.btn-update', function() {
 
@@ -476,7 +477,7 @@
                     $('#npk').val($(this).data('empno'));
                     $('#tgl_mulai1').val($(this).data('tgl_mulai'));
                     $('#tgl_selesai1').val($(this).data('tgl_selesai'));
-                    $('#jenisizin3').val($(this).data('jenis'));
+                    $('#jeniscuti3').val($(this).data('jenis'));
                     $('#note1').val($(this).data('note'));
                 });
 

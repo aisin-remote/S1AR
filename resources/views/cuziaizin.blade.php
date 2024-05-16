@@ -50,7 +50,8 @@
                                         <th class="text-center align-middle">NPK</th>
                                         <th class="text-center align-middle">Nama</th>
                                         <th class="align-middle">Jenis</th>
-                                        <th class="align-middle">Tanggal izin</th>
+                                        <th class="align-middle">Tanggal Mulai</th>
+                                        <th class="align-middle">Tanggal Selesai</th>
                                         <th class="align-middle">Status</th>
                                         <th class="align-middle">Keterangan</th>
                                         <th class="align-middle">Lampiran</th>
@@ -115,7 +116,7 @@
                                 </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea class="form-control" id="note" name="note"></textarea>
+                                    <textarea required class="form-control" id="note" name="note"></textarea>
                                 </div>
                                 <div class="form-group " id="lampiranContainer">
                                     <label for="lampiran">Unggah Dokumen/Lampiran:</label>
@@ -149,21 +150,21 @@
                         <div class="row" style="display: block">
                             <div class="form-group ">
                                 <label for="nama">Nama:</label>
-                                <input type="text" class="form-control" id="nama3" name="nama" disabled>
+                                <input type="text" required class="form-control" id="nama3" name="nama" disabled>
                             </div>
                             <div class="form-group ">
                                 <label for="npk">NPK:</label>
-                                <input type="text" class="form-control" id="npk" name="npk" disabled>
+                                <input type="text" required class="form-control" id="npk" name="npk" disabled>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_mulai">Tanggal Mulai:</label>
-                                    <input type="date" class="form-control" id="tgl_mulai3" name="tgl_mulai"
+                                    <input type="date"  required class="form-control" id="tgl_mulai3" name="tgl_mulai"
                                         disabled>
                                 </div>
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_selesai">Tanggal Selesai:</label>
-                                    <input type="date" class="form-control" id="tgl_selesai4" name="tgl_selesai"
+                                    <input type="date" required class="form-control" id="tgl_selesai4" name="tgl_selesai"
                                         disabled>
                                 </div>
                             </div>
@@ -172,13 +173,13 @@
                                 <select required class="form-control" id="jenisizin2" name="jenisizin" disabled>
                                     <option value="" disabled selected>Pilih Jenis Izin</option>
                                     @foreach ($jenisizin as $cuti)
-                                        <option value="{{ $cuti->jenisizin }}">{{ $cuti->jenisizin }}</option>
+                                        <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-group mb-2">
                                 <label for="note">Keterangan:</label>
-                                <textarea class="form-control" id="note3" name="note" disabled></textarea>
+                                <textarea required class="form-control" id="note3" name="note" disabled></textarea>
                             </div>
                         </div>
                     </div>
@@ -277,6 +278,10 @@
                         {
                             data: 'tgl_mulai',
                             name: 'tgl_mulai'
+                        },
+                        {
+                            data: 'tgl_selesai',
+                            name: 'tgl_selesai'
                         },
                         {
                             data: 'approval_status',

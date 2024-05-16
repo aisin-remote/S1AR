@@ -29,7 +29,7 @@
                 </div>
 
                 <div class="col-lg-6 text-lg-right">
-                    <a href="{{ asset('storage/master/import_holiday.xlsx') }}" class="btn btn-success btn-block">Download Template</a>
+                    <a href="{{ asset('storage/import_holiday.xlsx') }}" class="btn btn-success btn-block">Download Template</a>
                 </div>
 
                 <div class="col-lg-12 mt-3">

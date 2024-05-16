@@ -63,7 +63,7 @@
                                 );
                                 $isadmin = $userInfo[0]->is_admin;
                             @endphp
-                            @if ($isadmin == '1')
+                            {{-- @if ($isadmin == '1')
                                 <!-- Pengajuan Cuti Card Example -->
                                 <div class="col-xl-3 col-md-6 mb-4">
                                     <div class="card shadow h-100 py-2" style="background-color: #36b9cc; color: white;">
@@ -84,7 +84,7 @@
                                 {{-- @endif --}}
                                 {{-- @if ($isadmin == '1') --}}
                                 <!-- Pengajuan Izin Card Example -->
-                                <div class="col-xl-3 col-md-6 mb-4">
+                                {{-- <div class="col-xl-3 col-md-6 mb-4">
                                     <div class="card shadow h-100 py-2" style="background-color: #9966ff; color: white;">
                                         <div class="card-body">
                                             <div class="row no-gutters align-items-center">
@@ -102,7 +102,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                @endif
+                                @endif --}}
                         </div>
                     </div>
                 </div>

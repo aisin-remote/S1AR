@@ -23,7 +23,7 @@ class CuziaIzinController extends Controller
      */
     public function index()
     {
-        $tanggalSekarang = Carbon::now()->format('Ymd');
+        $tanggalSekarang = Carbon::now()->format('Y-m-d');
 
         $npk = auth()->user()->npk;
 
@@ -79,7 +79,7 @@ class CuziaIzinController extends Controller
     public function getData(Request $request)
     {
 
-        $tanggalSekarang = Carbon::now()->format('Ymd');
+        $tanggalSekarang = Carbon::now()->format('Y-m-d');
 
         $npk = auth()->user()->npk;
 
@@ -124,18 +124,16 @@ class CuziaIzinController extends Controller
         // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
 
-        // Memeriksa apakah data tanggal tersedia
-        if (!empty($start_date) && !empty($end_date)) {
-            // Memproses data tanggal jika ada
-            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
-            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
+        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
+            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
+        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
         } else {
-            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
-            $tanggalMulai = Carbon::now()->format('d-m-Y');
-            $tanggalAkhir = Carbon::now()->format('d-m-Y');
+            $tanggalMulai = $tanggalSekarang;
+            $tanggalAkhir = $tanggalSekarang;
         }
 
         DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
@@ -171,11 +169,10 @@ class CuziaIzinController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno LIKE '%$npk%' OR (pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir')
+                WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_pengajuan, '%d-%m-%Y') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
-
                 "));
                     // dd($data);
         // Iterate through each row in the collection
@@ -262,7 +259,7 @@ class CuziaIzinController extends Controller
         // dd($approval1);
         $cuti = new PengajuanIzin();
         $cuti->empno = $request->input('empno');
-        $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
+        $cuti->tgl_pengajuan = date('Y-m-d'); // Menyimpan tanggal hari ini
         $cuti->kodepengajuan = 'IZIN' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
 
         // Check if approval1Result has 2 hirars

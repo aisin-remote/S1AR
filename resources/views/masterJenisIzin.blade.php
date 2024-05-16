@@ -22,7 +22,7 @@
                                     <label for="pengajuan_button">&nbsp;</label>
                                     <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
                                         data-toggle="modal" data-target="#cuziaizinmodal" id="pengajuan_button">
-                                        <i class="fas fa-plus"></i> Pengajuan Izin
+                                        <i class="fas fa-plus"></i> Jenis Izin
                                     </button>
                                 </div>
                             </div>
@@ -83,7 +83,7 @@
                                 @csrf
                                 <div class="form-group">
                                     <label for="jenis_izin">Jenis Izin</label>
-                                    <input type="text" class="form-control" id="jenis_izin" name="jenis_izin"
+                                    <input type="text"  required class="form-control" id="jenis_izin" name="jenis_izin"
                                         placeholder="Masukkan Jenis Izin">
                                 </div>
                                 <button type="submit" class="btn btn-primary">Simpan</button>

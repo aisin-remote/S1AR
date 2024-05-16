@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\jenisizin;
-use Carbon\Carbon;
-use App\Models\saldoizin;
+use App\Models\PengajuanIzin;
 use Illuminate\Http\Request;
-use Termwind\Components\Raw;
-use App\Models\Pengajuanizin;
-use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
+use Termwind\Components\Raw;
+use Carbon\Carbon;
+use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-
+// use App\Models\Pengajuanizin;
+use App\Models\PengajuanIzin_Document;
 
 class RekapIzinController extends Controller
 {
@@ -23,7 +23,7 @@ class RekapIzinController extends Controller
      */
     public function index()
     {
-        $tanggalSekarang = Carbon::now()->format('Ymd');
+        $tanggalSekarang = Carbon::now()->format('Y-m-d');
 
         $npk = auth()->user()->npk;
 
@@ -70,8 +70,8 @@ class RekapIzinController extends Controller
         $userInfoDept = $cleanedStringDept;
         $data = collect($userInfo);
         $jenisizin = jenisizin::select('id', 'jenisizin')
-        ->where('jenisizin', 'NOT LIKE', '%Cuti%')
-        ->get();
+            ->where('jenisizin', 'NOT LIKE', '%Cuti%')
+            ->get();
         return view('rekapizin', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
@@ -79,7 +79,7 @@ class RekapIzinController extends Controller
     public function getData(Request $request)
     {
 
-        $tanggalSekarang = Carbon::now()->format('Ymd');
+        $tanggalSekarang = Carbon::now()->format('Y-m-d');
 
         $npk = auth()->user()->npk;
 
@@ -125,30 +125,15 @@ class RekapIzinController extends Controller
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-        // //     return DataTables::of()->make(true);
-        // if ($request->input('start_date') != null && $request->input('end_date') != null) {
-        //     $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Ymd');
-        //     $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Ymd');
-        // } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-        //     $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Ymd') : $tanggalSekarang;
-        //     $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Ymd') : $tanggalSekarang;
-        // } else {
-        //     $tanggalMulai = $tanggalSekarang;
-        //     $tanggalAkhir = $tanggalSekarang;
-        // }
-        // Mendapatkan data tanggal dari permintaan
-        $start_date = $request->input('start_date');
-        $end_date = $request->input('end_date');
-
-        // Memeriksa apakah data tanggal tersedia
-        if (!empty($start_date) && !empty($end_date)) {
-            // Memproses data tanggal jika ada
-            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
-            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
+        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
+            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
+        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
         } else {
-            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
-            $tanggalMulai = Carbon::now()->format('d-m-Y');
-            $tanggalAkhir = Carbon::now()->format('d-m-Y');
+            $tanggalMulai = $tanggalSekarang;
+            $tanggalAkhir = $tanggalSekarang;
         }
 
         DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
@@ -161,7 +146,7 @@ class RekapIzinController extends Controller
             empno,
             tgl_mulai,
             tgl_selesai,
-            pjenisizin,
+            jeniscuti,
             tgl_pengajuan,
             approval1_status,
             approval1_id,
@@ -172,14 +157,15 @@ class RekapIzinController extends Controller
             empnm,
             hirar,
             mutdt,
-            descr
+            descr,
+            is_admin
         FROM (
             SELECT
                 pc.id,
                 pc.empno,
                 pc.tgl_mulai,
                 pc.tgl_selesai,
-                pc.pjenisizin,
+                pc.jeniscuti,
                 pc.tgl_pengajuan,
                 pc.approval1_status,
                 pc.approval1_id,
@@ -187,20 +173,16 @@ class RekapIzinController extends Controller
                 pc.approval_status,
                 pc.note,
                 jz.jenisizin,
+                u.is_admin,
                 e.empnm,
                 h.hirar,
                 h.mutdt,
                 hd.descr,
-                @row_number := CASE
-                WHEN pc.empno != @empno_prev OR pc.tgl_pengajuan != @tgl_pengajuan_prev
-                    THEN 1
-                    ELSE @row_number + 1
-                END AS RowNum,
-                @empno_prev := pc.empno,
-                @tgl_pengajuan_prev := pc.tgl_pengajuan
-            FROM pengajuanizin pc
+                ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_pengajuan DESC) AS RowNum
+            FROM pengajuancuti pc
             INNER JOIN employee e ON pc.empno = e.empno
-            INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+            INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+            INNER JOIN users u ON pc.empno = u.npk
             INNER JOIN (
                 SELECT empno, MAX(mutdt) AS max_mutdt
                 FROM hirarki
@@ -208,19 +190,13 @@ class RekapIzinController extends Controller
             ) max_hirarki ON pc.empno = max_hirarki.empno
             INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
             INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-            WHERE pc.tgl_pengajuan BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+            WHERE  STR_TO_DATE(pc.tgl_pengajuan, '%d-%m-%Y') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
         ) AS numbered
         WHERE RowNum = 1
-        ORDER BY empno ASC, tgl_pengajuan ASC;
+        ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+
                 "));
-        // return $data;
-        // foreach ($data as $row) {
-        //     if ($row->tgl_pengajuan != "        ") {
-        //         $row->tgl_pengajuan = substr($row->tgl_pengajuan, 0, 4) . '/' . substr($row->tgl_pengajuan, 4, 2) . '/' . substr($row->tgl_pengajuan, 6, 2);
-        //     } else {
-        //         $row->tgl_pengajuan = "Tidak Ada Data";
-        //     }
-        // }
+        // dd($data);
         // Iterate through each row in the collection
         foreach ($data as $row) {
             // Calculate the character count for each row's cleaned hirar
@@ -240,104 +216,9 @@ class RekapIzinController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-        // $is_admin = auth()->user()->is_admin;
-        // if ($is_admin == 1) {
-        //     $data = Pengajuanizin::where('approval_status', '2');
-        // }
 
         return DataTables::of($data)->make(true);
     }
-
-
-    // public function saldoizin(Request $request)
-    // {
-    //     // Your existing code to get the NPK of the logged-in user.
-    //     $npk = $request->user()->npk;
-
-    //     // Your existing code to retrieve the saldo izin data.
-    //     $result = DB::connection('mysql2')->select(DB::raw(
-    //         "
-    //         SELECT CONVERT((clrig - clget), CHAR) AS saldo_izin
-    //         FROM pengajuanizinkar
-    //         WHERE pengajuanizinkar.empno = $npk
-    //         ORDER BY expdt DESC
-    //         LIMIT 1;
-    //         "
-    //     ));
-
-    //     // Check if the result is not empty and get the first element of the array.
-    //     $saldoizin = !empty($result) ? (string) $result[0]->saldo_izin : '0';
-
-    //     // Pass the string saldoizin to the view.
-    //     return view('dashboard', compact('saldoizin'));
-    // }
-    // public function chartData()
-    // {
-    //     $currentYear = Carbon::now()->year;
-    //     $absenceCounts = [];
-
-    //     // Retrieve counts for each type of absence (izin, Sakit, Ijin) by month.
-    //     $types = [
-    //         'CTH' => 'izin',
-    //         'SKT' => 'Sakit',
-    //         'DLU' => 'Izin'
-    //     ];
-
-    //     foreach ($types as $code => $type) {
-    //         $absenceCounts[$type] = DB::table('kehadiranmu')
-    //             ->select(DB::raw('MONTH(schdt) as month'), DB::raw('COUNT(*) as count'))
-    //             ->where('rsccd', $code)
-    //             ->whereYear('schdt', $currentYear)
-    //             ->groupBy(DB::raw('MONTH(schdt)'))
-    //             ->orderBy('month', 'ASC')
-    //             ->pluck('count', 'month')
-    //             ->toArray();
-
-    //         // Ensure that each month has a value.
-    //         for ($month = 1; $month <= 12; $month++) {
-    //             if (!array_key_exists($month, $absenceCounts[$type])) {
-    //                 $absenceCounts[$type][$month] = 0;
-    //             }
-    //         }
-
-    //         ksort($absenceCounts[$type]); // Sort by month.
-    //     }
-    //     $chartData = $absenceCounts;
-    //     // Pass the data to the view.
-    //     return view('dashboard', compact('chartData'));
-    // }
-
-    // /**
-    //  * Show the form for creating a new resource.
-    //  *
-    //  * @return \Illuminate\Http\Response
-    //  */
-    // public function approve(Request $request)
-    // {
-    //     $npk = auth()->user()->npk;
-    //     $pengajuanizin = Pengajuanizin::where('id', $request->id)->first();
-    //     if ($pengajuanizin->approval1_id == $npk) {
-    //         $pengajuanizin->approval1_status = Carbon::now();
-    //         if ($request->status == '0') {
-    //             $pengajuanizin->approval_status = '-1';
-    //         } else {
-    //             $pengajuanizin->approval_status = '1';
-    //         }
-    //     } else if ($pengajuanizin->approval2_id == $npk) {
-    //         $pengajuanizin->approval2_status = Carbon::now();
-    //         if ($request->status == '0') {
-    //             $pengajuanizin->approval_status = '-2';
-    //         } else {
-    //             $pengajuanizin->approval_status = '2';
-    //         }
-    //     }
-    //     $pengajuanizin->save();
-
-    //     return redirect()->back()->with([
-    //         'success' => true
-    //     ]);
-    // }
-
 
     /**
      * Show the form for creating a new resource.
@@ -349,16 +230,7 @@ class RekapIzinController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+
 
     /**
      * Display the specified resource.

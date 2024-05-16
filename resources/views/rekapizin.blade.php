@@ -259,6 +259,13 @@
                     "ordering": true,
                     paging: true,
                     pagingType: "simple_numbers",
+                    ajax: {
+                        url: '{{ url('/rekapizin/datatables') }}',
+                        data: function(d) {
+                            d.start_date = $('#start_date').val();
+                            d.end_date = $('#end_date').val();
+                        }
+                    },
                     scrollY: "400px",
                     scrollX: false,
                     buttons: [{
@@ -320,13 +327,6 @@
                         className: 'btn btn-success btn-sm float-above',
                     }],
 
-                    ajax: {
-                        url: '{{ url('/rekapizin/datatables') }}',
-                        data: function(d) {
-                            d.start_date = $('#start_date').val();
-                            d.end_date = $('#end_date').val();
-                        }
-                    },
 
                     columns: [{
                             data: 'tgl_pengajuan',
@@ -469,6 +469,7 @@
 
                 $('#filter_button').on('click', function() {
                     table.ajax.reload();
+
                 });
                 $('#employee-table').on('click', '.btn-update', function() {
 
