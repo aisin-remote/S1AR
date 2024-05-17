@@ -66,9 +66,14 @@
                 <a href="#" class="nav-link has-dropdown {{ request()->is('dailyattendance*')||request()->is('weeklyattendance*')||request()->is('monthlyattendance*') ? 'text-primary' : '' }}"><i class="fas fa-th"></i>
                     <span>Attendance</span></a>
                 <ul class="dropdown-menu">
+                    @if ($userInfoOccupation == 'GMR' or $userInfoOccupation == 'KDP' or $userInfoDept == 'HRD' )
+
                     <li>
                         <a class="nav-link {{ request()->is('dailyattendance*') ? 'text-primary' : '' }}" href="/dailyattendance">Daily attendance</a>
                     </li>
+
+                    @endif
+
                     <li>
                         <a class="nav-link {{ request()->is('monthlyattendance*') ? 'text-primary' : '' }}" href="/monthlyattendance">Monthly attendance</a>
                     </li>
