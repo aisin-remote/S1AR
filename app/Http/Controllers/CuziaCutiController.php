@@ -203,7 +203,7 @@ FROM (
         h.hirar,
         h.mutdt,
         hd.descr,
-        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_pengajuan DESC) AS RowNum
+        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
     FROM pengajuancuti pc
     INNER JOIN employee e ON pc.empno = e.empno
     INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
@@ -215,10 +215,10 @@ FROM (
     ) max_hirarki ON pc.empno = max_hirarki.empno
     INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
     INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-    WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_pengajuan, '%d-%m-%Y') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+    WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
 ) AS numbered
 WHERE RowNum = 1
-ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+ORDER BY empno ASC, tgl_mulai DESC;
 
 
 
@@ -309,7 +309,7 @@ ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
         // dd($approval1);
         $cuti = new PengajuanCuti();
         $cuti->empno = $request->input('empno');
-        $cuti->tgl_pengajuan = date('Y-m-d'); // Menyimpan tanggal hari ini
+        $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
         $cuti->kodepengajuan = 'CUTI' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
 
         // Check if approval1Result has 2 hirars

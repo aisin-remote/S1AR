@@ -285,7 +285,7 @@
                                     var newRow = {
                                         tanggal: currentDate.getFullYear() + (
                                                 currentDate.getMonth() + 1).toString()
-                                            .padStart(2, '0')  + currentDate
+                                            .padStart(2, '0') + currentDate
                                             .getDate().toString().padStart(2, '0'),
                                         shift: '', // Tambahkan kolom shift dengan data kosong
                                         nip: data.empno,
@@ -363,48 +363,54 @@
                                     '<?php echo $userInfoOccupation; ?>'; // Asumsikan nilai ini diambil dari server-side
                                 switch (data) {
                                     case '1':
-                                        if (userInfoOccupation === 'LDR/OPR') {
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Disetujui oleh LDR/OPR';
+                                        } else if (occupation === 'SPV') {
                                             statusText = 'Disetujui oleh SPV';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Disetujui oleh MGR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Disetujui oleh GMR';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Disetujui oleh KDP';
                                         } else {
                                             statusText = 'Disetujui oleh Atasan 1';
                                         }
                                         break;
                                     case '2':
-                                        if (userInfoOccupation === 'LDR/OPR') {
-                                            statusText = 'Disetujui oleh MGR';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Disetujui oleh GMR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Disetujui oleh DIR';
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Disetujui oleh LDR/OPR';
+                                        } else if (occupation === 'SPV') {
+                                            statusText = 'Disetujui oleh SPV';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Disetujui oleh KDP';
                                         } else {
                                             statusText = 'Disetujui oleh Atasan 2';
                                         }
                                         break;
+                                    case '3':
+                                        statusText = 'Disetujui oleh HRD';
+                                        break;
                                     case '-1':
-                                        if (userInfoOccupation === 'LDR/OPR') {
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Ditolak oleh LDR/OPR';
+                                        } else if (occupation === 'SPV') {
                                             statusText = 'Ditolak oleh SPV';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Ditolak oleh MGR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Ditolak oleh GMR';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Ditolak oleh KDP';
                                         } else {
                                             statusText = 'Ditolak oleh Atasan 1';
                                         }
                                         break;
                                     case '-2':
-                                        if (userInfoOccupation === 'LDR/OPR') {
-                                            statusText = 'Ditolak oleh MGR';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Ditolak oleh GMR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Ditolak oleh DIR';
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Ditolak oleh LDR/OPR';
+                                        } else if (occupation === 'SPV') {
+                                            statusText = 'Ditolak oleh SPV';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Ditolak oleh KDP';
                                         } else {
                                             statusText = 'Ditolak oleh Atasan 2';
                                         }
+                                        break;
+                                    case '-3':
+                                        statusText = 'Ditolak oleh HRD';
                                         break;
                                     default:
                                         statusText = 'Menunggu Persetujuan';

@@ -37,7 +37,7 @@
                                     <label for="pengajuan_button">&nbsp;</label>
                                     <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
                                         data-toggle="modal" data-target="#cuziacutimodal" id="pengajuan_button">
-                                        <i class="fas fa-plus"></i> Pengajuan Izin
+                                        <i class="fas fa-plus"></i> Pengajuan Cuti
                                     </button>
                                 </div>
                             </div>
@@ -117,9 +117,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group mb-2 ">
-                                    <label for="jenis_cuzia">Jenis Izin:</label>
+                                    <label for="jenis_cuzia">Jenis Cuti:</label>
                                     <select required class="form-control" id="jenisizin" name="jenisizin">
-                                        <option value="" disabled selected>Pilih Jenis Izin</option>
+                                        <option value="" disabled selected>Pilih Jenis Cuti</option>
                                         @foreach ($jenisizin as $cuti)
                                             <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
                                         @endforeach
@@ -147,7 +147,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editModal">Detail Pengajuan Izin</h5>
+                    <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -178,7 +178,7 @@
                             <div class="form-group ">
                                 <label for="jenis_cuzia">Jenis Cuzia:</label>
                                 <select required class="form-control" id="jeniscuti2" name="jeniscuti" disabled>
-                                    <option value="" disabled selected>Pilih Jenis Izin</option>
+                                    <option value="" disabled selected>Pilih Jenis Cuti</option>
                                     @foreach ($jenisizin as $cuti)
                                         <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
                                     @endforeach

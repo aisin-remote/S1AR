@@ -136,7 +136,7 @@ class CuziaIzinController extends Controller
             $tanggalAkhir = $tanggalSekarang;
         }
 
-        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
 
         // Execute main query
         $data = DB::connection('mysql2')
@@ -158,7 +158,7 @@ class CuziaIzinController extends Controller
                     h.hirar,
                     h.mutdt,
                     hd.descr,
-                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
@@ -169,10 +169,10 @@ class CuziaIzinController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_pengajuan, '%d-%m-%Y') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+                WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
             ) AS numbered
             WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
+            ORDER BY empno ASC, tgl_mulai DESC;
                 "));
                     // dd($data);
         // Iterate through each row in the collection
@@ -259,7 +259,7 @@ class CuziaIzinController extends Controller
         // dd($approval1);
         $cuti = new PengajuanIzin();
         $cuti->empno = $request->input('empno');
-        $cuti->tgl_pengajuan = date('Y-m-d'); // Menyimpan tanggal hari ini
+        $cuti->tgl_pengajuan = date('d-m-Y'); // Menyimpan tanggal hari ini
         $cuti->kodepengajuan = 'IZIN' . date('ymdHi') . trim($npk) . chr(rand(65, 90));
 
         // Check if approval1Result has 2 hirars

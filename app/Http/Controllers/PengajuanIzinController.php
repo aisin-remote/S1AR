@@ -147,60 +147,53 @@ class PengajuanIzinController extends Controller
             $data = DB::connection('mysql2')
                 ->select(DB::raw("
                 SELECT
-                    id,
-                    empno,
-                    tgl_mulai,
-                    tgl_selesai,
-                    pjenisizin,
-                    tgl_pengajuan,
-                    approval1_status,
-                    approval1_id,
-                    approval2_id,
-                    approval_status,
-                    lampiran,
-                    jenisizin,
-                    note,
-                    empnm,
-                    hirar,
-                    mutdt,
-                    descr,
-                    is_admin
-                FROM (
-                    SELECT
-                        pc.id,
-                        pc.empno,
-                        pc.tgl_mulai,
-                        pc.tgl_selesai,
-                        pc.pjenisizin,
-                        pc.tgl_pengajuan,
-                        pc.approval1_status,
-                        pc.approval1_id,
-                        pc.approval2_id,
-                        pc.approval_status,
-                        pc.lampiran,
-                        pc.note,
-                        jz.jenisizin,
-                        u.is_admin,
-                        e.empnm,
-                        h.hirar,
-                        h.mutdt,
-                        hd.descr,
-                        ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
-                    FROM pengajuanizin pc
-                    INNER JOIN employee e ON pc.empno = e.empno
-                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
-                    INNER JOIN users u ON pc.empno = u.npk
-                    INNER JOIN (
-                        SELECT empno, MAX(mutdt) AS max_mutdt
-                        FROM hirarki
-                        GROUP BY empno
-                    ) max_hirarki ON pc.empno = max_hirarki.empno
-                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-                    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                    WHERE pc.approval_status LIKE 2
-                ) AS numbered
-                WHERE RowNum = 1
-                ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
+    id,
+    empno,
+    tgl_mulai,
+    tgl_selesai,
+    pjenisizin,
+    tgl_pengajuan,
+    approval1_status,
+    approval1_id,
+    approval2_id,
+    approval_status,
+    lampiran,
+    jenisizin,
+    note,
+    empnm,
+    hirar
+FROM (
+    SELECT
+        pc.id,
+        pc.empno,
+        pc.tgl_mulai,
+        pc.tgl_selesai,
+        pc.pjenisizin,
+        pc.tgl_pengajuan,
+        pc.approval1_status,
+        pc.approval1_id,
+        pc.approval2_id,
+        pc.approval_status,
+        pc.lampiran,
+        pc.note,
+        jz.jenisizin,
+        e.empnm,
+        h.hirar,
+        ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+    FROM pengajuanizin pc
+    INNER JOIN employee e ON pc.empno = e.empno
+    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+    INNER JOIN (
+        SELECT empno, MAX(mutdt) AS max_mutdt
+        FROM hirarki
+        GROUP BY empno
+    ) max_hirarki ON pc.empno = max_hirarki.empno
+    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+    WHERE pc.approval_status IN (0, 1, 2)
+) AS numbered
+WHERE RowNum = 1
+ORDER BY empno ASC, tgl_mulai DESC;
+
                     "));
         } else {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
@@ -247,7 +240,7 @@ class PengajuanIzinController extends Controller
                     h.hirar,
                     h.mutdt,
                     hd.descr,
-                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
                 FROM pengajuanizin pc
                 INNER JOIN employee e ON pc.empno = e.empno
                 INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
@@ -262,7 +255,7 @@ class PengajuanIzinController extends Controller
                 WHERE (pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NULL) OR (pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NULL)
             ) AS numbered
             WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan ASC;
+            ORDER BY empno ASC, tgl_mulai DESC;
                 "));
         }
 

@@ -167,60 +167,50 @@ class RekapCutiController extends Controller
         $data = DB::connection('mysql2')
             ->select(DB::raw("
             SELECT
-    id,
-    empno,
-    tgl_mulai,
-    tgl_selesai,
-    jeniscuti,
-    tgl_pengajuan,
-    approval1_status,
-    approval1_id,
-    approval2_id,
-    approval_status,
-    jenisizin,
-    note,
-    empnm,
-    hirar,
-    mutdt,
-    descr,
-    is_admin
-FROM (
-    SELECT
-        pc.id,
-        pc.empno,
-        pc.tgl_mulai,
-        pc.tgl_selesai,
-        pc.jeniscuti,
-        pc.tgl_pengajuan,
-        pc.approval1_status,
-        pc.approval1_id,
-        pc.approval2_id,
-        pc.approval_status,
-        pc.note,
-        jz.jenisizin,
-        u.is_admin,
-        e.empnm,
-        h.hirar,
-        h.mutdt,
-        hd.descr,
-        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_pengajuan ORDER BY pc.tgl_pengajuan DESC) AS RowNum
-    FROM pengajuancuti pc
-    INNER JOIN employee e ON pc.empno = e.empno
-    INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-    INNER JOIN users u ON pc.empno = u.npk
-    INNER JOIN (
-        SELECT empno, MAX(mutdt) AS max_mutdt
-        FROM hirarki
-        GROUP BY empno
-    ) max_hirarki ON pc.empno = max_hirarki.empno
-    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-    WHERE  STR_TO_DATE(pc.tgl_pengajuan, '%d-%m-%Y') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
-) AS numbered
-WHERE RowNum = 1
-ORDER BY empno ASC, tgl_mulai DESC, tgl_pengajuan DESC;
-
-
+                id,
+                empno,
+                tgl_mulai,
+                tgl_selesai,
+                jeniscuti,
+                tgl_pengajuan,
+                approval1_status,
+                approval1_id,
+                approval2_id,
+                approval_status,
+                jenisizin,
+                note,
+                empnm,
+                hirar
+            FROM (
+                SELECT
+                    pc.id,
+                    pc.empno,
+                    pc.tgl_mulai,
+                    pc.tgl_selesai,
+                    pc.jeniscuti,
+                    pc.tgl_pengajuan,
+                    pc.approval1_status,
+                    pc.approval1_id,
+                    pc.approval2_id,
+                    pc.approval_status,
+                    pc.note,
+                    jz.jenisizin,
+                    e.empnm,
+                    h.hirar,
+                    ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                FROM pengajuancuti pc
+                INNER JOIN employee e ON pc.empno = e.empno
+                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+                INNER JOIN (
+                    SELECT empno, MAX(mutdt) AS max_mutdt
+                    FROM hirarki
+                    GROUP BY empno
+                ) max_hirarki ON pc.empno = max_hirarki.empno
+                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                WHERE pc.approval_status = 3 AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+            ) AS numbered
+            WHERE RowNum = 1
+            ORDER BY empno ASC, tgl_mulai DESC;
 
                 "));
         // dd($data);
