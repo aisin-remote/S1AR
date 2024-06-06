@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Kehadiran2;
+use App\Models\kehadiran2;
 use App\Models\attrn2;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +39,7 @@ class CopyDataK2Command extends Command
             DB::beginTransaction();
 
             // Retrieve all relevant records at once
-            $kehadiran2Records = Kehadiran2::whereDate('crtdt', $waktuSekarang)
+            $kehadiran2Records = kehadiran2::whereDate('crtdt', $waktuSekarang)
                 ->orWhereDate('lupddt', $waktuSekarang)
                 ->orderBy('crtdt', 'desc')
                 ->get();
