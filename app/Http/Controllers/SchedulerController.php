@@ -21,6 +21,9 @@ class SchedulerController extends Controller
         return response()->json([
             'result' => Artisan::output(),
         ]);
+
+    //     DB::connection('sqlsrv')
+    // ->select("SELECT * FROM attdly1 WHERE CAST(crtdt AS DATE) = '2024-05-20' OR CAST(lupddt AS DATE) = '2024-05-20' ORDER BY crtdt DESC");
     }
     public function index1()
     {

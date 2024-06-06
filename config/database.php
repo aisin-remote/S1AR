@@ -60,6 +60,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 1800,
             ]) : [],
         ],
 
@@ -82,14 +83,18 @@ return [
             'driver' => 'sqlsrv',
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', 'localhost'),
-            // 'port' => env('DB_PORT', '1433'),
+            // 'port' => env('DB_PORT', 1433),
             'database' => env('DB_DATABASE', 'forge'),
             'username' => env('DB_USERNAME', 'forge'),
             'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
+            'options' => extension_loaded('sqlsrv') ? array_filter([
+                PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 1800,
+            ]) : [],
         ],
+
 
         'mysql2' => [
             'driver' => 'mysql',
@@ -107,6 +112,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 1800,
             ]) : [],
         ],
 

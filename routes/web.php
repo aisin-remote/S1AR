@@ -26,6 +26,21 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+use Illuminate\Support\Facades\DB;
+
+Route::get('/test-connection', function () {
+    // try {
+    //     $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=sikola", "root", "");
+    //     echo "Connected successfully!";
+    // } catch (PDOException $e) {
+    //     echo "Connection failed: " . $e->getMessage();
+    // }
+    if (!DB::connection('mysql2')->getPdo()) {
+        $this->error('Could not connect to the mysql2 database.');
+        return 1;
+    }
+
+});
 
 // Grup rute yang memerlukan otentikasi
 Route::middleware(['auth'])->group(function () {
