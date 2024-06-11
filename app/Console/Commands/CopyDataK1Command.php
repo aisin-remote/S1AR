@@ -37,59 +37,62 @@ class CopyDataK1Command extends Command
         try {
             DB::beginTransaction();
 
-            // Define batch size
-            $batchSize = 100;
-
-            // Retrieve total record count
-            $totalRecords = kehadiran1::whereDate('crtdt', $waktuSekarang)
-                ->orWhereDate('lupddt', $waktuSekarang)
-                ->count();
-
-            $this->info("Total records to process: $totalRecords");
-
-            // Process records in batches
-            kehadiran1::whereDate('crtdt', $waktuSekarang)
+            // Retrieve all relevant records at once
+            $kehadiran1Records = kehadiran1::whereDate('crtdt', $waktuSekarang)
                 ->orWhereDate('lupddt', $waktuSekarang)
                 ->orderBy('crtdt', 'desc')
-                ->chunk($batchSize, function ($kehadiran1Records) {
-                    foreach ($kehadiran1Records as $data1) {
-                        // Check if the record exists in MySQL2
-                        $record = DB::connection('mysql2')->table('kehadiran1')
-                            ->where('empno', $data1->empno)
-                            ->where('datin', $data1->datin)
-                            ->first();
+                ->get();
 
-                        // Insert if it doesn't exist, or update if there's a change in the update date
-                        if (!$record || $record->lupddt != $data1->lupddt) {
-                            DB::connection('mysql2')->table('kehadiran1')->updateOrInsert(
-                                ['empno' => $data1->empno, 'datin' => $data1->datin],
-                                [
-                                    'empno' => $data1->empno,
-                                    'datin' => $data1->datin,
-                                    'timin' => $data1->timin,
-                                    'datot' => $data1->datot,
-                                    'timot' => $data1->timot,
-                                    'lupddt' => $data1->lupddt,
-                                ]
-                            );
-                        }
-                    }
-                });
+            $totalRecords = $kehadiran1Records->count();
+            $this->info("Total records retrieved: $totalRecords");
+
+            $dataToInsert = [];
+            $processedRecordsCount = 0;
+
+            foreach ($kehadiran1Records as $data1) {
+                $record = DB::connection('mysql2')->table('kehadiran1')
+                    ->where('empno', $data1->empno)
+                    ->where('datin', $data1->datin)
+                    ->first();
+
+                if (!$record) {
+                    $dataToInsert[] = [
+                        'empno' => $data1->empno,
+                        'datin' => $data1->datin,
+                        'timin' => $data1->timin,
+                        'datot' => $data1->datot,
+                        'timot' => $data1->timot,
+                        'lupddt' => $data1->lupddt,
+                    ];
+                } else if ($record->lupddt != $data1->lupddt) {
+                    DB::connection('mysql2')->table('kehadiran1')
+                        ->where('empno', $data1->empno)
+                        ->where('datin', $data1->datin)
+                        ->update([
+                            'empno' => $data1->empno,
+                            'datin' => $data1->datin,
+                            'timin' => $data1->timin,
+                            'datot' => $data1->datot,
+                            'timot' => $data1->timot,
+                            'lupddt' => $data1->lupddt,
+                        ]);
+                }
+
+                $processedRecordsCount++;
+            }
+
+            if (!empty($dataToInsert)) {
+                DB::connection('mysql2')->table('kehadiran1')->insert($dataToInsert);
+                $processedRecordsCount += count($dataToInsert);
+            }
 
             DB::commit();
 
-            // Verification of total records
-            $copiedRecordsCount = DB::connection('mysql2')->table('kehadiran1')
-                ->whereDate('crtdt', $waktuSekarang)
-                ->orWhereDate('lupddt', $waktuSekarang)
-                ->count();
-
-            if ($copiedRecordsCount === $totalRecords) {
-                $this->info("Data copied successfully: $copiedRecordsCount records.");
+            if ($processedRecordsCount === $totalRecords) {
+                $this->info("Data copied successfully: $processedRecordsCount records.");
                 return 1;
             } else {
-                $this->error("Mismatch in copied data. Expected: $totalRecords, Copied: $copiedRecordsCount.");
-                DB::rollBack();
+                $this->error("Mismatch in copied data. Expected: $totalRecords, Copied: $processedRecordsCount.");
                 return 0;
             }
         } catch (\Exception $e) {
