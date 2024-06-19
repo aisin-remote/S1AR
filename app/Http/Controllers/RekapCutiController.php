@@ -101,71 +101,152 @@ class RekapCutiController extends Controller
         // dd($request->all());
     }
 
+    // public function getData(Request $request)
+    // {
+
+    //     $tanggalSekarang = Carbon::now()->format('Y-m-d');
+
+    //     $npk = auth()->user()->npk;
+
+    //     $userInfo = DB::connection('mysql2')->select(DB::raw(
+    //         "
+    //         SELECT kehadiranmu.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+    //         FROM kehadiranmu
+    //         LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
+    //         LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+    //         WHERE kehadiranmu.empno = $npk
+    //         GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
+    //         ORDER BY mutdt DESC LIMIT 1;
+    //         "
+    //     ));
+
+    //     if (!empty($userInfo)) {
+    //         $npkDesc = $userInfo[0]->hirar; // Use array syntax
+
+    //         $cleanedString = str_replace(' ', '', $npkDesc);
+
+    //         // Hitung jumlah karakter
+    //         $jumlahKarakter = strlen($cleanedString);
+
+    //         // Tentukan jenis berdasarkan jumlah karakter
+    //         if ($jumlahKarakter == 5) {
+    //             $jenis = 'KDP';
+    //         } elseif ($jumlahKarakter == 7) {
+    //             $jenis = 'SPV';
+    //         } elseif ($jumlahKarakter == 9) {
+    //             $jenis = 'LDR/OPR';
+    //         } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+    //             $jenis = 'GMR';
+    //         } else {
+    //             $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+    //         }
+    //     } else {
+    //         // Handle the case where no results are returned
+    //         $jenis = 'Jenis tidak dikenali';
+    //     }
+
+    //     $cleanedStringDept = trim($userInfo[0]->descr);
+    //     // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+    //     $userInfoOccupation = $jenis;
+    //     $userInfoDept = $cleanedStringDept;
+
+    //     if ($request->input('start_date') != null && $request->input('end_date') != null) {
+    //         $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
+    //         $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
+    //     } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+    //         $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+    //         $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
+    //     } else {
+    //         $tanggalMulai = $tanggalSekarang;
+    //         $tanggalAkhir = $tanggalSekarang;
+    //     }
+
+    //     DB::connection('mysql2')->select(' SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL;');
+
+    //     // Execute main query
+    //     $data = DB::connection('mysql2')
+    //         ->select(DB::raw("
+    //         SELECT
+    //             id,
+    //             empno,
+    //             tgl_mulai,
+    //             tgl_selesai,
+    //             jeniscuti,
+    //             tgl_pengajuan,
+    //             approval1_status,
+    //             approval1_id,
+    //             approval2_id,
+    //             approval_status,
+    //             jenisizin,
+    //             note,
+    //             empnm,
+    //             hirar
+    //         FROM (
+    //             SELECT
+    //                 pc.id,
+    //                 pc.empno,
+    //                 pc.tgl_mulai,
+    //                 pc.tgl_selesai,
+    //                 pc.jeniscuti,
+    //                 pc.tgl_pengajuan,
+    //                 pc.approval1_status,
+    //                 pc.approval1_id,
+    //                 pc.approval2_id,
+    //                 pc.approval_status,
+    //                 pc.note,
+    //                 jz.jenisizin,
+    //                 e.empnm,
+    //                 h.hirar,
+    //                 ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+    //             FROM pengajuancuti pc
+    //             INNER JOIN employee e ON pc.empno = e.empno
+    //             INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+    //             INNER JOIN (
+    //                 SELECT empno, MAX(mutdt) AS max_mutdt
+    //                 FROM hirarki
+    //                 GROUP BY empno
+    //             ) max_hirarki ON pc.empno = max_hirarki.empno
+    //             INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+    //             WHERE pc.approval_status = 3 AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+    //         ) AS numbered
+    //         WHERE RowNum = 1
+    //         ORDER BY empno ASC, tgl_mulai DESC;
+
+    //             "));
+    //     // dd($data);
+    //     // Iterate through each row in the collection
+    //     foreach ($data as $row) {
+    //         // Calculate the character count for each row's cleaned hirar
+    //         $cleanedString = str_replace(' ', '', $row->hirar);
+    //         $jumlahKarakter = strlen($cleanedString);
+
+    //         // Determine jenis berdasarkan jumlah karakter
+    //         if ($jumlahKarakter == 5) {
+    //             $row->hirar = 'KDP';
+    //         } elseif ($jumlahKarakter == 7) {
+    //             $row->hirar = 'SPV';
+    //         } elseif ($jumlahKarakter == 9) {
+    //             $row->hirar = 'LDR/OPR';
+    //         } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+    //             $row->hirar = 'GMR';
+    //         } else {
+    //             $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+    //         }
+    //     }
+
+    //     return DataTables::of($data)->make(true);
+    // }
     public function getData(Request $request)
     {
-
         $tanggalSekarang = Carbon::now()->format('Y-m-d');
-
         $npk = auth()->user()->npk;
 
-        $userInfo = DB::connection('mysql2')->select(DB::raw(
-            "
-            SELECT kehadiranmu.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
-            FROM kehadiranmu
-            LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
-            LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiranmu.empno = $npk
-            GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
-            ORDER BY mutdt DESC LIMIT 1;
-            "
-        ));
+        // Handling input dates
+        $tanggalMulai = $request->input('start_date') ?? $tanggalSekarang;
+        $tanggalAkhir = $request->input('end_date') ?? $tanggalSekarang;
 
-        if (!empty($userInfo)) {
-            $npkDesc = $userInfo[0]->hirar; // Use array syntax
-
-            $cleanedString = str_replace(' ', '', $npkDesc);
-
-            // Hitung jumlah karakter
-            $jumlahKarakter = strlen($cleanedString);
-
-            // Tentukan jenis berdasarkan jumlah karakter
-            if ($jumlahKarakter == 5) {
-                $jenis = 'KDP';
-            } elseif ($jumlahKarakter == 7) {
-                $jenis = 'SPV';
-            } elseif ($jumlahKarakter == 9) {
-                $jenis = 'LDR/OPR';
-            } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
-                $jenis = 'GMR';
-            } else {
-                $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
-            }
-        } else {
-            // Handle the case where no results are returned
-            $jenis = 'Jenis tidak dikenali';
-        }
-
-        $cleanedStringDept = trim($userInfo[0]->descr);
-        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
-        $userInfoOccupation = $jenis;
-        $userInfoDept = $cleanedStringDept;
-
-        if ($request->input('start_date') != null && $request->input('end_date') != null) {
-            $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
-            $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
-        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
-            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
-        } else {
-            $tanggalMulai = $tanggalSekarang;
-            $tanggalAkhir = $tanggalSekarang;
-        }
-
-        DB::connection('mysql2')->select(' SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL;');
-
-        // Execute main query
-        $data = DB::connection('mysql2')
-            ->select(DB::raw("
+        // Main query to fetch data
+        $data = DB::connection('mysql2')->select(DB::raw("
             SELECT
                 id,
                 empno,
@@ -207,13 +288,16 @@ class RekapCutiController extends Controller
                     GROUP BY empno
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-                WHERE pc.approval_status = 3 AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+                WHERE pc.approval_status = 3
+                  AND (
+                    STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+                    OR '$tanggalMulai' = '$tanggalAkhir' -- To include all data if no date filter is applied
+                  )
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC;
+        "));
 
-                "));
-        // dd($data);
         // Iterate through each row in the collection
         foreach ($data as $row) {
             // Calculate the character count for each row's cleaned hirar

@@ -19,19 +19,19 @@
                         <form id="filter-form">
                             <div class="form-row">
                                 <div class="form-group col-auto">
-                                    <label for="start_date">Start Date:</label>
+                                    <label for="start_date">Tanggal Mulai:</label>
                                     <input type="date" class="form-control form-control-sm" id="start_date"
                                         name="start_date">
                                 </div>
                                 <div class="form-group col-auto">
-                                    <label for="end_date">End Date:</label>
+                                    <label for="end_date">Tanggal Selesai:</label>
                                     <input type="date" class="form-control form-control-sm" id="end_date"
                                         name="end_date">
                                 </div>
                                 <div class="form-group col-auto">
                                     <label for="filter_button">&nbsp;</label>
                                     <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
-                                        id="filter_button">Apply Filter</button>
+                                        id="filter_button">Terapkan Filter</button>
                                 </div>
                                 <div class="form-group ml-auto">
                                     <label for="pengajuan_button">&nbsp;</label>
@@ -43,9 +43,10 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-sm table-bordered" id="employee-table">
-                                <thead>
+                            <table class="table-bor table-striped table-sm table-bordered w-100" id="employee-table">
+                                <thead class="thead-custom">
                                     <tr>
+                                        <th class="text-center align-middle">No</th>
                                         <th class="align-middle">Tanggal Pengajuan</th>
                                         <th class="text-center align-middle">NPK</th>
                                         <th class="text-center align-middle">Nama</th>
@@ -54,7 +55,7 @@
                                         <th class="align-middle">Tanggal Selesai</th>
                                         <th class="align-middle">Status</th>
                                         <th class="align-middle">Keterangan</th>
-                                        <th class="align-middle">Action</th>
+                                        <th class="align-middle">Aksi</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -130,15 +131,13 @@
                                     <textarea class="form-control" required class="form-control" id="note" name="note"></textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Kirim</button>
                         </div>
                     </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
-    </div>
     </div>
 
     <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
@@ -193,10 +192,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    </div>
-    </div>
-    </div>
     </div>
     @push('scripts')
         <?php
@@ -266,6 +261,13 @@
                         }
                     },
                     columns: [{
+                            data: null,
+                            render: function(data, type, row, meta) {
+                                // Mengembalikan nomor urut berdasarkan nomor baris (index + 1)
+                                return meta.row + 1;
+                            }
+                        },
+                        {
                             data: 'tgl_pengajuan',
                             name: 'tgl_pengajuan'
                         }, {
@@ -424,5 +426,23 @@
                 });
             });
         </script>
+        <style>
+            /* Header Styling */
+            .thead-custom {
+                background-color: #054483;
+                color: white;
+            }
+
+            /* Table Styling */
+            .table-bor {
+                width: 80%;
+                border-collapse: collapse;
+            }
+
+            .table-bor th,
+            .table-bor td {
+                border: 1px solid #1e1d1d;
+            }
+        </style>
     @endpush
 @endsection

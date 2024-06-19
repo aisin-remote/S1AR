@@ -9,153 +9,158 @@
         </div>
 
         @php
-        $npk = auth()->user()->npk;
+            $npk = auth()->user()->npk;
 
-        $userInfo = DB::connection('mysql2')->select(DB::raw(
-            "
-            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr, users.is_admin
-            FROM kehadiran2
-            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
-            LEFT JOIN users ON kehadiran2.empno = users.npk
-            LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiran2.empno = $npk
-            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr,users.is_admin
-            ORDER BY mutdt DESC LIMIT 1;
-            "
-        ));
+            $userInfo = DB::connection('mysql2')->select(
+                DB::raw(
+                    "
+                    SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr, users.is_admin
+                    FROM kehadiran2
+                    LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+                    LEFT JOIN users ON kehadiran2.empno = users.npk
+                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+                    WHERE kehadiran2.empno = $npk
+                    GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr, users.is_admin
+                    ORDER BY mutdt DESC LIMIT 1;
+                    "
+                )
+            );
 
-        if (!empty($userInfo)) {
-        $npkDesc = $userInfo[0]->hirar; // Use array syntax
-        $isadmin = $userInfo[0]->is_admin;
-        $cleanedString = str_replace(' ', '', $npkDesc);
+            // Default values
+            $jenis = 'Jenis tidak dikenali';
+            $userInfoOccupation = '';
+            $userInfoDept = '';
 
-        // Hitung jumlah karakter
-        $jumlahKarakter = strlen($cleanedString);
+            if (!empty($userInfo)) {
+                $npkDesc = $userInfo[0]->hirar; // Use array syntax
+                $isadmin = $userInfo[0]->is_admin;
+                $cleanedString = str_replace(' ', '', $npkDesc);
 
-        // Tentukan jenis berdasarkan jumlah karakter
-        if ($jumlahKarakter == 5) {
-        $jenis = 'KDP';
-        } elseif ($jumlahKarakter == 7) {
-        $jenis = 'SPV';
-        } elseif ($jumlahKarakter == 9) {
-        $jenis = 'LDR/OPR';
-        } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
-        $jenis = 'GMR';
-        } else {
-        $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
-        }
-        } else {
-        // Handle the case where no results are returned
-        $jenis = 'Jenis tidak dikenali';
-        }
+                // Hitung jumlah karakter
+                $jumlahKarakter = strlen($cleanedString);
 
-        $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
-        $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
-        $userInfoOccupation = $jenis;
-        $userInfoDept = $cleanedStringDeptFinal;
+                // Tentukan jenis berdasarkan jumlah karakter
+                if ($jumlahKarakter == 5) {
+                    $jenis = 'KDP';
+                } elseif ($jumlahKarakter == 7) {
+                    $jenis = 'SPV';
+                } elseif ($jumlahKarakter == 9) {
+                    $jenis = 'LDR/OPR';
+                } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                    $jenis = 'GMR';
+                }
+
+                $cleanedStringDept = str_replace(' ', '', $userInfo[0]->descr);
+                $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+                $userInfoOccupation = $jenis;
+                $userInfoDept = $cleanedStringDeptFinal;
+            }
         @endphp
-        @if ($userInfoOccupation == 'GMR' or $userInfoOccupation == 'KDP' or $userInfoDept == 'HRD' or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR' )
+
         <ul class="sidebar-menu">
             <li>
-                <a href="/dashboard" class="nav-link{{ request()->is('dashboard*') ? 'text-primary' : '' }}">
+                <a href="/dashboard" class="nav-link{{ request()->is('dashboard*') ? ' text-primary' : '' }}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
+
             <li class="dropdown">
-                <a href="#" class="nav-link has-dropdown {{ request()->is('dailyattendance*')||request()->is('weeklyattendance*')||request()->is('monthlyattendance*') ? 'text-primary' : '' }}"><i class="fas fa-th"></i>
-                    <span>Attendance</span></a>
+                <a href="#" class="nav-link has-dropdown{{ request()->is('dailyattendance*') || request()->is('weeklyattendance*') || request()->is('monthlyattendance*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-th"></i>
+                    <span>Attendance</span>
+                </a>
                 <ul class="dropdown-menu">
-                    @if ($userInfoOccupation == 'GMR' or $userInfoOccupation == 'KDP' or $userInfoDept == 'HRD' )
-
-                    <li>
-                        <a class="nav-link {{ request()->is('dailyattendance*') ? 'text-primary' : '' }}" href="/dailyattendance">Daily attendance</a>
-                    </li>
-
+                    @if (in_array($userInfoOccupation, ['GMR', 'KDP']) || $userInfoDept == 'HRD')
+                        <li>
+                            <a href="/dailyattendance" class="nav-link{{ request()->is('dailyattendance*') ? ' text-primary' : '' }}">
+                                Daily attendance
+                            </a>
+                        </li>
                     @endif
-
                     <li>
-                        <a class="nav-link {{ request()->is('monthlyattendance*') ? 'text-primary' : '' }}" href="/monthlyattendance">Monthly attendance</a>
+                        <a href="/monthlyattendance" class="nav-link{{ request()->is('monthlyattendance*') ? ' text-primary' : '' }}">
+                            Monthly attendance
+                        </a>
                     </li>
                     <li>
-                        <a class="nav-link {{ request()->is('historyattendance*') ? 'text-primary' : '' }}" href="/historyattendance">History attendance</a>
+                        <a href="/historyattendance" class="nav-link{{ request()->is('historyattendance*') ? ' text-primary' : '' }}">
+                            History attendance
+                        </a>
                     </li>
                 </ul>
-                @if ($userInfoDept == 'HRD')
-                <a class="sidebar-menu {{ request()->is('holiday*') ? 'text-primary' : '' }}" href="/holiday"><i class="fas fa-calendar"></i><span>Master Holiday</span></a>
-                <a class="sidebar-menu {{ request()->is('jenisizin*') ? 'text-primary' : '' }}" href="/jenisizin"><i class="fas fa-calendar"></i><span>Master Jenis Izin</span></a>
-                @endif
-                {{-- <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a> --}}
+            </li>
 
-            </li>
-            <li>
-                <a href="#" class="nav-link has-dropdown {{ request()->is('cuziacuti*')||request()->is('cuzia*') ? 'text-primary' : '' }}"><i class="fas fa-umbrella-beach"></i>
-                    <span>Cuti </span></a>
-                    <ul class="dropdown-menu">
-                    <li>
-                        <a class="nav-link {{ request()->is('cuziacuti*') ? 'text-primary' : '' }}" href="/cuziacuti">Pengajuan Cuti</a>
-                    </li>
-                    <li>
-                        @if ($userInfoOccupation == 'KDP' or $userInfoOccupation == 'GMR' or  $userInfoOccupation == 'SPV' or $userInfoDept == 'HRD'  or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR')
-                        <a class="nav-link {{ request()->is('cuzia*') ? 'text-primary' : '' }}" href="/cuzia">Approval Cuti</a>
-                        @endif
-                    </li>
-                    <li>
-                        @if ( $isadmin == '1')
-                        <a class="nav-link {{ request()->is('rekapcuti*') ? 'text-primary' : '' }}" href="/rekapcuti">Rekap Cuti</a>
-                        @endif
-                    </li>
-                    </ul>
+            @if ($userInfoDept == 'HRD')
+                <li>
+                    <a href="/holiday" class="nav-link{{ request()->is('holiday*') ? ' text-primary' : '' }}">
+                        <i class="fas fa-calendar"></i>
+                        <span>Master Holiday</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/jenisizin" class="nav-link{{ request()->is('jenisizin*') ? ' text-primary' : '' }}">
+                        <i class="fas fa-calendar"></i>
+                        <span>Master Jenis Izin</span>
+                    </a>
+                </li>
+            @endif
+
+            <li class="dropdown{{ request()->is('cuziacuti*') || request()->is('cuzia*') ? ' active' : '' }}">
+                <a href="#" class="nav-link has-dropdown{{ request()->is('cuziacuti*') || request()->is('cuzia*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-umbrella-beach"></i>
+                    <span>Cuti</span>
                 </a>
-            </li>
-            <li>
-                <a href="#" class="nav-link has-dropdown {{ request()->is('cuziaizin*')||request()->is('izin*') ? 'text-primary' : '' }}"><i class="fas fa-check-circle"></i>
-                    <span>Izin </span></a>
-                    <ul class="dropdown-menu">
+                <ul class="dropdown-menu">
                     <li>
-                        <a class="nav-link {{ request()->is('cuziaizin*') ? 'text-primary' : '' }}" href="/cuziaizin">Pengajuan Izin</a>
+                        <a href="/cuziacuti" class="nav-link{{ request()->is('cuziacuti*') ? ' text-primary' : '' }}">
+                            Pengajuan Cuti
+                        </a>
                     </li>
-                    <li>
-                        @if ($userInfoOccupation == 'KDP' || $userInfoOccupation == 'GMR' ||$userInfoOccupation == 'SPV' || $userInfoDept == 'HRD'  or $userInfoOccupation == 'SPV'  or $userInfoOccupation == 'LDR/OPR' )
-                        <a class="nav-link {{ request()->is('cuzia*') ? 'text-primary' : '' }}" href="/izin">Approval Izin</a>
-                        @endif
-                    </li>
-                    <li>
-                        @if ( $isadmin == '1')
-                        <a class="nav-link {{ request()->is('rekapizin*') ? 'text-primary' : '' }}" href="/rekapizin">Rekap Izin</a>
-                        @endif
-                    </li>
-                    </ul>
-                </a>
-            </li>
-        </ul>
-        @else
-        <ul class="sidebar-menu">
-            <li>
-                <a href="#" class="nav-link{{ request()->is('dashboard*') ? 'text-primary' : '' }}">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="dropdown">
-                <a class="nav-link {{ request()->is('historyattendance*') || request()->is('/') ? 'text-primary' : '' }}" href="/historyattendance"><i class="fas fa-th"></i><span>History attendance</span></a>
-                <a class="nav-link {{ request()->is('monthlyattendance*') ? 'text-primary' : '' }}" href="/monthlyattendance"><i class="fas fa-th"></i><span>Monthly attendance</span></a>
-                {{-- <a class="sidebar-menu" href="#"><i class="fas fa-edit"></i><span>Cuzia<span class="text-sm badge bg-secondary" style="width: 100px;">Coming Soon</span></span></a> --}}
-            </li>
-            <li>
-                <a href="#" class="nav-link has-dropdown {{ request()->is('cuziacuti*')||request()->is('cuziaizin*') ? 'text-primary' : '' }}"><i class="fas fa-check-circle"></i>
-                    <span>Pengajuan </span></a>
-                    <ul class="dropdown-menu">
+                    @if (in_array($userInfoOccupation, ['KDP', 'GMR', 'SPV', 'LDR/OPR']) || $userInfoDept == 'HRD')
                         <li>
-                            <a class="nav-link {{ request()->is('cuziacuti*') ? 'text-primary' : '' }}" href="/cuziacuti">Pengajuan Cuti</a>
+                            <a href="/cuzia" class="nav-link{{ request()->is('cuzia*') ? ' text-primary' : '' }}">
+                                Approval Cuti
+                            </a>
                         </li>
-                    <li>
-                        <a class="nav-link {{ request()->is('cuziaizin*') ? 'text-primary' : '' }}" href="/cuziaizin">Pengajuan Izin</a>
-                    </li>
-                    </ul>
+                    @endif
+                    @if ($isadmin == '1')
+                        <li>
+                            <a href="/rekapcuti" class="nav-link{{ request()->is('rekapcuti*') ? ' text-primary' : '' }}">
+                                Rekap Cuti
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
+
+            <li class="dropdown{{ request()->is('cuziaizin*') || request()->is('izin*') ? ' active' : '' }}">
+                <a href="#" class="nav-link has-dropdown{{ request()->is('cuziaizin*') || request()->is('izin*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Izin</span>
                 </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="/cuziaizin" class="nav-link{{ request()->is('cuziaizin*') ? ' text-primary' : '' }}">
+                            Pengajuan Izin
+                        </a>
+                    </li>
+                    @if (in_array($userInfoOccupation, ['KDP', 'GMR', 'SPV', 'LDR/OPR']) || $userInfoDept == 'HRD')
+                        <li>
+                            <a href="/izin" class="nav-link{{ request()->is('izin*') ? ' text-primary' : '' }}">
+                                Approval Izin
+                            </a>
+                        </li>
+                    @endif
+                    @if ($isadmin == '1')
+                        <li>
+                            <a href="/rekapizin" class="nav-link{{ request()->is('rekapizin*') ? ' text-primary' : '' }}">
+                                Rekap Izin
+                            </a>
+                        </li>
+                    @endif
+                </ul>
             </li>
         </ul>
-        @endif
     </aside>
 </div>

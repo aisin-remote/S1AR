@@ -19,19 +19,19 @@
                         <form id="filter-form">
                             <div class="form-row">
                                 <div class="form-group col-auto">
-                                    <label for="start_date">Start Date:</label>
+                                    <label for="start_date">Tanggal Mulai:</label>
                                     <input type="date" class="form-control form-control-sm" id="start_date"
                                         name="start_date">
                                 </div>
                                 <div class="form-group col-auto">
-                                    <label for="end_date">End Date:</label>
+                                    <label for="end_date">Tanggal Selesai:</label>
                                     <input type="date" class="form-control form-control-sm" id="end_date"
                                         name="end_date">
                                 </div>
                                 <div class="form-group col-auto">
                                     <label for="filter_button">&nbsp;</label>
                                     <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
-                                        id="filter_button">Apply Filter</button>
+                                        id="filter_button">Terapkan Filter</button>
                                 </div>
                                 <div class="form-group ml-auto">
                                     <label for="pengajuan_button">&nbsp;</label>
@@ -43,9 +43,10 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-sm table-bordered" id="employee-table">
-                                <thead>
+                            <table class="table-bor table-striped table-sm table-bordered w-100" id="employee-table">
+                                <thead class="thead-custom">
                                     <tr>
+                                        <th class="text-center align-middle">No</th>
                                         <th class="align-middle">Tanggal Pengajuan</th>
                                         <th class="text-center align-middle">NPK</th>
                                         <th class="text-center align-middle">Nama</th>
@@ -55,7 +56,7 @@
                                         <th class="align-middle">Status</th>
                                         <th class="align-middle">Keterangan</th>
                                         <th class="align-middle">Lampiran</th>
-                                        <th class="align-middle">Action</th>
+                                        <th class="align-middle">Aksi</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -123,7 +124,7 @@
                                     <input type="file" multiple name="data_verifikasi" id="data_verifikasi"
                                         class="w-full border-2 border-gray-300 px-3 py-2 rounded-md">
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Kirim</button>
                         </div>
                     </div>
                     </form>
@@ -150,22 +151,24 @@
                         <div class="row" style="display: block">
                             <div class="form-group ">
                                 <label for="nama">Nama:</label>
-                                <input type="text" required class="form-control" id="nama3" name="nama" disabled>
+                                <input type="text" required class="form-control" id="nama3" name="nama"
+                                    disabled>
                             </div>
                             <div class="form-group ">
                                 <label for="npk">NPK:</label>
-                                <input type="text" required class="form-control" id="npk" name="npk" disabled>
+                                <input type="text" required class="form-control" id="npk" name="npk"
+                                    disabled>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_mulai">Tanggal Mulai:</label>
-                                    <input type="date"  required class="form-control" id="tgl_mulai3" name="tgl_mulai"
+                                    <input type="date" required class="form-control" id="tgl_mulai3" name="tgl_mulai"
                                         disabled>
                                 </div>
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_selesai">Tanggal Selesai:</label>
-                                    <input type="date" required class="form-control" id="tgl_selesai4" name="tgl_selesai"
-                                        disabled>
+                                    <input type="date" required class="form-control" id="tgl_selesai4"
+                                        name="tgl_selesai" disabled>
                                 </div>
                             </div>
                             <div class="form-group ">
@@ -259,6 +262,13 @@
                         }
                     },
                     columns: [{
+                            data: null,
+                            render: function(data, type, row, meta) {
+                                // Mengembalikan nomor urut berdasarkan nomor baris (index + 1)
+                                return meta.row + 1;
+                            }
+                        },
+                        {
                             data: 'tgl_pengajuan',
                             name: 'tgl_pengajuan'
                         }, {
@@ -430,5 +440,23 @@
                 });
             });
         </script>
+        <style>
+            /* Header Styling */
+            .thead-custom {
+                background-color: #054483;
+                color: white;
+            }
+
+            /* Table Styling */
+            .table-bor {
+                width: 80%;
+                border-collapse: collapse;
+            }
+
+            .table-bor th,
+            .table-bor td {
+                border: 1px solid #1e1d1d;
+            }
+        </style>
     @endpush
 @endsection

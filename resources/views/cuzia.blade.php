@@ -36,9 +36,10 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-sm table-bordered" id="employee-table">
-                                <thead>
+                            <table class="table-bor table-striped table-sm table-bordered w-100" id="employee-table">
+                                <thead class="thead-custom">
                                     <tr>
+                                        <th class="text-center align-middle">No</th>
                                         <th class="align-middle">Tanggal Pengajuan</th>
                                         <th class="text-center align-middle">NPK</th>
                                         <th class="text-center align-middle">Nama</th>
@@ -114,296 +115,370 @@
             </div>
         </div>
     </div>
-    <!-- Reason for Rejection Modal -->
-    <div class="modal fade" id="reasonRejectionModal" tabindex="-1" role="dialog" aria-labelledby="reasonModalLabel"
+    <div class="modal fade" id="rejectionReasonModal" tabindex="-1" role="dialog" aria-labelledby="rejectionReasonLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editModal">Detail Pengajuan Cuti</h5>
+                    <h5 class="modal-title" id="rejectionReasonLabel">Masukkan Alasan Penolakan</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
-                        <form id="rejectionForm">
-                            <div class="form-group">
-                                <label for="rejectionReason">Alasan:</label>
-                                <textarea class="form-control" id="rejectionReason" name="reason" required></textarea>
+                        <div class="row" style="display: block">
+                            <div class="form-group mb-2">
+                                <label for="rejectionReason">Alasan Penolakan:</label>
+                                <textarea id="rejectionReason" class="form-control" rows="4"></textarea>
                             </div>
-                            <input type="hidden" id="rejectId" name="id">
-                            <input type="hidden" name="status" value="0">
-                            <button type="submit" class="btn btn-primary">Kirim</button>
-                        </form>
+                        </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirmRejection">Oke</button>
                 </div>
             </div>
         </div>
+    </div>
 
 
-        @push('scripts')
-            <script>
-                $(document).ready(function() {
-                    var table = $('#employee-table').DataTable({
-                        dom: '<"top"f>rt<"bottom"lip><"clear">',
-                        processing: true,
-                        ajax: {
-                            url: '{{ url('/cuzia/datatables') }}',
-                            data: function(d) {
-                                d.start_date = $('#start_date').val();
-                                d.end_date = $('#end_date').val();
+
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                var table = $('#employee-table').DataTable({
+                    dom: '<"top"f>rt<"bottom"lip><"clear">',
+                    processing: true,
+                    ajax: {
+                        url: '{{ url('/cuzia/datatables') }}',
+                        data: function(d) {
+                            d.start_date = $('#start_date').val();
+                            d.end_date = $('#end_date').val();
+                        }
+                    },
+                    columns: [{
+                            data: null,
+                            render: function(data, type, row, meta) {
+                                // Mengembalikan nomor urut berdasarkan nomor baris (index + 1)
+                                return meta.row + 1;
+                            }
+                        }, {
+                            data: 'tgl_pengajuan',
+                            name: 'tgl_pengajuan'
+                        }, {
+                            data: 'empno',
+                            name: 'empno'
+                        },
+                        {
+                            data: 'empnm',
+                            name: 'empnm',
+                            orderable: false
+                        },
+
+                        {
+                            data: 'jenisizin',
+                            name: 'jenisizin'
+                        },
+                        {
+                            data: 'tgl_mulai',
+                            name: 'tgl_mulai'
+                        },
+                        {
+                            data: 'approval_status',
+                            name: 'approval_status',
+                            render: function(data, type, row) {
+                                // row.hirar sekarang berisi informasi hirarki dari server
+                                var statusText = '';
+                                var hirar = row
+                                    .hirar; // Asumsikan kolom hirar sudah termasuk dalam data yang dikirim ke DataTables
+
+                                // Membersihkan string hirar dari spasi, jika ada
+                                var cleanedHirar = hirar.replace(/\s+/g, '');
+                                var jumlahKarakter = cleanedHirar.length;
+                                var occupation;
+
+                                // Tentukan jenis berdasarkan jumlah karakter di cleanedHirar
+                                if (jumlahKarakter == 5) {
+                                    occupation = 'KDP';
+                                } else if (jumlahKarakter == 7) {
+                                    occupation = 'SPV';
+                                } else if (jumlahKarakter == 9) {
+                                    occupation = 'LDR/OPR';
+                                } else if (jumlahKarakter == 2 || jumlahKarakter == 3) {
+                                    occupation = 'GMR';
+                                } else {
+                                    occupation = 'Jenis tidak dikenali';
+                                }
+
+                                // Logika untuk menentukan teks status berdasarkan occupation
+                                switch (data) {
+                                    case '1':
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Disetujui oleh SPV';
+                                        } else if (occupation === 'SPV') {
+                                            statusText = 'Disetujui oleh MGR';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Disetujui oleh GMR';
+                                        } else {
+                                            statusText = 'Disetujui oleh Atasan 1';
+                                        }
+                                        break;
+                                    case '2':
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Disetujui oleh MGR';
+                                        } else if (occupation === 'SPV') {
+                                            statusText = 'Disetujui oleh GMR';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Disetujui oleh DIR';
+                                        } else {
+                                            statusText = 'Disetujui oleh Atasan 2';
+                                        }
+                                        break;
+                                    case '-1':
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Ditolak oleh SPV';
+                                        } else if (occupation === 'SPV') {
+                                            statusText = 'Ditolak oleh MGR';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Ditolak oleh GMR';
+                                        } else {
+                                            statusText = 'Ditolak oleh Atasan 1';
+                                        }
+                                        break;
+                                    case '-2':
+                                        if (occupation === 'LDR/OPR') {
+                                            statusText = 'Ditolak oleh MGR';
+                                        } else if (occupation === 'SPV') {
+                                            statusText = 'Ditolak oleh GMR';
+                                        } else if (occupation === 'KDP') {
+                                            statusText = 'Ditolak oleh DIR';
+                                        } else {
+                                            statusText = 'Ditolak oleh Atasan 2';
+                                        }
+                                        break;
+                                    case '3':
+                                        statusText = 'Disetujui oleh HR';
+                                        break;
+                                    case '-3':
+                                        statusText = 'Ditolak oleh HR';
+                                        break;
+                                    default:
+                                        statusText = 'Menunggu Persetujuan';
+                                        break;
+                                }
+
+                                return statusText;
                             }
                         },
-                        columns: [{
-                                data: 'tgl_pengajuan',
-                                name: 'tgl_pengajuan'
-                            }, {
-                                data: 'empno',
-                                name: 'empno'
-                            },
-                            {
-                                data: 'empnm',
-                                name: 'empnm',
-                                orderable: false
-                            },
 
-                            {
-                                data: 'jenisizin',
-                                name: 'jenisizin'
-                            },
-                            {
-                                data: 'tgl_mulai',
-                                name: 'tgl_mulai'
-                            },
-                            {
-                                data: 'approval_status',
-                                name: 'approval_status',
-                                render: function(data, type, row) {
-                                    // row.hirar sekarang berisi informasi hirarki dari server
-                                    var statusText = '';
-                                    var hirar = row
-                                        .hirar; // Asumsikan kolom hirar sudah termasuk dalam data yang dikirim ke DataTables
-
-                                    // Membersihkan string hirar dari spasi, jika ada
-                                    var cleanedHirar = hirar.replace(/\s+/g, '');
-                                    var jumlahKarakter = cleanedHirar.length;
-                                    var occupation;
-
-                                    // Tentukan jenis berdasarkan jumlah karakter di cleanedHirar
-                                    if (jumlahKarakter == 5) {
-                                        occupation = 'KDP';
-                                    } else if (jumlahKarakter == 7) {
-                                        occupation = 'SPV';
-                                    } else if (jumlahKarakter == 9) {
-                                        occupation = 'LDR/OPR';
-                                    } else if (jumlahKarakter == 2 || jumlahKarakter == 3) {
-                                        occupation = 'GMR';
-                                    } else {
-                                        occupation = 'Jenis tidak dikenali';
-                                    }
-
-                                    // Logika untuk menentukan teks status berdasarkan occupation
-                                    switch (data) {
-                                        case '1':
-                                            if (occupation === 'LDR/OPR') {
-                                                statusText = 'Disetujui oleh SPV';
-                                            } else if (occupation === 'SPV') {
-                                                statusText = 'Disetujui oleh MGR';
-                                            } else if (occupation === 'KDP') {
-                                                statusText = 'Disetujui oleh GMR';
-                                            } else {
-                                                statusText = 'Disetujui oleh Atasan 1';
-                                            }
-                                            break;
-                                        case '2':
-                                            if (occupation === 'LDR/OPR') {
-                                                statusText = 'Disetujui oleh MGR';
-                                            } else if (occupation === 'SPV') {
-                                                statusText = 'Disetujui oleh GMR';
-                                            } else if (occupation === 'KDP') {
-                                                statusText = 'Disetujui oleh DIR';
-                                            } else {
-                                                statusText = 'Disetujui oleh Atasan 2';
-                                            }
-                                            break;
-                                        case '-1':
-                                            if (occupation === 'LDR/OPR') {
-                                                statusText = 'Ditolak oleh SPV';
-                                            } else if (occupation === 'SPV') {
-                                                statusText = 'Ditolak oleh MGR';
-                                            } else if (occupation === 'KDP') {
-                                                statusText = 'Ditolak oleh GMR';
-                                            } else {
-                                                statusText = 'Ditolak oleh Atasan 1';
-                                            }
-                                            break;
-                                        case '-2':
-                                            if (occupation === 'LDR/OPR') {
-                                                statusText = 'Ditolak oleh MGR';
-                                            } else if (occupation === 'SPV') {
-                                                statusText = 'Ditolak oleh GMR';
-                                            } else if (occupation === 'KDP') {
-                                                statusText = 'Ditolak oleh DIR';
-                                            } else {
-                                                statusText = 'Ditolak oleh Atasan 2';
-                                            }
-                                            break;
-                                        case '3':
-                                            statusText = 'Disetujui oleh HR';
-                                            break;
-                                        case '-3':
-                                            statusText = 'Ditolak oleh HR';
-                                            break;
-                                        default:
-                                            statusText = 'Menunggu Persetujuan';
-                                            break;
-                                    }
-
-                                    return statusText;
-                                }
-                            },
-
-                            {
-                                data: 'note',
-                                name: 'note'
-                            },
-                            {
-                                data: 'action',
-                                name: 'action',
-                                orderable: false,
-                                searchable: false,
-                                className: 'text-center',
-                                render: function(data, type, row) {
-                                    return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
-                                }
-
+                        {
+                            data: 'note',
+                            name: 'note'
+                        },
+                        {
+                            data: 'action',
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            className: 'text-center',
+                            render: function(data, type, row) {
+                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jenisizin}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
                             }
 
-                        ],
-
-                        initComplete: function() {
-                            var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
-                            var userInfoDept = '<?php echo $userInfoDept; ?>';
-
-                            if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
-                                this.api().columns([3]).every(function() {
-                                    var column = this;
-
-                                    // Create a container for the filter and clear button
-                                    var filterContainer = $(
-                                        '<div class="d-flex align-items-center"></div>').appendTo($(
-                                        '#employee-table_wrapper .top'));
-
-                                    // Create a select element
-                                    var select = $(
-                                            '<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>'
-                                        )
-                                        .appendTo(filterContainer) // Append it to the container
-
-                                        // Add event listeners for keyup and change events
-                                        .on('keyup change', function() {
-                                            column.search($(this).val()).draw();
-                                        });
-
-                                    // Add a clear button to reset the filter
-                                    $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
-                                        .appendTo(filterContainer)
-                                        .on('click', function() {
-                                            select.val('')
-                                                .change(); // Reset the select and trigger change event
-                                        });
-                                });
-                            }
                         }
-                    });
 
-                    $('#filter_button').on('click', function() {
-                        table.ajax.reload();
-                    });
+                    ],
 
-                    $('#employee-table').on('click', '.btn-update', function() {
-                        console.log($(this).data('tgl_mulai'));
-                        $('#nama').val($(this).data('nama'));
-                        $('#npk').val($(this).data('empno'));
-                        $('#tgl_mulai').val($(this).data('tgl_mulai'));
-                        $('#tgl_selesai').val($(this).data('tgl_selesai'));
-                        $('#jenis_cuzia').val($(this).data('jenis'));
-                        $('#note').val($(this).data('note'));
-                        $('#btn-tolak').attr('data-id', $(this).data('uuid'));
-                        $('#btn-setuju').attr('data-id', $(this).data('uuid'));
-                    });
+                    initComplete: function() {
+                        var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
+                        var userInfoDept = '<?php echo $userInfoDept; ?>';
 
-                    $('#btn-tolak').on('click', function() {
-                        var reason = prompt("Masukkan alasan penolakan:");
-                        if (reason !== null && reason !== "") {
-                            var form = document.createElement("form");
-                            form.method = "POST";
-                            form.action =
-                                "{{ route('cuzia.approve') }}"; // Your existing route for handling approval/rejection
+                        if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
+                            this.api().columns([3]).every(function() {
+                                var column = this;
 
-                            // CSRF Token
-                            var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                'content');
-                            var hiddenToken = document.createElement('input');
-                            hiddenToken.type = 'hidden';
-                            hiddenToken.name = '_token';
-                            hiddenToken.value = csrfToken;
-                            form.appendChild(hiddenToken);
+                                // Create a container for the filter and clear button
+                                var filterContainer = $(
+                                    '<div class="d-flex align-items-center"></div>').appendTo($(
+                                    '#employee-table_wrapper .top'));
 
-                            // ID of the request
-                            var inputId = document.createElement("input");
-                            inputId.type = 'hidden';
-                            inputId.name = 'id';
-                            inputId.value = $(this).data(
-                                'id'); // Ensure your button has a data-id attribute with the request ID
-                            form.appendChild(inputId);
+                                // Create a select element
+                                var select = $(
+                                        '<select class="form-control form-control-sm col-md-3 mb-2 mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>'
+                                    )
+                                    .appendTo(filterContainer) // Append it to the container
 
-                            // Approval status (0 for rejection)
-                            var inputStatus = document.createElement("input");
-                            inputStatus.type = 'hidden';
-                            inputStatus.name = 'status';
-                            inputStatus.value = '0'; // '0' signifies rejection
-                            form.appendChild(inputStatus);
+                                    // Add event listeners for keyup and change events
+                                    .on('keyup change', function() {
+                                        column.search($(this).val()).draw();
+                                    });
 
-                            // Reason for rejection
-                            var inputReason = document.createElement("input");
-                            inputReason.type = 'hidden';
-                            inputReason.name = 'reason';
-                            inputReason.value = reason; // The reason collected from the prompt
-                            form.appendChild(inputReason);
-
-                            document.body.appendChild(form);
-                            form.submit();
+                                // Add a clear button to reset the filter
+                                $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
+                                    .appendTo(filterContainer)
+                                    .on('click', function() {
+                                        select.val('')
+                                            .change(); // Reset the select and trigger change event
+                                    });
+                            });
                         }
-                    });
-
-
-                    $('#btn-setuju').on('click', function() {
-                        var form = document.createElement("form");
-                        form.method = "POST";
-                        form.action = "{{ route('cuzia.approve') }}";
-                        var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                        var hiddenToken = document.createElement('input');
-                        hiddenToken.type = 'hidden';
-                        hiddenToken.name = '_token';
-                        hiddenToken.value = csrfToken;
-                        form.appendChild(hiddenToken);
-
-                        var input = document.createElement("input");
-                        input.name = 'id';
-                        input.value = $(this).data('id');
-                        form.appendChild(input);
-
-                        var input = document.createElement("input");
-                        input.name = 'status';
-                        input.value = '1';
-                        form.appendChild(input);
-                        document.body.appendChild(form);
-                        form.submit();
-                    });
-
+                    }
                 });
-            </script>
-        @endpush
-    @endsection
+
+                $('#filter_button').on('click', function() {
+                    table.ajax.reload();
+                });
+
+                $('#employee-table').on('click', '.btn-update', function() {
+                    console.log($(this).data('tgl_mulai'));
+                    $('#nama').val($(this).data('nama'));
+                    $('#npk').val($(this).data('empno'));
+                    $('#tgl_mulai').val($(this).data('tgl_mulai'));
+                    $('#tgl_selesai').val($(this).data('tgl_selesai'));
+                    $('#jenis_cuzia').val($(this).data('jenis'));
+                    $('#note').val($(this).data('note'));
+                    $('#btn-tolak').attr('data-id', $(this).data('uuid'));
+                    $('#btn-setuju').attr('data-id', $(this).data('uuid'));
+                });
+
+                // $('#btn-tolak').on('click', function() {
+                //     var reason = prompt("Masukkan alasan penolakan:");
+                //     if (reason !== null && reason !== "") {
+                //         var form = document.createElement("form");
+                //         form.method = "POST";
+                //         form.action =
+                //             "{{ route('cuzia.approve') }}"; // Your existing route for handling approval/rejection
+
+                //         // CSRF Token
+                //         var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute(
+                //             'content');
+                //         var hiddenToken = document.createElement('input');
+                //         hiddenToken.type = 'hidden';
+                //         hiddenToken.name = '_token';
+                //         hiddenToken.value = csrfToken;
+                //         form.appendChild(hiddenToken);
+
+                //         // ID of the request
+                //         var inputId = document.createElement("input");
+                //         inputId.type = 'hidden';
+                //         inputId.name = 'id';
+                //         inputId.value = $(this).data(
+                //             'id'); // Ensure your button has a data-id attribute with the request ID
+                //         form.appendChild(inputId);
+
+                //         // Approval status (0 for rejection)
+                //         var inputStatus = document.createElement("input");
+                //         inputStatus.type = 'hidden';
+                //         inputStatus.name = 'status';
+                //         inputStatus.value = '0'; // '0' signifies rejection
+                //         form.appendChild(inputStatus);
+
+                //         // Reason for rejection
+                //         var inputReason = document.createElement("input");
+                //         inputReason.type = 'hidden';
+                //         inputReason.name = 'reason';
+                //         inputReason.value = reason; // The reason collected from the prompt
+                //         form.appendChild(inputReason);
+
+                //         document.body.appendChild(form);
+                //         form.submit();
+                //     }
+                // });
+
+
+                $('#btn-setuju').on('click', function() {
+                    var form = document.createElement("form");
+                    form.method = "POST";
+                    form.action = "{{ route('cuzia.approve') }}";
+                    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    var hiddenToken = document.createElement('input');
+                    hiddenToken.type = 'hidden';
+                    hiddenToken.name = '_token';
+                    hiddenToken.value = csrfToken;
+                    form.appendChild(hiddenToken);
+
+                    var input = document.createElement("input");
+                    input.name = 'id';
+                    input.value = $(this).data('id');
+                    form.appendChild(input);
+
+                    var input = document.createElement("input");
+                    input.name = 'status';
+                    input.value = '1';
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+
+            });
+        </script>
+        <script>
+            document.getElementById('btn-tolak').addEventListener('click', function() {
+                $('#rejectionReasonModal').modal('show');
+            });
+
+            document.getElementById('confirmRejection').addEventListener('click', function() {
+                var reason = document.getElementById('rejectionReason').value;
+                if (reason !== "") {
+                    var form = document.createElement("form");
+                    form.method = "POST";
+                    form.action = "{{ route('cuzia.approve') }}"; // Your existing route for handling approval/rejection
+
+                    // CSRF Token
+                    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    var hiddenToken = document.createElement('input');
+                    hiddenToken.type = 'hidden';
+                    hiddenToken.name = '_token';
+                    hiddenToken.value = csrfToken;
+                    form.appendChild(hiddenToken);
+
+                    // ID of the request
+                    var inputId = document.createElement("input");
+                    inputId.type = 'hidden';
+                    inputId.name = 'id';
+                    inputId.value = document.getElementById('btn-tolak').dataset
+                    .id; // Ensure your button has a data-id attribute with the request ID
+                    form.appendChild(inputId);
+
+                    // Approval status (0 for rejection)
+                    var inputStatus = document.createElement("input");
+                    inputStatus.type = 'hidden';
+                    inputStatus.name = 'status';
+                    inputStatus.value = '0'; // '0' signifies rejection
+                    form.appendChild(inputStatus);
+
+                    // Reason for rejection
+                    var inputReason = document.createElement("input");
+                    inputReason.type = 'hidden';
+                    inputReason.name = 'reason';
+                    inputReason.value = reason; // The reason collected from the prompt
+                    form.appendChild(inputReason);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                } else {
+                    alert("Alasan penolakan harus diisi!");
+                }
+            });
+        </script>
+        <style>
+            /* Header Styling */
+            .thead-custom {
+                background-color: #054483;
+                color: white;
+            }
+
+            /* Table Styling */
+            .table-bor {
+                width: 80%;
+                border-collapse: collapse;
+            }
+
+            .table-bor th,
+            .table-bor td {
+                border: 1px solid #1e1d1d;
+            }
+        </style>
+    @endpush
+@endsection

@@ -27,20 +27,21 @@
             }
         }
 
-        // Accordion
         .collapse {
             position: absolute;
-            left: calc(#{$sidebar-collapsed-width} + #{$grid-gutter-width} / 2);
+            left: $sidebar-collapsed-width; // Ubah ke $sidebar-collapsed-width agar submenu tetap terlihat
+            top: 0;
             z-index: 1;
-            top: 2px;
-            // Grow In Animation
-            @extend .animated--grow-in;
+            display: block; // Ubah ke block agar submenu tetap terlihat
+            background-color: $sidebar-bg; // Sesuaikan dengan warna background sidebar
+            border-radius: $border-radius; // Sesuaikan dengan border-radius yang diinginkan
+            box-shadow: $box-shadow; // Sesuaikan dengan box-shadow yang diinginkan
 
             .collapse-inner {
-                border-radius: $border-radius;
-                box-shadow: $box-shadow;
+                // Logika styling untuk collapse-inner...
             }
         }
+
 
         .collapsing {
             display: none;
@@ -277,20 +278,18 @@
                 // Accordion
                 .collapse {
                     position: absolute;
-                    left: calc(#{$sidebar-collapsed-width} + #{$grid-gutter-width} / 2);
+                    left: $sidebar-collapsed-width; // Ubah ke $sidebar-collapsed-width agar submenu tetap terlihat
+                    top: 0;
                     z-index: 1;
-                    top: 2px;
-                    // Grow In Animation for Toggled State
-                    animation-name: growIn;
-                    animation-duration: 200ms;
-                    animation-timing-function: transform cubic-bezier(.18, 1.25, .4, 1), opacity cubic-bezier(0, 1, .4, 1);
+                    display: block; // Ubah ke block agar submenu tetap terlihat
+                    background-color: $sidebar-bg; // Sesuaikan dengan warna background sidebar
+                    border-radius: $border-radius; // Sesuaikan dengan border-radius yang diinginkan
+                    box-shadow: $box-shadow; // Sesuaikan dengan box-shadow yang diinginkan
 
                     .collapse-inner {
-                        box-shadow: $box-shadow;
-                        border-radius: $border-radius;
+                        // Logika styling untuk collapse-inner...
                     }
                 }
-
                 .collapsing {
                     display: none;
                     transition: none;

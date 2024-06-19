@@ -76,31 +76,146 @@ class CuziaIzinController extends Controller
         // dd($request->all());
     }
 
+    // public function getData(Request $request)
+    // {
+
+    //     $tanggalSekarang = Carbon::now()->format('Y-m-d');
+
+    //     $npk = auth()->user()->npk;
+
+    //     $userInfo = DB::connection('mysql2')->select(DB::raw(
+    //         "
+    //         SELECT kehadiranmu.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+    //         FROM kehadiranmu
+    //         LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
+    //         LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+    //         WHERE kehadiranmu.empno = $npk
+    //         GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
+    //         ORDER BY mutdt DESC LIMIT 1;
+    //         "
+    //     ));
+
+    //     if (!empty($userInfo)) {
+    //         $npkDesc = $userInfo[0]->hirar; // Use array syntax
+
+    //         $cleanedString = str_replace(' ', '', $npkDesc);
+
+    //         // Hitung jumlah karakter
+    //         $jumlahKarakter = strlen($cleanedString);
+
+    //         // Tentukan jenis berdasarkan jumlah karakter
+    //         if ($jumlahKarakter == 5) {
+    //             $jenis = 'KDP';
+    //         } elseif ($jumlahKarakter == 7) {
+    //             $jenis = 'SPV';
+    //         } elseif ($jumlahKarakter == 9) {
+    //             $jenis = 'LDR/OPR';
+    //         } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+    //             $jenis = 'GMR';
+    //         } else {
+    //             $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+    //         }
+    //     } else {
+    //         // Handle the case where no results are returned
+    //         $jenis = 'Jenis tidak dikenali';
+    //     }
+
+    //     $cleanedStringDept = trim($userInfo[0]->descr);
+    //     // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+    //     $userInfoOccupation = $jenis;
+    //     $userInfoDept = $cleanedStringDept;
+
+    //     if ($request->input('start_date') != null && $request->input('end_date') != null) {
+    //         $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
+    //         $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
+    //     } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+    //         $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+    //         $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
+    //     } else {
+    //         $tanggalMulai = $tanggalSekarang;
+    //         $tanggalAkhir = $tanggalSekarang;
+    //     }
+
+    //     DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_mulai_prev = NULL');
+
+    //     // Execute main query
+    //     $data = DB::connection('mysql2')
+    //         ->select(DB::raw("
+    //         SELECT *
+    //         FROM (
+    //             SELECT
+    //                 pc.empno,
+    //                 pc.tgl_mulai,
+    //                 pc.tgl_selesai,
+    //                 pc.pjenisizin,
+    //                 pc.tgl_pengajuan,
+    //                 pc.approval1_status,
+    //                 pc.approval_status,
+    //                 pc.lampiran,
+    //                 pc.note,
+    //                 jz.jenisizin,
+    //                 e.empnm,
+    //                 h.hirar,
+    //                 h.mutdt,
+    //                 hd.descr,
+    //                 ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+    //             FROM pengajuanizin pc
+    //             INNER JOIN employee e ON pc.empno = e.empno
+    //             INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+    //             INNER JOIN (
+    //                 SELECT empno, MAX(mutdt) AS max_mutdt
+    //                 FROM hirarki
+    //                 GROUP BY empno
+    //             ) max_hirarki ON pc.empno = max_hirarki.empno
+    //             INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+    //             INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+    //             WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+    //         ) AS numbered
+    //         WHERE RowNum = 1
+    //         ORDER BY empno ASC, tgl_mulai DESC;
+    //             "));
+    //                 // dd($data);
+    //     // Iterate through each row in the collection
+    //     foreach ($data as $row) {
+    //         // Calculate the character count for each row's cleaned hirar
+    //         $cleanedString = str_replace(' ', '', $row->hirar);
+    //         $jumlahKarakter = strlen($cleanedString);
+
+    //         // Determine jenis berdasarkan jumlah karakter
+    //         if ($jumlahKarakter == 5) {
+    //             $row->hirar = 'KDP';
+    //         } elseif ($jumlahKarakter == 7) {
+    //             $row->hirar = 'SPV';
+    //         } elseif ($jumlahKarakter == 9) {
+    //             $row->hirar = 'LDR/OPR';
+    //         } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+    //             $row->hirar = 'GMR';
+    //         } else {
+    //             $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+    //         }
+    //     }
+
+    //     return DataTables::of($data)->make(true);
+    // }
     public function getData(Request $request)
     {
-
         $tanggalSekarang = Carbon::now()->format('Y-m-d');
+        $npk = Auth::user()->npk;
 
-        $npk = auth()->user()->npk;
-
-        $userInfo = DB::connection('mysql2')->select(DB::raw(
-            "
+        // Fetch user information
+        $userInfo = DB::connection('mysql2')->select(DB::raw("
             SELECT kehadiranmu.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
             FROM kehadiranmu
             LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiranmu.empno = $npk
+            WHERE kehadiranmu.empno = ?
             GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
             ORDER BY mutdt DESC LIMIT 1;
-            "
-        ));
+        "), [$npk]);
 
         if (!empty($userInfo)) {
-            $npkDesc = $userInfo[0]->hirar; // Use array syntax
-
+            $npkDesc = $userInfo[0]->hirar;
             $cleanedString = str_replace(' ', '', $npkDesc);
-
-            // Hitung jumlah karakter
             $jumlahKarakter = strlen($cleanedString);
 
             // Tentukan jenis berdasarkan jumlah karakter
@@ -113,26 +228,24 @@ class CuziaIzinController extends Controller
             } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
                 $jenis = 'GMR';
             } else {
-                $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+                $jenis = 'Jenis tidak dikenali';
             }
         } else {
-            // Handle the case where no results are returned
             $jenis = 'Jenis tidak dikenali';
         }
 
-        $cleanedStringDept = trim($userInfo[0]->descr);
-        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+        $cleanedStringDept = trim($userInfo[0]->descr ?? '');
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+        if ($request->input('start_date') && $request->input('end_date')) {
             $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
             $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
-        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
-            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
+        } elseif ($request->input('start_date') || $request->input('end_date')) {
+            $tanggalMulai = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
         } else {
-            $tanggalMulai = $tanggalSekarang;
+            $tanggalMulai = '1900-01-01';  // Tampilkan semua data jika tidak ada filter
             $tanggalAkhir = $tanggalSekarang;
         }
 
@@ -169,19 +282,17 @@ class CuziaIzinController extends Controller
                 ) max_hirarki ON pc.empno = max_hirarki.empno
                 INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
                 INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
+                WHERE pc.empno = ? AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN ? AND ?
             ) AS numbered
             WHERE RowNum = 1
             ORDER BY empno ASC, tgl_mulai DESC;
-                "));
-                    // dd($data);
+        "), [$npk, $tanggalMulai, $tanggalAkhir]);
+
         // Iterate through each row in the collection
         foreach ($data as $row) {
-            // Calculate the character count for each row's cleaned hirar
             $cleanedString = str_replace(' ', '', $row->hirar);
             $jumlahKarakter = strlen($cleanedString);
 
-            // Determine jenis berdasarkan jumlah karakter
             if ($jumlahKarakter == 5) {
                 $row->hirar = 'KDP';
             } elseif ($jumlahKarakter == 7) {
@@ -191,13 +302,12 @@ class CuziaIzinController extends Controller
             } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
                 $row->hirar = 'GMR';
             } else {
-                $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+                $row->hirar = 'Jenis tidak dikenali';
             }
         }
 
         return DataTables::of($data)->make(true);
     }
-
     /**
      * Show the form for creating a new resource.
      *

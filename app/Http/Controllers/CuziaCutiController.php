@@ -114,14 +114,14 @@ class CuziaCutiController extends Controller
             FROM kehadiranmu
             LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            WHERE kehadiranmu.empno = $npk
+            WHERE kehadiranmu.empno = :npk
             GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
             ORDER BY mutdt DESC LIMIT 1;
             "
-        ));
+        ), ['npk' => $npk]);
 
         if (!empty($userInfo)) {
-            $npkDesc = $userInfo[0]->hirar; // Use array syntax
+            $npkDesc = $userInfo[0]->hirar;
 
             $cleanedString = str_replace(' ', '', $npkDesc);
 
@@ -146,84 +146,93 @@ class CuziaCutiController extends Controller
         }
 
         $cleanedStringDept = trim($userInfo[0]->descr);
-        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
-        if ($request->input('start_date') != null && $request->input('end_date') != null) {
+        // Handling date filters
+        if ($request->input('start_date') && $request->input('end_date')) {
             $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
             $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
-        } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
-            $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
-            $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
+        } elseif ($request->input('start_date') || $request->input('end_date')) {
+            $tanggalMulai = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+            $tanggalAkhir = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
         } else {
-            $tanggalMulai = $tanggalSekarang;
-            $tanggalAkhir = $tanggalSekarang;
+            $tanggalMulai = null;
+            $tanggalAkhir = null;
         }
 
-        DB::connection('mysql2')->select(' SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL;');
-
-        // Execute main query
-        $data = DB::connection('mysql2')
-            ->select(DB::raw("
+        $query = "
             SELECT
-    id,
-    empno,
-    tgl_mulai,
-    tgl_selesai,
-    jeniscuti,
-    tgl_pengajuan,
-    approval1_status,
-    approval1_id,
-    approval2_id,
-    approval_status,
-    jenisizin,
-    note,
-    empnm,
-    hirar,
-    mutdt,
-    descr,
-    is_admin
-FROM (
-    SELECT
-        pc.id,
-        pc.empno,
-        pc.tgl_mulai,
-        pc.tgl_selesai,
-        pc.jeniscuti,
-        pc.tgl_pengajuan,
-        pc.approval1_status,
-        pc.approval1_id,
-        pc.approval2_id,
-        pc.approval_status,
-        pc.note,
-        jz.jenisizin,
-        u.is_admin,
-        e.empnm,
-        h.hirar,
-        h.mutdt,
-        hd.descr,
-        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
-    FROM pengajuancuti pc
-    INNER JOIN employee e ON pc.empno = e.empno
-    INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-    INNER JOIN users u ON pc.empno = u.npk
-    INNER JOIN (
-        SELECT empno, MAX(mutdt) AS max_mutdt
-        FROM hirarki
-        GROUP BY empno
-    ) max_hirarki ON pc.empno = max_hirarki.empno
-    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-    WHERE pc.empno = '$npk' AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'
-) AS numbered
-WHERE RowNum = 1
-ORDER BY empno ASC, tgl_mulai DESC;
+                id,
+                empno,
+                tgl_mulai,
+                tgl_selesai,
+                jeniscuti,
+                tgl_pengajuan,
+                approval1_status,
+                approval1_id,
+                approval2_id,
+                approval_status,
+                jenisizin,
+                note,
+                empnm,
+                hirar,
+                mutdt,
+                descr,
+                is_admin
+            FROM (
+                SELECT
+                    pc.id,
+                    pc.empno,
+                    pc.tgl_mulai,
+                    pc.tgl_selesai,
+                    pc.jeniscuti,
+                    pc.tgl_pengajuan,
+                    pc.approval1_status,
+                    pc.approval1_id,
+                    pc.approval2_id,
+                    pc.approval_status,
+                    pc.note,
+                    jz.jenisizin,
+                    u.is_admin,
+                    e.empnm,
+                    h.hirar,
+                    h.mutdt,
+                    hd.descr,
+                    ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                FROM pengajuancuti pc
+                INNER JOIN employee e ON pc.empno = e.empno
+                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+                INNER JOIN users u ON pc.empno = u.npk
+                INNER JOIN (
+                    SELECT empno, MAX(mutdt) AS max_mutdt
+                    FROM hirarki
+                    GROUP BY empno
+                ) max_hirarki ON pc.empno = max_hirarki.empno
+                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+                WHERE pc.empno = :npk
+        ";
 
+        if ($tanggalMulai && $tanggalAkhir) {
+            $query .= " AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN :tanggalMulai AND :tanggalAkhir ";
+        }
 
+        $query .= "
+            ) AS numbered
+            WHERE RowNum = 1
+            ORDER BY empno ASC, tgl_mulai DESC;
+        ";
 
-                "));
-        // dd($data);
+        $bindings = ['npk' => $npk];
+
+        if ($tanggalMulai && $tanggalAkhir) {
+            $bindings['tanggalMulai'] = $tanggalMulai;
+            $bindings['tanggalAkhir'] = $tanggalAkhir;
+        }
+
+        $data = DB::connection('mysql2')->select(DB::raw($query), $bindings);
+
         // Iterate through each row in the collection
         foreach ($data as $row) {
             // Calculate the character count for each row's cleaned hirar
@@ -246,6 +255,144 @@ ORDER BY empno ASC, tgl_mulai DESC;
 
         return DataTables::of($data)->make(true);
     }
+    // public function getData(Request $request)
+    // {
+    //     // Define current date
+    //     $tanggalSekarang = Carbon::now()->format('Y-m-d');
+
+    //     // Get authenticated user npk
+    //     $npk = auth()->user()->npk;
+
+    //     // Fetch user info from the database
+    //     $userInfo = DB::connection('mysql2')->select(DB::raw(
+    //         "
+    //         SELECT kehadiranmu.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr
+    //         FROM kehadiranmu
+    //         LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
+    //         LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+    //         WHERE kehadiranmu.empno = $npk
+    //         GROUP BY kehadiranmu.empno, hirarki.hirar, hirarkidesc.descr
+    //         ORDER BY mutdt DESC LIMIT 1;
+    //         "
+    //     ));
+
+    //     // Determine the user occupation type
+    //     $jenis = 'Jenis tidak dikenali';
+    //     if (!empty($userInfo)) {
+    //         $npkDesc = $userInfo[0]->hirar;
+    //         $cleanedString = str_replace(' ', '', $npkDesc);
+    //         $jumlahKarakter = strlen($cleanedString);
+
+    //         if ($jumlahKarakter == 5) {
+    //             $jenis = 'KDP';
+    //         } elseif ($jumlahKarakter == 7) {
+    //             $jenis = 'SPV';
+    //         } elseif ($jumlahKarakter == 9) {
+    //             $jenis = 'LDR/OPR';
+    //         } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+    //             $jenis = 'GMR';
+    //         }
+    //     }
+
+    //     $cleanedStringDept = trim($userInfo[0]->descr);
+    //     $userInfoOccupation = $jenis;
+    //     $userInfoDept = $cleanedStringDept;
+
+    //     // Define date range for the query
+    //     if ($request->input('start_date') != null && $request->input('end_date') != null) {
+    //         $tanggalMulai = Carbon::parse($request->input('start_date'))->format('Y-m-d');
+    //         $tanggalAkhir = Carbon::parse($request->input('end_date'))->format('Y-m-d');
+    //     } elseif ($request->input('start_date') != null || $request->input('end_date') != null) {
+    //         $tanggalMulai = $request->input('start_date') != null ? Carbon::parse($request->input('start_date'))->format('Y-m-d') : $tanggalSekarang;
+    //         $tanggalAkhir = $request->input('end_date') != null ? Carbon::parse($request->input('end_date'))->format('Y-m-d') : $tanggalSekarang;
+    //     } else {
+    //         $tanggalMulai = null;
+    //         $tanggalAkhir = null;
+    //     }
+
+    //     // Set session variables for date range
+    //     session(['tanggalMulai' => $tanggalMulai, 'tanggalAkhir' => $tanggalAkhir]);
+
+    //     DB::connection('mysql2')->select(' SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL;');
+
+    //     // Execute main query
+    //     $data = DB::connection('mysql2')
+    //         ->select(DB::raw("
+    //         SELECT
+    //             id,
+    //             empno,
+    //             tgl_mulai,
+    //             tgl_selesai,
+    //             jeniscuti,
+    //             tgl_pengajuan,
+    //             approval1_status,
+    //             approval1_id,
+    //             approval2_id,
+    //             approval_status,
+    //             jenisizin,
+    //             note,
+    //             empnm,
+    //             hirar,
+    //             mutdt,
+    //             descr,
+    //             is_admin
+    //         FROM (
+    //             SELECT
+    //                 pc.id,
+    //                 pc.empno,
+    //                 pc.tgl_mulai,
+    //                 pc.tgl_selesai,
+    //                 pc.jeniscuti,
+    //                 pc.tgl_pengajuan,
+    //                 pc.approval1_status,
+    //                 pc.approval1_id,
+    //                 pc.approval2_id,
+    //                 pc.approval_status,
+    //                 pc.note,
+    //                 jz.jenisizin,
+    //                 u.is_admin,
+    //                 e.empnm,
+    //                 h.hirar,
+    //                 h.mutdt,
+    //                 hd.descr,
+    //                 ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+    //             FROM pengajuancuti pc
+    //             INNER JOIN employee e ON pc.empno = e.empno
+    //             INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+    //             INNER JOIN users u ON pc.empno = u.npk
+    //             INNER JOIN (
+    //                 SELECT empno, MAX(mutdt) AS max_mutdt
+    //                 FROM hirarki
+    //                 GROUP BY empno
+    //             ) max_hirarki ON pc.empno = max_hirarki.empno
+    //             INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+    //             INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+    //             WHERE pc.empno = '$npk'
+    //             " . ($tanggalMulai && $tanggalAkhir ? "AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN '$tanggalMulai' AND '$tanggalAkhir'" : "") . "
+    //         ) AS numbered
+    //         WHERE RowNum = 1
+    //         ORDER BY empno ASC, tgl_mulai DESC;
+    //     "));
+
+    //     foreach ($data as $row) {
+    //         $cleanedString = str_replace(' ', '', $row->hirar);
+    //         $jumlahKarakter = strlen($cleanedString);
+
+    //         if ($jumlahKarakter == 5) {
+    //             $row->hirar = 'KDP';
+    //         } elseif ($jumlahKarakter == 7) {
+    //             $row->hirar = 'SPV';
+    //         } elseif ($jumlahKarakter == 9) {
+    //             $row->hirar = 'LDR/OPR';
+    //         } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+    //             $row->hirar = 'GMR';
+    //         } else {
+    //             $row->hirar = 'Jenis tidak dikenali';
+    //         }
+    //     }
+
+    //     return DataTables::of($data)->make(true);
+    // }
 
     /**
      * Show the form for creating a new resource.

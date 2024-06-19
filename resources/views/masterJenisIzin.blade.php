@@ -28,32 +28,18 @@
                             </div>
                         </form>
                         <div class="table-responsive">
-                            <table class="table table-striped table-sm table-bordered" id="employee-table">
-                                <thead>
+                            <table class="table-bor table-striped table-sm table-bordered w-100">
+                                <thead class="thead-custom">
                                     <tr>
-                                        <th class="text-center align-middle"
-                                            style="text-align: center; vertical-align: middle;">Jenis Izin</th>
-                                        {{-- <th class="align-middle" style="text-align: center; vertical-align: middle;">Action --}}
-                                        </th>
+                                        <th class="text-center align-middle">No</th>
+                                        <th class="text-left align-middle">Jenis Izin</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($jenisIzin as $izin)
+                                    @foreach ($jenisIzin as $index => $izin)
                                         <tr>
-                                            <td style="text-align: center; vertical-align: middle;">{{ $izin->jenisizin }}
-                                            </td>
-                                            {{-- <td style="text-align: center; vertical-align: middle;">
-                                                <!-- Contoh Aksi -->
-                                                <a href="#" class="btn btn-sm" style="background-color: #007bff; color: #fff; border-color: #007bff; text-align: center; vertical-align: middle; display: inline-block; width: auto; padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; border-radius: 0.25rem;"
-                                                data-toggle="modal" data-target="#editModal{{$izin->jenisizin}}">
-                                                Edit
-                                             </a>
-                                                {{-- <form action="#" method="POST" style="display: inline-block;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                                </form> --}}
-                                            {{-- </td> --}}
+                                            <td class="text-center align-middle">{{ $index + 1 }}</td>
+                                            <td class="text-left align-middle">{{ $izin->jenisizin }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -65,9 +51,8 @@
         </section>
     </div>
 
-    <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
-    <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
+    <!-- Modal -->
+    <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -77,21 +62,43 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="container-fluid">
-                        <div class="row" style="display: block">
-                            <form action="{{ route('jenisizin.store') }}" method="POST">
-                                @csrf
-                                <div class="form-group">
-                                    <label for="jenis_izin">Jenis Izin</label>
-                                    <input type="text"  required class="form-control" id="jenis_izin" name="jenis_izin"
-                                        placeholder="Masukkan Jenis Izin">
-                                </div>
-                                <button type="submit" class="btn btn-primary">Simpan</button>
-                            </form>
+                    <form action="{{ route('jenisizin.store') }}" method="POST">
+                        @csrf
+                        <div class="form-group">
+                            <label for="jenis_izin">Jenis Izin</label>
+                            <input type="text" required class="form-control" id="jenis_izin" name="jenis_izin" placeholder="Masukkan Jenis Izin">
                         </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        /* Header Styling */
+        .thead-custom {
+            background-color: #054483;
+            color: white;
+        }
+
+        /* Table Styling */
+        .table-bor {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-bor th,
+        .table-bor td {
+            border: 1.5px solid #000;
+        }
+
+        .table-bor th {
+            text-align: center;
+        }
+
+        .table-bor td {
+            text-align: left;
+        }
+    </style>
 @endsection

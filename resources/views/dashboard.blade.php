@@ -62,17 +62,48 @@
                                     ),
                                 );
                                 $isadmin = $userInfo[0]->is_admin;
+
+                                if (!empty($userInfo)) {
+                                    $npkDesc = $userInfo[0]->hirar; // Use array syntax
+
+                                    $cleanedString = str_replace(' ', '', $npkDesc);
+
+                                    // Hitung jumlah karakter
+                                    $jumlahKarakter = strlen($cleanedString);
+
+                                    // Tentukan jenis berdasarkan jumlah karakter
+                                    if ($jumlahKarakter == 5) {
+                                        $jenis = 'KDP';
+                                    } elseif ($jumlahKarakter == 7) {
+                                        $jenis = 'SPV';
+                                    } elseif ($jumlahKarakter == 9) {
+                                        $jenis = 'LDR/OPR';
+                                    } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                                        $jenis = 'GMR';
+                                    } else {
+                                        $jenis = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
+                                    }
+                                } else {
+                                    // Handle the case where no results are returned
+                                    $jenis = 'Jenis tidak dikenali';
+                                }
+
+                                $cleanedStringDept = trim($userInfo[0]->descr);
+                                // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
+                                $userInfoOccupation = $jenis;
+                                $userInfoDept = $cleanedStringDept;
+
                             @endphp
-                            {{-- @if ($isadmin == '1')
+                            @if ($isadmin == '1')
                                 <!-- Pengajuan Cuti Card Example -->
                                 <div class="col-xl-3 col-md-6 mb-4">
-                                    <div class="card shadow h-100 py-2" style="background-color: #36b9cc; color: white;">
+                                    <div class="card shadow h-100 py-2" style="background-color: #076270; color: white;">
                                         <div class="card-body">
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col mr-2">
                                                     <div class="text-xs font-weight-bold text-uppercase mb-1">
                                                         Pengajuan Cuti</div>
-                                                    <div class="h5 mb-0 font-weight-bold">{{ $jumlahpengajuancuti }}</div>
+                                                    <div class="h5 mb-0 font-weight-bold">{{ $jumlahpengajuancuti1 }}</div>
                                                 </div>
                                                 <div class="col-auto">
                                                     <i class="fas fa-dollar-sign fa-2x"></i>
@@ -81,10 +112,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- @endif --}}
-                                {{-- @if ($isadmin == '1') --}}
+                            @endif
+                            @if ($isadmin == '1')
                                 <!-- Pengajuan Izin Card Example -->
-                                {{-- <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="col-xl-3 col-md-6 mb-4">
                                     <div class="card shadow h-100 py-2" style="background-color: #9966ff; color: white;">
                                         <div class="card-body">
                                             <div class="row no-gutters align-items-center">
@@ -93,7 +124,7 @@
                                                         Pengajuan Izin</div>
                                                     <div class="row no-gutters align-items-center">
                                                         <div class="col-auto">
-                                                            <div class="h5 mb-0 font-weight-bold">{{ $jumlahpengajuanizin }}
+                                                            <div class="h5 mb-0 font-weight-bold">{{ $jumlahpengajuanizin1 }}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -102,7 +133,45 @@
                                         </div>
                                     </div>
                                 </div>
-                                @endif --}}
+                            @endif
+                            @if ($userInfoOccupation == 'KDP' OR $userInfoOccupation =='SPV')
+                                <!-- Pengajuan Cuti Card Example -->
+                                <div class="col-xl-3 col-md-6 mb-4">
+                                    <div class="card shadow h-100 py-2" style="background-color: #076270; color: white;">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                                        Pengajuan Cuti</div>
+                                                    <div class="h5 mb-0 font-weight-bold">{{ $jumlahpengajuancuti2 }}</div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            @if ($userInfoOccupation == 'KDP' OR $userInfoOccupation =='SPV')
+                                <!-- Pengajuan Cuti Card Example -->
+                                <div class="col-xl-3 col-md-6 mb-4">
+                                    <div class="card shadow h-100 py-2" style="background-color: #36b9cc; color: white;">
+                                        <div class="card-body">
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="text-xs font-weight-bold text-uppercase mb-1">
+                                                        Pengajuan Izin</div>
+                                                    <div class="h5 mb-0 font-weight-bold">{{ $jumlahpengajuanizin2 }}</div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

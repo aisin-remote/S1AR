@@ -303,6 +303,7 @@ class CuziaController extends Controller
 
     public function saldoCuti(Request $request)
     {
+        set_time_limit(600); // Increase time limit
         // Your existing code to get the NPK of the logged-in user.
         $npk = $request->user()->npk;
 
@@ -328,23 +329,270 @@ class CuziaController extends Controller
         // Check if the result is not empty and get the first element of the array.
         $saldocutitahunan = !empty($result) ? (string) $result[0]->saldocutitahunan : '0';
 
-        $result1 = DB::connection('mysql2')->select(DB::raw(
+        $npk = auth()->user()->npk;
+
+        $userInfo = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT COUNT(*) AS jumlahpengajuancuti
-            FROM pengajuancuti
-            WHERE approvalhr_status IS NULL;
+            SELECT
+            kehadiranmu.empno,
+            hirarki.hirar,
+            MAX(hirarki.mutdt) AS mutdt,
+            hirarkidesc.descr,
+            users.is_admin,
+            pc.approval1_id,
+            pc.approval2_id
+            FROM kehadiranmu
+            LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
+            LEFT JOIN users ON kehadiranmu.empno = users.npk
+            LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+            LEFT JOIN pengajuancuti pc ON kehadiranmu.empno = pc.empno
+            WHERE kehadiranmu.empno = $npk
+            GROUP BY
+            kehadiranmu.empno,
+            hirarki.hirar,
+            hirarkidesc.descr,
+            users.is_admin,
+            pc.approval1_id,
+            pc.approval2_id
+            ORDER BY mutdt DESC
+            LIMIT 1;
             "
         ));
-        $jumlahpengajuancuti = !empty($result1) ? (string) $result1[0]->jumlahpengajuancuti : '0';
+        DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
+        $result1 = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT COUNT(*) AS jumlahpengajuancuti1
+            FROM (
+                SELECT
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    jeniscuti,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    jenisizin,
+                    note,
+                    empnm,
+                    hirar
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.jeniscuti,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.note,
+                        jz.jenisizin,
+                        e.empnm,
+                        h.hirar,
+                        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuancuti pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    WHERE pc.approval_status IN (0, 1, 2)
+                ) AS numbered
+                WHERE RowNum = 1
+            ) AS final_query;
+            "
+        ));
+        $jumlahpengajuancuti1 = !empty($result1) ? (string) $result1[0]->jumlahpengajuancuti1 : '0';
 
         $result2 = DB::connection('mysql2')->select(DB::raw(
             "
-            SELECT COUNT(*) AS jumlahpengajuanizin
-            FROM pengajuanizin
-            WHERE approvalhr_status IS NULL;
+            SELECT COUNT(*) AS jumlahpengajuancuti2
+            FROM (
+                SELECT
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    jeniscuti,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    jenisizin,
+                    note,
+                    empnm,
+                    hirar,
+                    mutdt,
+                    descr,
+                    is_admin
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.jeniscuti,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.note,
+                        jz.jenisizin,
+                        u.is_admin,
+                        e.empnm,
+                        h.hirar,
+                        h.mutdt,
+                        hd.descr,
+                        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuancuti pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
+                    INNER JOIN users u ON pc.empno = u.npk
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+                    WHERE (pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NULL)
+                        OR (pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NULL)
+                ) AS numbered
+                WHERE RowNum = 1
+            ) AS final_query;
             "
         ));
-        $jumlahpengajuanizin = !empty($result2) ? (string) $result2[0]->jumlahpengajuanizin : '0';
+        $jumlahpengajuancuti2= !empty($result2) ? (string) $result2[0]->jumlahpengajuancuti2 : '0';
+
+        $result3 = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT COUNT(*) AS jumlahpengajuanizin1
+            FROM (
+                SELECT
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    pjenisizin,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    lampiran,
+                    jenisizin,
+                    note,
+                    empnm,
+                    hirar
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.pjenisizin,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.lampiran,
+                        pc.note,
+                        jz.jenisizin,
+                        e.empnm,
+                        h.hirar,
+                        ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuanizin pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    WHERE pc.approval_status IN (0, 1, 2)
+                ) AS numbered
+                WHERE RowNum = 1
+            ) AS final_query;
+
+            "
+        ));
+        $jumlahpengajuanizin1 = !empty($result3) ? (string) $result3[0]->jumlahpengajuanizin1 : '0';
+        $result4 = DB::connection('mysql2')->select(DB::raw(
+            "
+            SELECT COUNT(*) AS jumlahpengajuanizin2
+            FROM (
+                SELECT
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    pjenisizin,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    lampiran,
+                    note,
+                    jenisizin,
+                    empnm,
+                    hirar,
+                    mutdt,
+                    descr,
+                    is_admin
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.pjenisizin,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.lampiran,
+                        pc.note,
+                        jz.jenisizin,
+                        u.is_admin,
+                        e.empnm,
+                        h.hirar,
+                        h.mutdt,
+                        hd.descr,
+                        ROW_NUMBER() OVER(PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuanizin pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+                    INNER JOIN users u ON pc.empno = u.npk
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+                    WHERE (pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NULL)
+                    OR (pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NULL)
+                ) AS numbered
+                WHERE RowNum = 1
+            ) AS final_query;
+
+            "
+        ));
+        $jumlahpengajuanizin2 = !empty($result4) ? (string) $result4[0]->jumlahpengajuanizin2 : '0';
 
         $result5 = DB::connection('mysql2')->select(DB::raw(
             "
@@ -381,7 +629,7 @@ class CuziaController extends Controller
             'rejectedIzinRequests' => $rejectedIzinRequests,
         ];
         // Pass the string saldoCuti to the view.
-        return view('dashboard', compact('saldocutitahunan', 'saldocutiistimewa', 'jumlahpengajuancuti', 'jumlahpengajuanizin', 'dashboardData'));
+        return view('dashboard', compact('saldocutitahunan', 'saldocutiistimewa', 'jumlahpengajuancuti1', 'jumlahpengajuancuti2','jumlahpengajuanizin1','jumlahpengajuanizin2', 'dashboardData'));
     }
 
     public function getDashboardData()
