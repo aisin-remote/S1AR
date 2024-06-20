@@ -279,7 +279,7 @@ class EmployeeController extends Controller
 
     public function getDataMonthly($year = null, $month = null)
     {
-        //set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
+        // set_time_limit(300); // Mengatur batas waktu eksekusi menjadi 5 menit
         ini_set('max_execution_time', 0);
         $dateArray = explode('-', $year);
         $tahunSekarang = $year ? $dateArray[0] : Carbon::now()->year;
@@ -367,7 +367,7 @@ class EmployeeController extends Controller
                 md.mutdt
             FROM MergedData md
             WHERE md.RowNum = 1 AND YEAR(md.schdt) = ' . $tahunSekarang . ' AND MONTH(md.schdt) = ' . $bulanSekarang . ';
-            
+
         ');
         } else if ($userInfoOccupation == 'KDP') {
             $data = DB::connection('mysql2')->select('
