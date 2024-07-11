@@ -320,7 +320,7 @@
                                 XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
 
                                 // Save file
-                                XLSX.writeFile(wb, 'rekap pengajuan cuti.xlsx');
+                                XLSX.writeFile(wb, 'rekap pengajuan izin.xlsx');
                             } else {
                                 console.log('No data to export');
                             }
