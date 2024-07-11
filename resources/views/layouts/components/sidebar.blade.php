@@ -1,4 +1,4 @@
-<div class="main-sidebar sidebar-style-2">
+{{-- <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
         <div class="sidebar-brand">
             <img src="{{ url('assets/img/S1AR.png') }}" alt="S1AR" class="img-fluid" style="max-width: 100px;">
@@ -41,7 +41,7 @@
 
                 // Tentukan jenis berdasarkan jumlah karakter
                 if ($jumlahKarakter == 5) {
-                    $jenis = 'KDP';
+                    $jenis = 'Kepala Department';
                 } elseif ($jumlahKarakter == 7) {
                     $jenis = 'SPV';
                 } elseif ($jumlahKarakter == 9) {
@@ -68,10 +68,10 @@
             <li class="dropdown">
                 <a href="#" class="nav-link has-dropdown{{ request()->is('dailyattendance*') || request()->is('weeklyattendance*') || request()->is('monthlyattendance*') ? ' text-primary' : '' }}">
                     <i class="fas fa-th"></i>
-                    <span>Attendance</span>
+                    <span>Kehadiran</span>
                 </a>
                 <ul class="dropdown-menu">
-                    @if (in_array($userInfoOccupation, ['GMR', 'KDP']) || $userInfoDept == 'HRD')
+                    @if (in_array($userInfoOccupation, ['GMR', 'Kepala Department']) || $userInfoDept == 'HRD')
                         <li>
                             <a href="/dailyattendance" class="nav-link{{ request()->is('dailyattendance*') ? ' text-primary' : '' }}">
                                 Daily attendance
@@ -85,7 +85,7 @@
                     </li>
                     <li>
                         <a href="/historyattendance" class="nav-link{{ request()->is('historyattendance*') ? ' text-primary' : '' }}">
-                            History attendance
+                            Riwayat attendance
                         </a>
                     </li>
                 </ul>
@@ -95,7 +95,7 @@
                 <li>
                     <a href="/holiday" class="nav-link{{ request()->is('holiday*') ? ' text-primary' : '' }}">
                         <i class="fas fa-calendar"></i>
-                        <span>Master Holiday</span>
+                        <span>Master Hari Libur</span>
                     </a>
                 </li>
                 <li>
@@ -117,10 +117,10 @@
                             Pengajuan Cuti
                         </a>
                     </li>
-                    @if (in_array($userInfoOccupation, ['KDP', 'GMR', 'SPV', 'LDR/OPR']) || $userInfoDept == 'HRD')
+                    @if (in_array($userInfoOccupation, ['Kepala Department', 'GMR', 'SPV', 'LDR/OPR']) || $userInfoDept == 'HRD')
                         <li>
                             <a href="/cuzia" class="nav-link{{ request()->is('cuzia*') ? ' text-primary' : '' }}">
-                                Approval Cuti
+                                Persetujuan Cuti
                             </a>
                         </li>
                     @endif
@@ -145,10 +145,10 @@
                             Pengajuan Izin
                         </a>
                     </li>
-                    @if (in_array($userInfoOccupation, ['KDP', 'GMR', 'SPV', 'LDR/OPR']) || $userInfoDept == 'HRD')
+                    @if (in_array($userInfoOccupation, ['Kepala Department', 'GMR', 'SPV', 'LDR/OPR']) || $userInfoDept == 'HRD')
                         <li>
                             <a href="/izin" class="nav-link{{ request()->is('izin*') ? ' text-primary' : '' }}">
-                                Approval Izin
+                                Persetujuan Izin
                             </a>
                         </li>
                     @endif
@@ -163,4 +163,137 @@
             </li>
         </ul>
     </aside>
+</div> --}}
+
+<div class="main-sidebar sidebar-style-2">
+    <aside id="sidebar-wrapper">
+        <div class="sidebar-brand">
+            <img src="{{ url('assets/img/S1AR.png') }}" alt="S1AR" class="img-fluid" style="max-width: 100px;">
+        </div>
+
+        <div class="sidebar-brand sidebar-brand-sm">
+            <img src="{{ url('assets/img/S1AR.png') }}" alt="S1AR" class="img-fluid" style="max-width: 50px;">
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/dashboard" class="nav-link{{ request()->is('dashboard*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="nav-link has-dropdown{{ request()->is('dailyattendance*') || request()->is('weeklyattendance*') || request()->is('monthlyattendance*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-th"></i>
+                    <span>Kehadiran</span>
+                </a>
+                <ul class="dropdown-menu">
+                    @if  (in_array(session('selected_role'), ['HRD Admin', 'Supervisor']))
+                        <li>
+                            <a href="/dailyattendance" class="nav-link{{ request()->is('dailyattendance*') ? ' text-primary' : '' }}">
+                             Kehadiran Harian
+                            </a>
+                        </li>
+                    @endif
+                    <li>
+                        <a href="/monthlyattendance" class="nav-link{{ request()->is('monthlyattendance*') ? ' text-primary' : '' }}">
+                           Kehadiran Bulanan
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/historyattendance" class="nav-link{{ request()->is('historyattendance*') ? ' text-primary' : '' }}">
+                            Riwayat Kehadiran
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            @if (session('selected_role') == 'HRD Admin')
+                <li>
+                    <a href="/holiday" class="nav-link{{ request()->is('holiday*') ? ' text-primary' : '' }}">
+                        <i class="fas fa-calendar"></i>
+                        <span>Master Hari Libur</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/jenisizin" class="nav-link{{ request()->is('jenisizin*') ? ' text-primary' : '' }}">
+                        <i class="fas fa-calendar"></i>
+                        <span>Master Jenis Izin</span>
+                    </a>
+                </li>
+            @endif
+
+            <li class="dropdown{{ request()->is('cuziacuti*') || request()->is('cuzia*') ? ' active' : '' }}">
+                <a href="#" class="nav-link has-dropdown{{ request()->is('cuziacuti*') || request()->is('cuzia*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-umbrella-beach"></i>
+                    <span>Cuti</span>
+                </a>
+                <ul class="dropdown-menu">
+                    @if (in_array(session('selected_role'), ['Karyawan']))
+                    <li>
+                        <a href="/cuziacuti" class="nav-link{{ request()->is('cuziacuti*') ? ' text-primary' : '' }}">
+                            Pengajuan Cuti
+                        </a>
+                    </li>
+                    @endif
+                    @if (in_array(session('selected_role'), ['HRD Admin', 'Supervisor', 'Kepala Department','GMR']))
+                        <li>
+                            <a href="/cuzia" class="nav-link{{ request()->is('cuzia*') ? ' text-primary' : '' }}">
+                                Persetujuan Cuti
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/historycuti" class="nav-link{{ request()->is('historycuti*') ? ' text-primary' : '' }}">
+                                History Persetujuan Cuti
+                            </a>
+                        </li>
+                    @endif
+                    @if (session('selected_role') == 'HRD Admin')
+                        <li>
+                            <a href="/rekapcuti" class="nav-link{{ request()->is('rekapcuti*') ? ' text-primary' : '' }}">
+                                Rekap Cuti
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
+
+            <li class="dropdown{{ request()->is('cuziaizin*') || request()->is('izin*') ? ' active' : '' }}">
+                <a href="#" class="nav-link has-dropdown{{ request()->is('cuziaizin*') || request()->is('izin*') ? ' text-primary' : '' }}">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Izin</span>
+                </a>
+                <ul class="dropdown-menu">
+                    @if (in_array(session('selected_role'), ['Karyawan']))
+                    <li>
+                        <a href="/cuziaizin" class="nav-link{{ request()->is('cuziaizin*') ? ' text-primary' : '' }}">
+                            Pengajuan Izin
+                        </a>
+                    </li>
+                    @endif
+                    @if (in_array(session('selected_role'), ['HRD Admin', 'Supervisor', 'Kepala Department','GMR']))
+                        <li>
+                            <a href="/izin" class="nav-link{{ request()->is('izin*') ? ' text-primary' : '' }}">
+                                Persetujuan Izin
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/historyizin" class="nav-link{{ request()->is('historyizin*') ? ' text-primary' : '' }}">
+                               History Persetujuan Izin
+                            </a>
+                        </li>
+                    @endif
+                    @if (session('selected_role') == 'HRD Admin')
+                        <li>
+                            <a href="/rekapizin" class="nav-link{{ request()->is('rekapizin*') ? ' text-primary' : '' }}">
+                                Rekap Izin
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </li>
+        </ul>
+    </aside>
 </div>
+

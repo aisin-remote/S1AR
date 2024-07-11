@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 
-class CuziaController extends Controller
+class HistoryIzinController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -74,52 +74,43 @@ class CuziaController extends Controller
             ->get();
 
         // dd($userInfoOccupation);
-        return view('cuzia', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
+        return view('historyizin', compact('userInfoOccupation', 'userInfoDept', 'jenisizin'));
         // dd($request->all());
     }
 
     public function getData(Request $request)
     {
-
         $tanggalSekarang = Carbon::now()->format('Ymd');
-
         $npk = auth()->user()->npk;
 
-        $userInfo = DB::connection('mysql2')->select(DB::raw(
-            "
-            SELECT
-            kehadiranmu.empno,
-            hirarki.hirar,
-            MAX(hirarki.mutdt) AS mutdt,
-            hirarkidesc.descr,
-            users.is_admin,
-            pc.approval1_id,
-            pc.approval2_id
-            FROM kehadiranmu
-            LEFT JOIN hirarki ON kehadiranmu.empno = hirarki.empno
-            LEFT JOIN users ON kehadiranmu.empno = users.npk
+        $userInfo = DB::connection('mysql2')->select(
+            DB::raw(
+                "
+            SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr, users.is_admin
+            FROM kehadiran2
+            LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+            LEFT JOIN users ON kehadiran2.empno = users.npk
             LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
-            LEFT JOIN pengajuancuti pc ON kehadiranmu.empno = pc.empno
-            WHERE kehadiranmu.empno = $npk
-            GROUP BY
-            kehadiranmu.empno,
-            hirarki.hirar,
-            hirarkidesc.descr,
-            users.is_admin,
-            pc.approval1_id,
-            pc.approval2_id
-            ORDER BY mutdt DESC
-            LIMIT 1;
+            WHERE kehadiran2.empno = :npk
+            GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr, users.is_admin
+            ORDER BY mutdt DESC LIMIT 1;
             "
-        ));
+            ),
+            ['npk' => $npk]
+        );
 
         if (!empty($userInfo)) {
-            $npkDesc = $userInfo[0]->hirar; // Use array syntax
+            $npkDesc = $userInfo[0]->hirar;
 
             $cleanedString = str_replace(' ', '', $npkDesc);
-
-            // Hitung jumlah karakter
             $jumlahKarakter = strlen($cleanedString);
+            $isadmin = $userInfo[0]->is_admin;
+
+            // Determine the role based on the character count
+            $roles = ['Karyawan'];
+            if ($isadmin == 1) {
+                $roles[] = 'HRD Admin';
+            }
 
             // Tentukan jenis berdasarkan jumlah karakter
             if ($jumlahKarakter == 5) {
@@ -139,313 +130,230 @@ class CuziaController extends Controller
         }
 
         $cleanedStringDept = trim($userInfo[0]->descr);
-        $isadmin = ($userInfo[0]->is_admin);
-        // $cleanedStringDeptFinal = substr($cleanedStringDept, 0, 3);
         $userInfoOccupation = $jenis;
         $userInfoDept = $cleanedStringDept;
 
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        // Memeriksa apakah data tanggal tersedia
+        // Handle dates
         if (!empty($start_date) && !empty($end_date)) {
-            // Memproses data tanggal jika ada
-            $tanggalMulai = Carbon::parse($start_date)->format('d-m-Y');
-            $tanggalAkhir = Carbon::parse($end_date)->format('d-m-Y');
+            $tanggalMulai = Carbon::parse($start_date)->format('Y-m-d');
+            $tanggalAkhir = Carbon::parse($end_date)->format('Y-m-d');
         } else {
-            // Menggunakan tanggal sekarang jika tidak ada tanggal yang diberikan
-            $tanggalMulai = Carbon::now()->format('d-m-Y');
-            $tanggalAkhir = Carbon::now()->format('d-m-Y');
+            $tanggalMulai = null;
+            $tanggalAkhir = null;
         }
-
-        // if ($userInfo[0]->is_admin == 1) {
-        //     DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
-        //     // Execute main query
-        //     $data = DB::connection('mysql2')
-        //         ->select(DB::raw("
-        //         SELECT
-        //         id,
-        //         empno,
-        //         tgl_mulai,
-        //         tgl_selesai,
-        //         jeniscuti,
-        //         tgl_pengajuan,
-        //         approval1_status,
-        //         approval1_id,
-        //         approval2_id,
-        //         approval_status,
-        //         jenisizin,
-        //         note,
-        //         empnm,
-        //         hirar
-        //     FROM (
-        //         SELECT
-        //             pc.id,
-        //             pc.empno,
-        //             pc.tgl_mulai,
-        //             pc.tgl_selesai,
-        //             pc.jeniscuti,
-        //             pc.tgl_pengajuan,
-        //             pc.approval1_status,
-        //             pc.approval1_id,
-        //             pc.approval2_id,
-        //             pc.approval_status,
-        //             pc.note,
-        //             jz.jenisizin,
-        //             e.empnm,
-        //             h.hirar,
-        //             ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
-        //         FROM pengajuancuti pc
-        //         INNER JOIN employee e ON pc.empno = e.empno
-        //         INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-        //         INNER JOIN (
-        //             SELECT empno, MAX(mutdt) AS max_mutdt
-        //             FROM hirarki
-        //             GROUP BY empno
-        //         ) max_hirarki ON pc.empno = max_hirarki.empno
-        //         INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-        //         WHERE pc.approval_status IN (0, 1, 2)
-        //     ) AS numbered
-        //     WHERE RowNum = 1
-        //     ORDER BY empno ASC, tgl_mulai DESC;
-        //             "));
-        // } else {
-        //     DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
-
-        //     // Execute main query
-        //     $data = DB::connection('mysql2')
-        //         ->select(DB::raw("
-        //         SELECT
-        //         id,
-        //         empno,
-        //         tgl_mulai,
-        //         tgl_selesai,
-        //         jeniscuti,
-        //         tgl_pengajuan,
-        //         approval1_status,
-        //         approval1_id,
-        //         approval2_id,
-        //         approval_status,
-        //         jenisizin,
-        //         note,
-        //         empnm,
-        //         hirar,
-        //         mutdt,
-        //         descr,
-        //         is_admin
-        //     FROM (
-        //         SELECT
-        //             pc.id,
-        //             pc.empno,
-        //             pc.tgl_mulai,
-        //             pc.tgl_selesai,
-        //             pc.jeniscuti,
-        //             pc.tgl_pengajuan,
-        //             pc.approval1_status,
-        //             pc.approval1_id,
-        //             pc.approval2_id,
-        //             pc.approval_status,
-        //             pc.note,
-        //             jz.jenisizin,
-        //             u.is_admin,
-        //             e.empnm,
-        //             h.hirar,
-        //             h.mutdt,
-        //             hd.descr,
-        //             ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
-        //         FROM pengajuancuti pc
-        //         INNER JOIN employee e ON pc.empno = e.empno
-        //         INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-        //         INNER JOIN users u ON pc.empno = u.npk
-        //         INNER JOIN (
-        //             SELECT empno, MAX(mutdt) AS max_mutdt
-        //             FROM hirarki
-        //             GROUP BY empno
-        //         ) max_hirarki ON pc.empno = max_hirarki.empno
-        //         INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-        //         INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-        //         WHERE (pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NULL)
-        //         OR (pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NULL)
-        //     ) AS numbered
-        //     WHERE RowNum = 1
-        //     ORDER BY empno ASC, tgl_mulai DESC;
-
-        //         "));
-        // }
         if ($userInfo[0]->is_admin == 1) {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
-                SELECT
-                id,
-                empno,
-                tgl_mulai,
-                tgl_selesai,
-                jeniscuti,
-                tgl_pengajuan,
-                approval1_status,
-                approval1_id,
-                approval2_id,
-                approval_status,
-                jenisizin,
-                note,
-                empnm,
-                hirar
-            FROM (
-                SELECT
-                    pc.id,
-                    pc.empno,
-                    pc.tgl_mulai,
-                    pc.tgl_selesai,
-                    pc.jeniscuti,
-                    pc.tgl_pengajuan,
-                    pc.approval1_status,
-                    pc.approval1_id,
-                    pc.approval2_id,
-                    pc.approval_status,
-                    pc.note,
-                    jz.jenisizin,
-                    e.empnm,
-                    h.hirar,
-                    ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
-                FROM pengajuancuti pc
-                INNER JOIN employee e ON pc.empno = e.empno
-                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-                INNER JOIN (
-                    SELECT empno, MAX(mutdt) AS max_mutdt
-                    FROM hirarki
-                    GROUP BY empno
-                ) max_hirarki ON pc.empno = max_hirarki.empno
-                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-                WHERE pc.approval_status IN (0, 1, 2)
-            ) AS numbered
-            WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC;
-                    "));
+            $baseQuery = "
+                 SELECT
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    pjenisizin,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    jenisizin,
+                    note,
+                    empnm,
+                    hirar
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.pjenisizin,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.note,
+                        jz.jenisizin,
+                        e.empnm,
+                        h.hirar,
+                        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuanizin pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    WHERE 1=1"; // Start with a true condition to simplify query building
+
+            // Add date conditions if provided
+            if ($tanggalMulai && $tanggalAkhir) {
+                $baseQuery .= " AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN :tanggalMulai AND :tanggalAkhir";
+            }
+
+            $baseQuery .= "
+                ) AS numbered
+                WHERE RowNum = 1
+                ORDER BY empno ASC, tgl_mulai DESC;
+            ";
+
+            // Bind parameters for date conditions
+            $params = [];
+            if ($tanggalMulai && $tanggalAkhir) {
+                $params['tanggalMulai'] = $tanggalMulai;
+                $params['tanggalAkhir'] = $tanggalAkhir;
+            }
+
+            try {
+                // Execute query
+                $data = DB::connection('mysql2')->select(DB::raw($baseQuery), $params);
+            } catch (\Exception $e) {
+                // Handle any exceptions here
+                // Example: Log or return an error message
+                dd($e->getMessage()); // Temporary debugging, replace with appropriate error handling
+            }
         } elseif ($userInfoOccupation == 'KDP') {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
+            $baseQuery = "
+                 SELECT
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    pjenisizin,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    jenisizin,
+                    note,
+                    empnm,
+                    hirar
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.pjenisizin,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.note,
+                        jz.jenisizin,
+                        e.empnm,
+                        h.hirar,
+                        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuanizin pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+                     WHERE pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NOT NULL
+                ";
 
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
-                SELECT
-                id,
-                empno,
-                tgl_mulai,
-                tgl_selesai,
-                jeniscuti,
-                tgl_pengajuan,
-                approval1_status,
-                approval1_id,
-                approval2_id,
-                approval_status,
-                jenisizin,
-                note,
-                empnm,
-                hirar,
-                mutdt,
-                descr,
-                is_admin
-            FROM (
-                SELECT
-                    pc.id,
-                    pc.empno,
-                    pc.tgl_mulai,
-                    pc.tgl_selesai,
-                    pc.jeniscuti,
-                    pc.tgl_pengajuan,
-                    pc.approval1_status,
-                    pc.approval1_id,
-                    pc.approval2_id,
-                    pc.approval_status,
-                    pc.note,
-                    jz.jenisizin,
-                    u.is_admin,
-                    e.empnm,
-                    h.hirar,
-                    h.mutdt,
-                    hd.descr,
-                    ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
-                FROM pengajuancuti pc
-                INNER JOIN employee e ON pc.empno = e.empno
-                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-                INNER JOIN users u ON pc.empno = u.npk
-                INNER JOIN (
-                    SELECT empno, MAX(mutdt) AS max_mutdt
-                    FROM hirarki
-                    GROUP BY empno
-                ) max_hirarki ON pc.empno = max_hirarki.empno
-                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-                INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE  approval_status  LIKE '%1%' AND pc.approval2_id LIKE '%$npk%' AND pc.approval2_status IS NULL AND pc.approval_status != '-1'
-            ) AS numbered
-            WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC;
+            // Add date conditions if provided
+            if ($tanggalMulai && $tanggalAkhir) {
+                $baseQuery .= " AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN :tanggalMulai AND :tanggalAkhir";
+            }
 
-                "));
+            $baseQuery .= "
+                ) AS numbered
+                WHERE RowNum = 1
+                ORDER BY empno ASC, tgl_mulai DESC;
+            ";
+
+            // Prepare parameters for binding
+            $params = [];
+            if ($tanggalMulai && $tanggalAkhir) {
+                $params['tanggalMulai'] = $tanggalMulai;
+                $params['tanggalAkhir'] = $tanggalAkhir;
+            }
+
+            // Execute query
+            $data = DB::connection('mysql2')->select(DB::raw($baseQuery), $params);
         } elseif ($userInfoOccupation == 'SPV') {
             DB::connection('mysql2')->select('SET @row_number = 0, @empno_prev = NULL, @tgl_pengajuan_prev = NULL');
-
-            // Execute main query
-            $data = DB::connection('mysql2')
-                ->select(DB::raw("
+            $baseQuery = "
                 SELECT
-                id,
-                empno,
-                tgl_mulai,
-                tgl_selesai,
-                jeniscuti,
-                tgl_pengajuan,
-                approval1_status,
-                approval1_id,
-                approval2_id,
-                approval_status,
-                jenisizin,
-                note,
-                empnm,
-                hirar,
-                mutdt,
-                descr,
-                is_admin
-            FROM (
-                SELECT
-                    pc.id,
-                    pc.empno,
-                    pc.tgl_mulai,
-                    pc.tgl_selesai,
-                    pc.jeniscuti,
-                    pc.tgl_pengajuan,
-                    pc.approval1_status,
-                    pc.approval1_id,
-                    pc.approval2_id,
-                    pc.approval_status,
-                    pc.note,
-                    jz.jenisizin,
-                    u.is_admin,
-                    e.empnm,
-                    h.hirar,
-                    h.mutdt,
-                    hd.descr,
-                    ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
-                FROM pengajuancuti pc
-                INNER JOIN employee e ON pc.empno = e.empno
-                INNER JOIN jenisizin jz ON pc.jeniscuti = jz.id
-                INNER JOIN users u ON pc.empno = u.npk
-                INNER JOIN (
-                    SELECT empno, MAX(mutdt) AS max_mutdt
-                    FROM hirarki
-                    GROUP BY empno
-                ) max_hirarki ON pc.empno = max_hirarki.empno
-                INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
-                INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
-                WHERE  approval_status  LIKE '%0%' AND pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NULL
-            ) AS numbered
-            WHERE RowNum = 1
-            ORDER BY empno ASC, tgl_mulai DESC;
+                    id,
+                    empno,
+                    tgl_mulai,
+                    tgl_selesai,
+                    pjenisizin,
+                    tgl_pengajuan,
+                    approval1_status,
+                    approval1_id,
+                    approval2_id,
+                    approval_status,
+                    jenisizin,
+                    note,
+                    empnm,
+                    hirar
+                FROM (
+                    SELECT
+                        pc.id,
+                        pc.empno,
+                        pc.tgl_mulai,
+                        pc.tgl_selesai,
+                        pc.pjenisizin,
+                        pc.tgl_pengajuan,
+                        pc.approval1_status,
+                        pc.approval1_id,
+                        pc.approval2_id,
+                        pc.approval_status,
+                        pc.note,
+                        jz.jenisizin,
+                        e.empnm,
+                        h.hirar,
+                        ROW_NUMBER() OVER (PARTITION BY pc.empno, pc.tgl_mulai ORDER BY pc.tgl_mulai DESC) AS RowNum
+                    FROM pengajuanizin pc
+                    INNER JOIN employee e ON pc.empno = e.empno
+                    INNER JOIN jenisizin jz ON pc.pjenisizin = jz.id
+                    INNER JOIN (
+                        SELECT empno, MAX(mutdt) AS max_mutdt
+                        FROM hirarki
+                        GROUP BY empno
+                    ) max_hirarki ON pc.empno = max_hirarki.empno
+                    INNER JOIN hirarki h ON max_hirarki.empno = h.empno AND max_hirarki.max_mutdt = h.mutdt
+                    INNER JOIN hirarkidesc hd ON h.hirar = hd.hirar
+                    WHERE pc.approval1_id LIKE '%$npk%' AND pc.approval1_status IS NOT NULL
+                ";
 
-                "));
+            // Add date conditions if provided
+            if ($tanggalMulai && $tanggalAkhir) {
+                $baseQuery .= " AND STR_TO_DATE(pc.tgl_mulai, '%Y-%m-%d') BETWEEN :tanggalMulai AND :tanggalAkhir";
+            }
+
+            $baseQuery .= "
+                ) AS numbered
+                WHERE RowNum = 1
+                ORDER BY empno ASC, tgl_mulai DESC;
+            ";
+
+            // Prepare parameters for binding
+            $params = [];
+            if ($tanggalMulai && $tanggalAkhir) {
+                $params['tanggalMulai'] = $tanggalMulai;
+                $params['tanggalAkhir'] = $tanggalAkhir;
+            }
+
+            // Execute query
+            $data = DB::connection('mysql2')->select(DB::raw($baseQuery), $params);
         }
+
 
         // Iterate through each row in the collection
         foreach ($data as $row) {
@@ -466,14 +374,29 @@ class CuziaController extends Controller
                 $row->hirar = 'Jenis tidak dikenali'; // Atur jenis untuk kondisi lainnya
             }
         }
-        // $is_admin = auth()->user()->is_admin;
-        // if ($is_admin == 1) {
-        //     $data = PengajuanCuti::where('approval_status', '2');
-        // }
-        // dd($data);
+
+        // Return DataTables response
         return DataTables::of($data)->make(true);
     }
 
+    // Method to determine jenis based on hirar length
+    private function determineJenis($hirar)
+    {
+        $cleanedString = str_replace(' ', '', $hirar);
+        $jumlahKarakter = strlen($cleanedString);
+
+        if ($jumlahKarakter == 5) {
+            return 'KDP';
+        } elseif ($jumlahKarakter == 7) {
+            return 'SPV';
+        } elseif ($jumlahKarakter == 9) {
+            return 'LDR/OPR';
+        } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+            return 'GMR';
+        } else {
+            return 'Jenis tidak dikenali';
+        }
+    }
 
     public function saldoCuti(Request $request)
     {

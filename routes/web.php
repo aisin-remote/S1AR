@@ -9,6 +9,8 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\SchedulerController;
 use App\Http\Controllers\CuziaIzinController;
 use App\Http\Controllers\CuziaCutiController;
+use App\Http\Controllers\HistoryCutiController;
+use App\Http\Controllers\HistoryIzinController;
 use App\Http\Controllers\IzinController;
 use App\Http\Controllers\PengajuanIzinController;
 use App\Http\Controllers\RekapCutiController;
@@ -28,18 +30,26 @@ use Illuminate\Support\Facades\Route;
 */
 use Illuminate\Support\Facades\DB;
 
-Route::get('/test-connection', function () {
-    // try {
-    //     $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=sikola", "root", "");
-    //     echo "Connected successfully!";
-    // } catch (PDOException $e) {
-    //     echo "Connection failed: " . $e->getMessage();
-    // }
-    if (!DB::connection('mysql2')->getPdo()) {
-        $this->error('Could not connect to the mysql2 database.');
-        return 1;
-    }
+// Route::get('/test-connection', function () {
+//     try {
+//         $pdo = new PDO("mysql:host=127.0.0.1;port=3306;dbname=sikola", "root", "");
+//         echo "Connected successfully!";
+//     } catch (PDOException $e) {
+//         echo "Connection failed: " . $e->getMessage();
+//     }
+//     // if (!DB::connection('mysql2')->getPdo()) {
+//     //     $this->error('Could not connect to the mysql2 database.');
+//     //     return 1;
+//     // }
 
+// });
+Route::get('/test-connection', function () {
+    try {
+        DB::connection('sqlsrv')->getPdo();
+        return "Connected successfully to the SQL Server database!";
+    } catch (\Exception $e) {
+        return "Connection failed: " . $e->getMessage();
+    }
 });
 
 // Grup rute yang memerlukan otentikasi
@@ -94,11 +104,18 @@ Route::middleware(['auth'])->group(function () {
     // Route::post('/cuziacuti/store', [CuziaCutiController::class, 'store'])->name('cuziacuti.store');
     Route::resource('cuziacuti', CuziaCutiController::class);
 
+    Route::get('/izinview', [PengajuanIzinController::class, 'index'])->name('izinview');
     Route::get('/izin', [PengajuanIzinController::class, 'index'])->name('izin');
     Route::get('/izin/datatables', [PengajuanIzinController::class, 'getData'])->name('izin.datatables');
     Route::post('/izinapprove', [PengajuanIzinController::class, 'approve'])->name('izin.approve');
     // Route::post('/cuziaizin', [CuziaIzinController::class, 'store'])->name('cuziaizin.store');
     Route::resource('izin', PengajuanIzinController::class);
+
+    Route::get('/historycuti', [HistoryCutiController::class, 'index'])->name('historycuti');
+    Route::get('/historycuti/datatables', [HistoryCutiController::class, 'getData'])->name('historycuti.datatables');
+
+    Route::get('/historyizin', [HistoryIzinController::class, 'index'])->name('historyizin');
+    Route::get('/historyizin/datatables', [HistoryIzinController::class, 'getData'])->name('historyizin.datatables');
 
     Route::get('/test', [EmployeeController::class, 'test']);
 });
@@ -110,9 +127,14 @@ Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'doRegister'])->name('store.register');
 Route::get('logout', [AuthController::class, 'logout']);
 
+Route::get('/select-role', [AuthController::class, 'selectRole'])->middleware('auth');
+Route::post('/set-role', [AuthController::class, 'setRole'])->name('setRole')->middleware('auth');
+
+
 Route::get('/scheduler', [SchedulerController::class, 'index']);
 Route::get('/scheduler1', [SchedulerController::class, 'index1']);
 Route::get('/scheduler2', [SchedulerController::class, 'index2']);
+Route::get('/scheduler3', [SchedulerController::class, 'index3']);
 // routes/web.php
 
 Route::get('/cuti/input', function () {
@@ -122,6 +144,9 @@ Route::get('/cuti/input', function () {
 Route::get('/ijin/input', function () {
     return view('pengajuanijin');
 });
+// In web.php
+
+
 
 
 // Route::get('/dashboard', function () {

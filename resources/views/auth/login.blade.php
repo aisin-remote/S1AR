@@ -18,9 +18,7 @@
             @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                 <ul>
-                    @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
+
                 </ul>
             </div>
             @endif
@@ -41,7 +39,18 @@
                             <div class="card-header">
                                 <h4>Login</h4>
                             </div>
+                            @if ($errors->has('login'))
+                            <div class="alert alert-danger" role="alert" style="
+                                    padding-left: 5px;
+                                    padding-right: 5px;
+                                    padding-bottom: 5px;
+                                    padding-top: 5px;
+                                ">
+                                <img src="http://127.0.0.1:8000/assets/img/alert-icon.png" alt="alert-icon" style="width:20px; height:20px; margin-right:2px; margin-left:2px;">
+                                <strong>Invalid NPK or password. Please try again.</strong>
+                            </div>
 
+                            @endif
                             <div class="card-body">
                                 <form method="POST" action="{{ route('store.login') }}" class="needs-validation" novalidate="">
                                     @csrf

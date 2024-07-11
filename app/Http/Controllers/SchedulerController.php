@@ -41,4 +41,13 @@ class SchedulerController extends Controller
             'result' => Artisan::output(),
         ]);
     }
+
+    public function index3()
+    {
+        Artisan::call('data:copyPengajuanCutiKar');
+
+        return response()->json([
+            'result' => Artisan::output(),
+        ]);
+    }
 }

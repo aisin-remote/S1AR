@@ -186,92 +186,70 @@
                             name: 'tgl_mulai'
                         },
                         {
-                            data: 'approval_status',
-                            name: 'approval_status',
-                            render: function(data, type, row) {
-                                // row.hirar sekarang berisi informasi hirarki dari server
-                                var statusText = '';
-                                var hirar = row
-                                    .hirar; // Asumsikan kolom hirar sudah termasuk dalam data yang dikirim ke DataTables
-
-                                // Membersihkan string hirar dari spasi, jika ada
-                                var cleanedHirar = hirar.replace(/\s+/g, '');
-                                var jumlahKarakter = cleanedHirar.length;
-                                var occupation;
-
-                                // Tentukan jenis berdasarkan jumlah karakter di cleanedHirar
-                                if (jumlahKarakter == 5) {
-                                    occupation = 'KDP';
-                                } else if (jumlahKarakter == 7) {
-                                    occupation = 'SPV';
-                                } else if (jumlahKarakter == 9) {
-                                    occupation = 'LDR/OPR';
-                                } else if (jumlahKarakter == 2 || jumlahKarakter == 3) {
-                                    occupation = 'GMR';
-                                } else {
-                                    occupation = 'Jenis tidak dikenali';
-                                }
-
-                                // Logika untuk menentukan teks status berdasarkan occupation
-                                switch (data) {
-                                    case '1':
-                                        if (occupation === 'LDR/OPR') {
-                                            statusText = 'Disetujui oleh SPV';
-                                        } else if (occupation === 'SPV') {
-                                            statusText = 'Disetujui oleh MGR';
-                                        } else if (occupation === 'KDP') {
-                                            statusText = 'Disetujui oleh GMR';
-                                        } else {
-                                            statusText = 'Disetujui oleh Atasan 1';
-                                        }
-                                        break;
-                                    case '2':
-                                        if (occupation === 'LDR/OPR') {
-                                            statusText = 'Disetujui oleh MGR';
-                                        } else if (occupation === 'SPV') {
-                                            statusText = 'Disetujui oleh GMR';
-                                        } else if (occupation === 'KDP') {
-                                            statusText = 'Disetujui oleh DIR';
-                                        } else {
-                                            statusText = 'Disetujui oleh Atasan 2';
-                                        }
-                                        break;
-                                    case '-1':
-                                        if (occupation === 'LDR/OPR') {
-                                            statusText = 'Ditolak oleh SPV';
-                                        } else if (occupation === 'SPV') {
-                                            statusText = 'Ditolak oleh MGR';
-                                        } else if (occupation === 'KDP') {
-                                            statusText = 'Ditolak oleh GMR';
-                                        } else {
-                                            statusText = 'Ditolak oleh Atasan 1';
-                                        }
-                                        break;
-                                    case '-2':
-                                        if (occupation === 'LDR/OPR') {
-                                            statusText = 'Ditolak oleh MGR';
-                                        } else if (occupation === 'SPV') {
-                                            statusText = 'Ditolak oleh GMR';
-                                        } else if (occupation === 'KDP') {
-                                            statusText = 'Ditolak oleh DIR';
-                                        } else {
-                                            statusText = 'Ditolak oleh Atasan 2';
-                                        }
-                                        break;
-                                    case '3':
-                                        statusText = 'Disetujui oleh HR';
-                                        break;
-                                    case '-3':
-                                        statusText = 'Ditolak oleh HR';
-                                        break;
-                                    default:
-                                        statusText = 'Menunggu Persetujuan';
-                                        break;
-                                }
-
-                                return statusText;
+                        data: 'approval_status',
+                        name: 'approval_status',
+                        render: function(data, type, row) {
+                            var statusText = '';
+                            var userInfoOccupation =
+                                '<?php echo $userInfoOccupation; ?>'; // Asumsikan nilai ini diambil dari server-side
+                            switch (data) {
+                                case '1':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Disetujui oleh SPV';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Disetujui oleh MGR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Disetujui oleh GMR';
+                                    } else {
+                                        statusText = 'Disetujui oleh Atasan 1';
+                                    }
+                                    break;
+                                case '2':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Disetujui oleh MGR';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Disetujui oleh GMR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Disetujui oleh DIR';
+                                    } else {
+                                        statusText = 'Disetujui oleh Atasan 2';
+                                    }
+                                    break;
+                                case '-1':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Ditolak oleh SPV';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Ditolak oleh MGR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Ditolak oleh GMR';
+                                    } else {
+                                        statusText = 'Ditolak oleh Atasan 1';
+                                    }
+                                    break;
+                                case '-2':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Ditolak oleh MGR';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Ditolak oleh GMR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Ditolak oleh DIR';
+                                    } else {
+                                        statusText = 'Ditolak oleh Atasan 2';
+                                    }
+                                    break;
+                                case '3':
+                                    statusText = 'Disetujui oleh HR';
+                                    break;
+                                case '-3':
+                                    statusText = 'Ditolak oleh HR';
+                                    break;
+                                default:
+                                    statusText = 'Menunggu Persetujuan';
+                                    break;
                             }
-                        },
+                            return statusText;
+                        }
+                    },
 
                         {
                             data: 'note',
@@ -423,6 +401,19 @@
                     form.appendChild(input);
                     document.body.appendChild(form);
                     form.submit();
+                     // Tampilkan SweetAlert dengan konfigurasi ukuran card dan tunda penutupan otomatis
+                     Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Data telah berhasil diapprove.',
+                        customClass: {
+                            popup: 'swal2-small' // Menggunakan kelas khusus untuk menentukan ukuran card (swal2-large)
+                        },
+                        allowOutsideClick: false, // Mencegah penutupan dengan klik di luar alert
+                        showCancelButton: false,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Oke',
+                    });
                 });
 
             });
@@ -471,6 +462,19 @@
 
                     document.body.appendChild(form);
                     form.submit();
+                     // Tampilkan SweetAlert dengan konfigurasi ukuran card dan tunda penutupan otomatis
+                     Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Data telah berhasil ditolak.',
+                            customClass: {
+                                popup: 'swal2-small' // Menggunakan kelas khusus untuk menentukan ukuran card (swal2-large)
+                            },
+                            allowOutsideClick: false, // Mencegah penutupan dengan klik di luar alert
+                            showCancelButton: false,
+                            showConfirmButton: true,
+                            confirmButtonText: 'Oke',
+                        });
                 } else {
                     alert("Alasan penolakan harus diisi!");
                 }

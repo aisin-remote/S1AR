@@ -53,6 +53,15 @@ class JenisIzinController extends Controller
             return back()->with('error', 'Terjadi kesalahan saat menyimpan data jenis izin: ' . $e->getMessage())->withInput();
         }
     }
+    public function getDataJenisIzin()
+    {
+        // Fetch data from jenisizin table
+        $jenisizinData = Jenisizin::select(['id', 'jenisizin', 'created_at', 'updated_at'])->get();
+
+        // Use DataTables to format the data
+        return DataTables::of($jenisizinData)
+            ->make(true);
+    }
 
 
     /**

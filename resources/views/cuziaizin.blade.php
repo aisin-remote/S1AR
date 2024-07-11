@@ -1,4 +1,4 @@
-@extends('layouts.app', ['title' => 'Cuzia izin Attendance'])
+@extends('layouts.app', ['title' => 'Cuzia Izin Attendance'])
 
 @section('content')
     @if (session('error'))
@@ -10,7 +10,7 @@
     <div class="main-content">
         <section class="section">
             <div class="section-header">
-                <h1>Data izin Pribadi Karyawan </h1>
+                <h1>Data Izin Pribadi Karyawan </h1>
             </div>
 
             <div class="card">
@@ -36,7 +36,7 @@
                                 <div class="form-group ml-auto">
                                     <label for="pengajuan_button">&nbsp;</label>
                                     <button type="button" class="btn btn-primary btn-sm form-control form-control-sm"
-                                        data-toggle="modal" data-target="#cuziaizinmodal" id="pengajuan_button">
+                                        data-toggle="modal" data-target="#cuziacutimodal" id="pengajuan_button">
                                         <i class="fas fa-plus"></i> Pengajuan Izin
                                     </button>
                                 </div>
@@ -55,7 +55,6 @@
                                         <th class="align-middle">Tanggal Selesai</th>
                                         <th class="align-middle">Status</th>
                                         <th class="align-middle">Keterangan</th>
-                                        <th class="align-middle">Lampiran</th>
                                         <th class="align-middle">Aksi</th>
                                     </tr>
                                 </thead>
@@ -68,7 +67,7 @@
     </div>
 
     <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
-    <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="cuziacutimodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -81,7 +80,7 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row" style="display: block">
-                            <form action="{{ route('cuziaizin.store') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('cuziacuti.store') }}" method="POST" enctype="multipart/form-data">
                                 <!-- Isi formulir di sini -->
                                 @csrf
                                 <div class="form-group mb-2">
@@ -106,6 +105,18 @@
                                             name="tgl_selesai">
                                     </div>
                                 </div>
+                                {{-- <div class="form-row">
+                                    <div class="form-group mb-2 col-md-5 ">
+                                        <label for="saldocutitahunan"> Saldo Izin Tahunan</label>
+                                        <input type="text" required class="form-control" id="saldocutitahunan"
+                                            name="saldocutitahunan" value="{{ $saldocutitahunan }}" readonly>
+                                    </div>
+                                    <div class="form-group mb-2 col-md-5 ">
+                                        <label for="saldocutiistimewa">Saldo Izin Istimewa:</label>
+                                        <input type="text" required class="form-control" id="saldocutiistimewa"
+                                            name="saldocutiistimewa" value="{{ $saldocutiistimewa }}" readonly>
+                                    </div>
+                                </div> --}}
                                 <div class="form-group mb-2 ">
                                     <label for="jenis_cuzia">Jenis Izin:</label>
                                     <select required class="form-control" id="jenisizin" name="jenisizin">
@@ -117,13 +128,9 @@
                                 </div>
                                 <div class="form-group mb-2">
                                     <label for="note">Keterangan:</label>
-                                    <textarea required class="form-control" id="note" name="note"></textarea>
+                                    <textarea class="form-control" required class="form-control" id="note" name="note"></textarea>
                                 </div>
-                                <div class="form-group " id="lampiranContainer">
-                                    <label for="lampiran">Unggah Dokumen/Lampiran:</label>
-                                    <input type="file" multiple name="data_verifikasi" id="data_verifikasi"
-                                        class="w-full border-2 border-gray-300 px-3 py-2 rounded-md">
-                                </div>
+
                                 <button type="submit" class="btn btn-primary btn-sm">Kirim</button>
                         </div>
                     </div>
@@ -131,8 +138,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    </div>
     </div>
 
     <!-- Add this modal code at the end of your HTML file, before closing the body tag -->
@@ -151,29 +156,27 @@
                         <div class="row" style="display: block">
                             <div class="form-group ">
                                 <label for="nama">Nama:</label>
-                                <input type="text" required class="form-control" id="nama3" name="nama"
-                                    disabled>
+                                <input type="text" class="form-control" id="nama3" name="nama" disabled>
                             </div>
                             <div class="form-group ">
                                 <label for="npk">NPK:</label>
-                                <input type="text" required class="form-control" id="npk" name="npk"
-                                    disabled>
+                                <input type="text" class="form-control" id="npk" name="npk" disabled>
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_mulai">Tanggal Mulai:</label>
-                                    <input type="date" required class="form-control" id="tgl_mulai3" name="tgl_mulai"
+                                    <input type="date" class="form-control" id="tgl_mulai3" name="tgl_mulai"
                                         disabled>
                                 </div>
                                 <div class="form-group col-md-6 ">
                                     <label for="tgl_selesai">Tanggal Selesai:</label>
-                                    <input type="date" required class="form-control" id="tgl_selesai4"
-                                        name="tgl_selesai" disabled>
+                                    <input type="date" class="form-control" id="tgl_selesai4" name="tgl_selesai"
+                                        disabled>
                                 </div>
                             </div>
                             <div class="form-group ">
                                 <label for="jenis_cuzia">Jenis Cuzia:</label>
-                                <select required class="form-control" id="jenisizin2" name="jenisizin" disabled>
+                                <select required class="form-control" id="jeniscuti2" name="jeniscuti" disabled>
                                     <option value="" disabled selected>Pilih Jenis Izin</option>
                                     @foreach ($jenisizin as $cuti)
                                         <option value="{{ $cuti->id }}">{{ $cuti->jenisizin }}</option>
@@ -182,17 +185,13 @@
                             </div>
                             <div class="form-group mb-2">
                                 <label for="note">Keterangan:</label>
-                                <textarea required class="form-control" id="note3" name="note" disabled></textarea>
+                                <textarea class="form-control" id="note3" name="note" disabled></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    </div>
-    </div>
-    </div>
     </div>
     @push('scripts')
         <?php
@@ -363,19 +362,6 @@
                             name: 'note'
                         },
                         {
-                            data: 'lampiran', // Ganti 'lampiran' dengan nama field di database Anda
-                            name: 'lampiran',
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, row) {
-                                if (data) {
-                                    return `<a href="storage/${data.substr(7)}" target="_blank">Lihat Lampiran</a>`;
-                                } else {
-                                    return 'Tidak ada lampiran';
-                                }
-                            }
-                        },
-                        {
                             data: 'action',
                             name: 'action',
                             orderable: false,
@@ -435,7 +421,7 @@
                     $('#npk').val($(this).data('empno'));
                     $('#tgl_mulai3').val($(this).data('tgl_mulai'));
                     $('#tgl_selesai4').val($(this).data('tgl_selesai'));
-                    $('#jenisizin2').val($(this).data('jenis'));
+                    $('#jeniscuti2').val($(this).data('jenis'));
                     $('#note3').val($(this).data('note'));
                 });
             });

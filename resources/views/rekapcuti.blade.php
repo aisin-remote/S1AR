@@ -10,7 +10,7 @@
     <div class="main-content">
         <section class="section">
             <div class="section-header">
-                <h1>Rekap Data Cuti Pribadi Karyawan </h1>
+                <h1>Rekap Data Cuti Karyawan </h1>
             </div>
 
             <div class="card">
@@ -325,7 +325,7 @@
                                 console.log('No data to export');
                             }
                         },
-                        className: 'btn btn-success btn-sm float-above',
+                        className: 'btn btn-primary btn-sm float-above custom-blue-button',
                     }],
 
 
@@ -391,9 +391,6 @@
                                             statusText = 'Disetujui oleh Atasan 2';
                                         }
                                         break;
-                                    case '3':
-                                        statusText = 'Disetujui oleh HRD';
-                                        break;
                                     case '-1':
                                         if (userInfoOccupation === 'LDR/OPR') {
                                             statusText = 'Ditolak oleh SPV';
@@ -416,8 +413,11 @@
                                             statusText = 'Ditolak oleh Atasan 2';
                                         }
                                         break;
+                                    case '3':
+                                        statusText = 'Disetujui oleh HR';
+                                        break;
                                     case '-3':
-                                        statusText = 'Ditolak oleh HRD';
+                                        statusText = 'Ditolak oleh HR';
                                         break;
                                     default:
                                         statusText = 'Menunggu Persetujuan';
@@ -512,6 +512,14 @@
             .table-bor th,
             .table-bor td {
                 border: 1px solid #1e1d1d;
+            }
+        </style>
+        <style>
+            .custom-blue-button {
+                background-color: #004080;
+                /* Warna biru agak tua */
+                color: white;
+                /* Warna teks putih */
             }
         </style>
     @endpush

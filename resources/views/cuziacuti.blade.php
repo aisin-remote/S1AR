@@ -187,6 +187,21 @@
                                 <label for="note">Keterangan:</label>
                                 <textarea class="form-control" id="note3" name="note" disabled></textarea>
                             </div>
+                            <div class="form-group mb-2" id="reason1" style="display: none;">
+                                <label for="reason1">Reason Approval 1:</label>
+                                <input type="text" class="form-control" id="reason1" name="reason1k"
+                                        disabled>
+                            </div>
+                            <div class="form-group mb-2" id="reason2" style="display: none;">
+                                <label for="reason2">Reason Approval 2:</label>
+                                <input type="text" class="form-control" id="reason2" name="reason2e"
+                                        disabled>
+                            </div>
+                            <div class="form-group mb-2" id="reasonHr" style="display: none;">
+                                <label for="reasonHr">Reason Approval HR:</label>
+                                <input type="text" class="form-control" id="reasonhr" name="reasonhrl"
+                                        disabled>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -249,181 +264,223 @@
 
         <script>
             $(document).ready(function() {
-                var table = $('#employee-table').DataTable({
-                    destroy: true,
-                    dom: '<"top"f>rt<"bottom"lip><"clear">',
-                    processing: true,
-                    ajax: {
-                        url: '{{ url('/cuziacuti/datatables') }}',
-                        data: function(d) {
-                            d.start_date = $('#start_date').val();
-                            d.end_date = $('#end_date').val();
+            var table = $('#employee-table').DataTable({
+                destroy: true,
+                dom: '<"top"f>rt<"bottom"lip><"clear">',
+                processing: true,
+                ajax: {
+                    url: '{{ url('/cuziacuti/datatables') }}',
+                    data: function(d) {
+                        d.start_date = $('#start_date').val();
+                        d.end_date = $('#end_date').val();
+                    }
+                },
+                columns: [{
+                        data: null,
+                        render: function(data, type, row, meta) {
+                            // Mengembalikan nomor urut berdasarkan nomor baris (index + 1)
+                            return meta.row + 1;
                         }
                     },
-                    columns: [{
-                            data: null,
-                            render: function(data, type, row, meta) {
-                                // Mengembalikan nomor urut berdasarkan nomor baris (index + 1)
-                                return meta.row + 1;
-                            }
-                        },
-                        {
-                            data: 'tgl_pengajuan',
-                            name: 'tgl_pengajuan'
-                        }, {
-                            data: 'empno',
-                            name: 'empno'
-                        },
-                        {
-                            data: 'empnm',
-                            name: 'empnm',
-                            orderable: false
-                        },
+                    {
+                        data: 'tgl_pengajuan',
+                        name: 'tgl_pengajuan'
+                    }, {
+                        data: 'empno',
+                        name: 'empno'
+                    },
+                    {
+                        data: 'empnm',
+                        name: 'empnm',
+                        orderable: false
+                    },
 
-                        {
-                            data: 'jenisizin',
-                            name: 'jenisizin'
-                        },
-                        {
-                            data: 'tgl_mulai',
-                            name: 'tgl_mulai'
-                        },
-                        {
-                            data: 'tgl_selesai',
-                            name: 'tgl_selesai'
-                        },
-                        {
-                            data: 'approval_status',
-                            name: 'approval_status',
-                            render: function(data, type, row) {
-                                var statusText = '';
-                                var userInfoOccupation =
-                                    '<?php echo $userInfoOccupation; ?>'; // Asumsikan nilai ini diambil dari server-side
-                                switch (data) {
-                                    case '1':
-                                        if (userInfoOccupation === 'LDR/OPR') {
-                                            statusText = 'Disetujui oleh SPV';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Disetujui oleh MGR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Disetujui oleh GMR';
-                                        } else {
-                                            statusText = 'Disetujui oleh Atasan 1';
-                                        }
-                                        break;
-                                    case '2':
-                                        if (userInfoOccupation === 'LDR/OPR') {
-                                            statusText = 'Disetujui oleh MGR';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Disetujui oleh GMR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Disetujui oleh DIR';
-                                        } else {
-                                            statusText = 'Disetujui oleh Atasan 2';
-                                        }
-                                        break;
-                                    case '-1':
-                                        if (userInfoOccupation === 'LDR/OPR') {
-                                            statusText = 'Ditolak oleh SPV';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Ditolak oleh MGR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Ditolak oleh GMR';
-                                        } else {
-                                            statusText = 'Ditolak oleh Atasan 1';
-                                        }
-                                        break;
-                                    case '-2':
-                                        if (userInfoOccupation === 'LDR/OPR') {
-                                            statusText = 'Ditolak oleh MGR';
-                                        } else if (userInfoOccupation === 'SPV') {
-                                            statusText = 'Ditolak oleh GMR';
-                                        } else if (userInfoOccupation === 'KDP') {
-                                            statusText = 'Ditolak oleh DIR';
-                                        } else {
-                                            statusText = 'Ditolak oleh Atasan 2';
-                                        }
-                                        break;
-                                    case '3':
-                                        statusText = 'Disetujui oleh HR';
-                                        break;
-                                    case '-3':
-                                        statusText = 'Ditolak oleh HR';
-                                        break;
-                                    default:
-                                        statusText = 'Menunggu Persetujuan';
-                                        break;
-                                }
-                                return statusText;
+                    {
+                        data: 'jenisizin',
+                        name: 'jenisizin'
+                    },
+                    {
+                        data: 'tgl_mulai',
+                        name: 'tgl_mulai'
+                    },
+                    {
+                        data: 'tgl_selesai',
+                        name: 'tgl_selesai'
+                    },
+                    {
+                        data: 'approval_status',
+                        name: 'approval_status',
+                        render: function(data, type, row) {
+                            var statusText = '';
+                            var userInfoOccupation =
+                                '<?php echo $userInfoOccupation; ?>'; // Asumsikan nilai ini diambil dari server-side
+                            switch (data) {
+                                case '1':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Disetujui oleh SPV';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Disetujui oleh MGR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Disetujui oleh GMR';
+                                    } else {
+                                        statusText = 'Disetujui oleh Atasan 1';
+                                    }
+                                    break;
+                                case '2':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Disetujui oleh MGR';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Disetujui oleh GMR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Disetujui oleh DIR';
+                                    } else {
+                                        statusText = 'Disetujui oleh Atasan 2';
+                                    }
+                                    break;
+                                case '-1':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Ditolak oleh SPV';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Ditolak oleh MGR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Ditolak oleh GMR';
+                                    } else {
+                                        statusText = 'Ditolak oleh Atasan 1';
+                                    }
+                                    break;
+                                case '-2':
+                                    if (userInfoOccupation === 'LDR/OPR') {
+                                        statusText = 'Ditolak oleh MGR';
+                                    } else if (userInfoOccupation === 'SPV') {
+                                        statusText = 'Ditolak oleh GMR';
+                                    } else if (userInfoOccupation === 'KDP') {
+                                        statusText = 'Ditolak oleh DIR';
+                                    } else {
+                                        statusText = 'Ditolak oleh Atasan 2';
+                                    }
+                                    break;
+                                case '3':
+                                    statusText = 'Disetujui oleh HR';
+                                    break;
+                                case '-3':
+                                    statusText = 'Ditolak oleh HR';
+                                    break;
+                                default:
+                                    statusText = 'Menunggu Persetujuan';
+                                    break;
                             }
-                        },
-                        {
-                            data: 'note',
-                            name: 'note'
-                        },
-                        {
-                            data: 'action',
-                            name: 'action',
-                            orderable: false,
-                            searchable: false,
-                            className: 'text-center',
-                            render: function(data, type, row) {
-                                return `<button type="button" class="btn btn-primary btn-sm btn-update"  data-toggle="modal" data-target="#cuziaDetailModal" data-empno="${row.empno}" data-uuid="${row.id}" data-nama="${row.empnm}" data-jenis="${row.jeniscuti}" data-tgl_mulai="${row.tgl_mulai}" data-tgl_selesai="${row.tgl_selesai}" data-status="${row.approval_status}" data-note="${row.note}">Detail</button>`;
-                            }
-
+                            return statusText;
+                        }
+                    },
+                    {
+                        data: 'note',
+                        name: 'note'
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            return `
+                                <button type="button" class="btn btn-primary btn-sm btn-update" data-toggle="modal" data-target="#cuziaDetailModal"
+                                    data-empno="${row.empno}"
+                                    data-nama="${row.empnm}"
+                                    data-jenis="${row.jeniscuti}"
+                                    data-tgl_mulai="${row.tgl_mulai}"
+                                    data-tgl_selesai="${row.tgl_selesai}"
+                                    data-status="${row.approval_status}"
+                                    data-note="${row.note}"
+                                    data-reason_approval1="${row.reason_approval1}"
+                                    data-reason_approval2="${row.reason_approval2}"
+                                    data-reason_approvalhr="${row.reason_approvalhr}">
+                                    Detail
+                                </button>`;
                         }
 
-                    ],
 
-                    initComplete: function() {
-                        var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
-                        var userInfoDept = '<?php echo $userInfoDept; ?>';
 
-                        if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
-                            this.api().columns([3]).every(function() {
-                                var column = this;
-
-                                // Create a container for the filter and clear button
-                                var filterContainer = $(
-                                    '<div class="d-flex align-items-center"></div>').appendTo($(
-                                    '#employee-table_wrapper .top'));
-
-                                // Create a select element
-                                var select = $(
-                                        '<select class="form-control form-control-sm col-md-3  mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>'
-                                    )
-                                    .appendTo(filterContainer) // Append it to the container
-
-                                    // Add event listeners for keyup and change events
-                                    .on('keyup change', function() {
-                                        column.search($(this).val()).draw();
-                                    });
-
-                                // Add a clear button to reset the filter
-                                $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
-                                    .appendTo(filterContainer)
-                                    .on('click', function() {
-                                        select.val('')
-                                            .change(); // Reset the select and trigger change event
-                                    });
-                            });
-                        }
                     }
-                });
 
-                $('#filter_button').on('click', function() {
-                    table.ajax.reload();
+                ],
 
-                });
-                $('#employee-table').on('click', '.btn-update', function() {
-                    console.log($(this).data('jeniscuti'));
-                    $('#nama3').val($(this).data('nama'));
-                    $('#npk').val($(this).data('empno'));
-                    $('#tgl_mulai3').val($(this).data('tgl_mulai'));
-                    $('#tgl_selesai4').val($(this).data('tgl_selesai'));
-                    $('#jeniscuti2').val($(this).data('jenis'));
-                    $('#note3').val($(this).data('note'));
-                });
+                initComplete: function() {
+                    var userInfoOccupation = '<?php echo $userInfoOccupation; ?>';
+                    var userInfoDept = '<?php echo $userInfoDept; ?>';
+
+                    if (userInfoOccupation == 'GMR' || userInfoDept == 'HRD') {
+                        this.api().columns([3]).every(function() {
+                            var column = this;
+
+                            // Create a container for the filter and clear button
+                            var filterContainer = $(
+                                '<div class="d-flex align-items-center"></div>').appendTo($(
+                                '#employee-table_wrapper .top'));
+
+                            // Create a select element
+                            var select = $(
+                                    '<select class="form-control form-control-sm col-md-3  mb-md-0" id="departmentSelect"><option value="">-- Select Department --</option><option value="hr">HRD & GA</option><option value="ir">IR & LEGAL</option><option value="enb">ENB</option><option value="enu">ENU</option><option value="mte">MTE</option><option value="qab">QAB</option><option value="msy">MSY</option><option value="qau">QAU</option><option value="itd">ITD</option><option value="PRO BODY">PRO BODY</option><option value="pro unit dc">PRO UNIT DC</option><option value="pro unit ma">PRO UNIT MA</option><option value="psd">PSD</option><option value="ppic">PPIC</option><option value="eqec">EQEC</option><option value="mma">MMA</option><option value="pro ec">PRO EC</option></select>'
+                                )
+                                .appendTo(filterContainer) // Append it to the container
+
+                                // Add event listeners for keyup and change events
+                                .on('keyup change', function() {
+                                    column.search($(this).val()).draw();
+                                });
+
+                            // Add a clear button to reset the filter
+                            $('<button class="btn btn-secondary btn-sm ml-2" id="clearFilter">Clear</button>')
+                                .appendTo(filterContainer)
+                                .on('click', function() {
+                                    select.val('')
+                                        .change(); // Reset the select and trigger change event
+                                });
+                        });
+                    }
+                }
+            });
+
+            $('#filter_button').on('click', function() {
+                table.ajax.reload();
+
+            });
+            $('#employee-table').on('click', '.btn-update', function() {
+                $('#nama3').val($(this).data('nama'));
+                $('#npk').val($(this).data('npk'));
+                $('#tgl_mulai3').val($(this).data('tgl_mulai'));
+                $('#tgl_selesai4').val($(this).data('tgl_selesai'));
+                $('#jeniscuti2').val($(this).data('jenis'));
+                $('#note3').val($(this).data('note'));
+
+                // var status = $(this).data('status');
+                // var reason1 = $(this).data('reason_approval1');
+                // var reason2 = $(this).data('reason_approval2');
+                // var reasonHr = $(this).data('reason_approvalhr');
+
+                // // Reset the display of reason fields
+                // $('#reason1').hide();
+                // $('#reason2').hide();
+                // $('#reasonHr').hide();
+
+                // // Set the reasons and display the appropriate field based on status
+                // if (status == -1) {
+                //     $('#reason1').val(reason1).show();
+                // } else if (status == -2) {
+                //     $('#reason2').val(reason2).show();
+                // } else if (status == -3) {
+                //     $('#reasonHr').val(reasonHr).show();
+                // } else {
+                //     // For other statuses, you might want to hide the reason fields or show an appropriate message
+                //     $('#reason1').val('');
+                //     $('#reason2').val('');
+                //     $('#reasonHr').val('');
+                // }
+                // console.log('Reason Approval 1:', reason1);
+                // console.log('Reason Approval 2:', reason2);
+                // console.log('Reason Approval HR:', reasonHr);
+            });
+
             });
         </script>
         <style>

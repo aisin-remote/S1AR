@@ -27,23 +27,21 @@
                                 </div>
                             </div>
                         </form>
-                        <div class="table-responsive">
-                            <table class="table-bor table-striped table-sm table-bordered w-100">
-                                <thead class="thead-custom">
-                                    <tr>
-                                        <th class="text-center align-middle">No</th>
-                                        <th class="text-left align-middle">Jenis Izin</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($jenisIzin as $index => $izin)
+                        <div class="col-lg-12 mt-3">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-sm table-bordered text-center align-middle table-bor"
+                                    id="jenisizin-table">
+                                    <thead class="thead-custom">
                                         <tr>
-                                            <td class="text-center align-middle">{{ $index + 1 }}</td>
-                                            <td class="text-left align-middle">{{ $izin->jenisizin }}</td>
+                                            <th class="text-center align-middle">No</th>
+                                            <th class="text-center align-middle">Jenis Izin</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <!-- DataTables will populate the body -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -52,7 +50,8 @@
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+    <div class="modal fade" id="cuziaizinmodal" tabindex="-1" role="dialog" aria-labelledby="editModal"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -66,7 +65,8 @@
                         @csrf
                         <div class="form-group">
                             <label for="jenis_izin">Jenis Izin</label>
-                            <input type="text" required class="form-control" id="jenis_izin" name="jenis_izin" placeholder="Masukkan Jenis Izin">
+                            <input type="text" required class="form-control" id="jenis_izin" name="jenis_izin"
+                                placeholder="Masukkan Jenis Izin">
                         </div>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </form>
@@ -74,6 +74,37 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                var table = $('#jenisizin-table').DataTable({
+                    processing: true,
+                    ajax: {
+                        url: '{{ url('/jenisizin/datatables') }}',
+                        data: function(d) {}
+                    },
+                    columns: [{
+                            data: null,
+                            render: function(data, type, row, meta) {
+                                // Mengembalikan nomor urut berdasarkan nomor baris (index + 1)
+                                return meta.row + 1;
+                            }
+                        },
+                        {
+                            data: 'jenisizin',
+                            name: 'jenisizin'
+                        }
+                    ],
+                    responsive: true,
+                });
+
+                $('#filter_button').on('click', function() {
+                    table.ajax.reload();
+                });
+            });
+        </script>
+    @endpush
 
     <style>
         /* Header Styling */
@@ -84,21 +115,15 @@
 
         /* Table Styling */
         .table-bor {
-            width: 100%;
+            width: 80%;
             border-collapse: collapse;
         }
 
-        .table-bor th,
-        .table-bor td {
-            border: 1.5px solid #000;
-        }
-
-        .table-bor th {
-            text-align: center;
-        }
-
-        .table-bor td {
-            text-align: left;
+        /* Table Styling */
+        .table.table-bor,
+        .table.table-bor th,
+        .table.table-bor td {
+            border: 1px solid #1e1d1d;
         }
     </style>
 @endsection

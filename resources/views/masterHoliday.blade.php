@@ -34,13 +34,16 @@
 
                 <div class="col-lg-12 mt-3">
                     <div class="table-responsive">
-                        <table class="table table-striped table-sm table-bordered text-center align-middle" id="holiday-table">
-                            <thead>
+                        <table class="table table-striped table-sm table-bordered text-center align-middle table-bor" id="holiday-table">
+                            <thead class="thead-custom">
                                 <tr>
                                     <th class="text-center align-middle">Date Holiday</th>
                                     <th class="text-center align-middle">Note Holiday</th>
                                 </tr>
                             </thead>
+                            <tbody>
+                                <!-- DataTables will populate the body -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -82,7 +85,8 @@
                 data: function(d) {
                 }
             },
-            columns: [{
+            columns: [
+                {
                     data: 'date',
                     name: 'date'
                 },
@@ -101,4 +105,19 @@
     });
 </script>
 @endpush
+
+<style>
+    /* Header Styling */
+    .table thead.thead-custom {
+        background-color: #054483;
+        color: white;
+    }
+
+    /* Table Styling */
+    .table.table-bor,
+    .table.table-bor th,
+    .table.table-bor td {
+        border: 1px solid #1e1d1d;
+    }
+</style>
 @endsection

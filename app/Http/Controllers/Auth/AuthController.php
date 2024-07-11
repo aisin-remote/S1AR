@@ -25,15 +25,74 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        // Coba melakukan autentikasi user
-        if (Auth::guard('web')->attempt(['npk' => $request->npk, 'password' => $request->password])) {
-            // Jika autentikasi berhasil, redirect ke halaman yang diinginkan
-            return redirect('/')->with('success', 'Login successful! Welcome back, ' . Auth::user()->name . '!');
-        } else {
-            // Jika autentikasi gagal, redirect kembali ke halaman login dengan pesan error
-            return redirect('/login')->withErrors(['login' => 'Invalid NPK or password. Please try again.']);
+        // Attempt to authenticate the user
+        if (Auth::attempt(['npk' => $request->npk, 'password' => $request->password])) {
+            // If authentication is successful, fetch the user info
+            $npk = Auth::user()->npk;
+            $userInfo = DB::connection('mysql2')->select(
+                DB::raw(
+                    "
+                    SELECT kehadiran2.empno, hirarki.hirar, MAX(hirarki.mutdt) AS mutdt, hirarkidesc.descr, users.is_admin
+                    FROM kehadiran2
+                    LEFT JOIN hirarki ON kehadiran2.empno = hirarki.empno
+                    LEFT JOIN users ON kehadiran2.empno = users.npk
+                    LEFT JOIN hirarkidesc ON hirarki.hirar = hirarkidesc.hirar
+                    WHERE kehadiran2.empno = $npk
+                    GROUP BY kehadiran2.empno, hirarki.hirar, hirarkidesc.descr, users.is_admin
+                    ORDER BY mutdt DESC LIMIT 1;
+                    "
+                )
+            );
+
+            if (!empty($userInfo)) {
+                $isadmin = $userInfo[0]->is_admin;
+                $npkDesc = $userInfo[0]->hirar;
+                $cleanedString = str_replace(' ', '', $npkDesc);
+                $jumlahKarakter = strlen($cleanedString);
+
+                // Determine the role based on the character count
+                $roles = ['Karyawan'];
+                if ($isadmin == 1) {
+                    $roles[] = 'HRD Admin';
+                }
+                if ($jumlahKarakter == 5) {
+                    $roles[] = 'Kepala Department';
+                } elseif ($jumlahKarakter == 7) {
+                    $roles[] = 'Supervisor';
+                } elseif ($jumlahKarakter == 2 || $jumlahKarakter == 3) {
+                    $roles[] = 'General Manager';
+                }
+
+                // Store user information and role options in session
+                session(['roles' => $roles]);
+
+                // Redirect to role selection page
+                return redirect('/select-role');
+            }
         }
+
+        // If authentication fails, redirect back with an error message
+        return redirect()->back()->withErrors(['login' => 'Invalid NPK or password. Please try again.']);
     }
+
+    public function selectRole()
+    {
+        return view('auth.select-role');
+    }
+
+    public function setRole(Request $request)
+    {
+        $request->validate([
+            'role' => 'required',
+        ]);
+
+        // Store the selected role in session
+        session(['selected_role' => $request->role]);
+
+        return redirect('/dashboard');
+    }
+
+
 
 
     public function register()
